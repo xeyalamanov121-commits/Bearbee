@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Premium</title>
+    <title>Bearbee Premium Green</title>
     <script src="https://sad.adsgram.ai/js/adsgram-telegram-web-app.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            /* Şəkildəki kimi tünd meşə yaşılı və qara keçidli premium fon */
-            background: linear-gradient(180deg, #0b2914 0%, #05140a 100%);
+            /* Zəngin tünd yaşıl və sirli meşə tonlarında premium fon */
+            background: linear-gradient(180deg, #0a2f1d 0%, #04140c 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             text-align: center;
@@ -26,235 +26,220 @@
             justify-content: space-between;
             height: 100vh;
             box-sizing: border-box;
+            background: radial-gradient(circle at center, rgba(16, 85, 49, 0.3) 0%, transparent 70%);
         }
 
-        /* Loqo və Başlıq Hissəsi */
-        .header {
+        /* 3D Qızılı-Yaşıl Başlıq Paneli */
+        .header-panel {
+            background: linear-gradient(135deg, #14492c 0%, #092516 100%);
+            border: 2px solid #b89742;
+            box-shadow: 0 0 15px rgba(184, 151, 66, 0.4), inset 0 0 10px rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 10px 25px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffe082;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            margin: 0;
+        }
+
+        /* Lüks Şüşə (Glassmorphism) Göstərici Paneli */
+        .status-card {
+            background: rgba(10, 40, 24, 0.65);
+            border: 2px solid rgba(184, 151, 66, 0.3);
+            border-radius: 20px;
+            width: 88%;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
             margin-top: 10px;
         }
-        .logo {
-            font-size: 45px;
-            margin: 0;
-        }
-        .title {
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin: 2px 0;
-            background: linear-gradient(135deg, #ffe082 0%, #ffb300 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .subtitle {
-            font-size: 14px;
-            color: #81c784;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 0;
-        }
 
-        /* Şəkildəki 3-lü Premium Grid Panel */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            width: 92%;
-            margin-top: 15px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            border-radius: 15px;
-            padding: 10px 5px;
-            backdrop-filter: blur(10px);
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.02);
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #a5d6a7;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .stat-value {
-            font-size: 15px;
-            font-weight: bold;
+        .status-row {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 6px 0;
+            color: #e0f2f1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
-        .gold-text {
-            color: #ffd54f;
+        .gold-glow {
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
         }
 
-        /* Oyun Sahəsi (Premium Ayı və Arı) */
-        .game-area {
-            position: relative;
+        /* İldırımlı Enerji Barı */
+        .energy-wrapper {
             width: 100%;
-            height: 35vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .bear-display {
-            font-size: 110px;
-            cursor: pointer;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-        }
-
-        .bear-display:active {
-            transform: scale(1.15);
-        }
-
-        .bee-display {
-            position: absolute;
-            font-size: 38px;
-            left: 25%;
-            top: 20%;
-            transition: all 0.6s ease-in-out;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-        }
-
-        /* Şəkildəki İldırımlı Yaşıl Enerji Barı */
-        .energy-section {
-            width: 88%;
-        }
-
-        .energy-title {
-            font-size: 13px;
-            color: #e8f5e9;
-            margin-bottom: 6px;
-            letter-spacing: 1px;
+            margin-top: 12px;
         }
 
         .energy-container {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid #2e7d32;
-            border-radius: 30px;
-            height: 24px;
-            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #b89742;
+            border-radius: 25px;
+            height: 22px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
         }
 
         .energy-bar-fill {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 50%, #4caf50 100%);
+            background: linear-gradient(90deg, #1b5e20 0%, #4caf50 50%, #1b5e20 100%);
             height: 100%;
             width: 100%;
-            border-radius: 30px;
-            transition: width 0.3s ease;
+            border-radius: 25px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 0 12px #4caf50;
         }
 
-        /* İldırım İkonu */
-        .bolt-icon {
+        .bolt {
             position: absolute;
-            left: 10px;
-            font-size: 14px;
+            left: 12px;
+            font-size: 13px;
             color: #fff;
             z-index: 2;
-            text-shadow: 0 0 5px #fff;
-            animation: pulse 1s infinite alternate;
+            text-shadow: 0 0 6px #fff, 0 0 12px #4caf50;
+            animation: flash 0.8s infinite alternate;
         }
 
-        /* Şəkildəki Qızılı Premium Düymələr */
-        .controls {
+        /* Oyun Sahəsi və Elementlər */
+        .game-area {
+            position: relative;
             width: 100%;
-            margin-bottom: 20px;
+            height: 38vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bear-avatar {
+            font-size: 115px;
+            cursor: pointer;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+        }
+
+        .bear-avatar:active {
+            transform: scale(1.18);
+        }
+
+        .bee-avatar {
+            position: absolute;
+            font-size: 40px;
+            left: 20%;
+            top: 25%;
+            transition: all 0.6s ease-in-out;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4));
+        }
+
+        /* 3D Premium Qızılı-Yaşıl Düymələr */
+        .control-panel {
+            width: 100%;
+            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .premium-btn {
-            background: linear-gradient(135deg, #b58d3d 0%, #866323 100%);
-            border: 1px solid #ffd700;
-            color: #fff;
+        .luxury-btn {
+            background: linear-gradient(135deg, #1b5e20 0%, #0c290e 100%);
+            border: 2px solid #ffd700;
+            color: #ffd700;
             font-size: 16px;
             font-weight: bold;
-            padding: 15px 0;
-            width: 85%;
-            border-radius: 20px;
+            padding: 16px 0;
+            width: 86%;
+            border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2);
-            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.2);
+            transition: all 0.1s ease;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
-        .premium-btn:active {
-            transform: scale(0.98);
+        .luxury-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.7);
         }
 
-        /* Video Düyməsi (Şəkildəki alt sətir dizaynı) */
-        .video-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px dashed rgba(255, 215, 0, 0.4);
-            color: #ffe082;
-            font-size: 14px;
+        .btn-feed {
+            background: linear-gradient(135deg, #795548 0%, #3e2723 100%);
+            border-color: #ffb300;
+            color: #ffb300;
+        }
+
+        .btn-video {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed #4caf50;
+            color: #a5d6a7;
+            box-shadow: none;
         }
 
         .hidden { display: none !important; }
 
-        @keyframes pulse {
-            from { transform: scale(1); opacity: 0.8; }
-            to { transform: scale(1.2); opacity: 1; }
+        @keyframes flash {
+            from { opacity: 0.7; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1.15); }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="logo">👑</div>
-        <h1 class="title">Bearbee Premium</h1>
-        <p class="subtitle">Meşə İqtisadiyyatı</p>
+    <div class="header-panel">
+        <span>🐻</span>
+        <h1 class="header-title">Bearbee Oyun Sahəsi</h1>
+        <span>🐝</span>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Balans</div>
-            <div class="stat-value gold-text"><span id="honey-val">0</span> 🍯</div>
+    <div class="status-card">
+        <div class="status-row">
+            <span>🍯 Toplanan Bal:</span>
+            <span id="honey-display" class="gold-glow">0</span>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Status</div>
-            <div class="stat-value" style="color: #ffd54f;">⭐ VIP</div>
+        <div class="status-row">
+            <span>🐻 Ayının Çəkisi:</span>
+            <span id="weight-display" style="color: #81c784;">10 kg</span>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Xoşbəxtlik</div>
-            <div class="stat-value" style="color: #ff5252;">❤️ <span id="weight-val">10</span></div>
+        <div class="status-row" style="margin-bottom: 0;">
+            <span>⚡ Arı Enerjisi:</span>
+            <span id="energy-display">100/100</span>
+        </div>
+        
+        <div class="energy-wrapper">
+            <div class="energy-container">
+                <span class="bolt">⚡</span>
+                <div id="energy-bar" class="energy-bar-fill"></div>
+            </div>
         </div>
     </div>
 
     <div class="game-area">
-        <div id="bee-obj" class="bee-display">🐝</div>
-        <div id="bear-obj" class="bear-display" onclick="ayiniYedizdir()">🐻</div>
+        <div id="bee-node" class="bee-avatar">🐝</div>
+        <div id="bear-node" class="bear-avatar" onclick="ayiniYedizdir()">🐻</div>
     </div>
 
-    <div class="energy-section">
-        <div class="energy-title">Enerji (<span id="energy-num">100</span>/100)</div>
-        <div class="energy-container">
-            <span class="bolt-icon">⚡</span>
-            <div id="energy-fill" class="energy-bar-fill"></div>
-        </div>
-    </div>
-
-    <div class="controls">
-        <button id="btn-honey" class="premium-btn" onclick="balTopla()">🐝 Maksimum Sürətlə Bal Topla</button>
-        <button id="btn-feed" class="premium-btn" onclick="ayiniYedizdir()" style="background: linear-gradient(135deg, #a6621e 0%, #6d3b0d 100%); border-color: #ff9800;">🍯 Ayını Yedizdir (50 Bal)</button>
-        <button id="btn-video" class="premium-btn video-btn hidden" onclick="reklamIzle()">🎬 Video İzlə - 2X Enerji Qazan</button>
+    <div class="control-panel">
+        <button id="btn-collect" class="luxury-btn" onclick="balTopla()">🐝 Bal Toplamağa Uç (-10 ⚡)</button>
+        <button id="btn-feed" class="luxury-btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Yedizdir (50 Bal)</button>
+        <button id="btn-video" class="luxury-btn btn-video hidden" onclick="reklamIzle()">🎬 Video İzlə - Enerji Qazan</button>
     </div>
 </div>
 
@@ -267,17 +252,17 @@
     const ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID";
     let AdController = window.Adsgram ? window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID }) : null;
 
-    function updateGameUI() {
-        document.getElementById('honey-val').innerText = honey;
-        document.getElementById('weight-val').innerText = bearWeight;
-        document.getElementById('energy-num').innerText = energy;
-        document.getElementById('energy-fill').style.width = energy + "%";
+    function refreshUI() {
+        document.getElementById('honey-display').innerText = honey;
+        document.getElementById('weight-display').innerText = bearWeight + " kg";
+        document.getElementById('energy-display').innerText = energy + "/100";
+        document.getElementById('energy-bar').style.width = energy + "%";
 
         if (energy < 10) {
-            document.getElementById('btn-honey').classList.add('hidden');
+            document.getElementById('btn-collect').classList.add('hidden');
             document.getElementById('btn-video').classList.remove('hidden');
         } else {
-            document.getElementById('btn-honey').classList.remove('hidden');
+            document.getElementById('btn-collect').classList.remove('hidden');
             document.getElementById('btn-video').classList.add('hidden');
         }
     }
@@ -285,14 +270,13 @@
     function balTopla() {
         if (energy >= 10) {
             energy -= 10;
-            honey += Math.floor(Math.random() * 10) + 8; // Sürətli bal qazancı
+            honey += Math.floor(Math.random() * 8) + 6; 
 
-            // Arının premium uçuş hərəkəti
-            let bee = document.getElementById('bee-obj');
-            bee.style.left = (Math.random() * 50 + 15) + "%";
-            bee.style.top = (Math.random() * 40 + 10) + "%";
+            let bee = document.getElementById('bee-node');
+            bee.style.left = (Math.random() * 55 + 15) + "%";
+            bee.style.top = (Math.random() * 35 + 15) + "%";
 
-            updateGameUI();
+            refreshUI();
         }
     }
 
@@ -302,18 +286,18 @@
             bearWeight += 1;
             feedCount++;
 
-            let bear = document.getElementById('bear-obj');
-            bear.style.transform = "scale(1.25)";
-            setTimeout(() => bear.style.transform = "scale(1)", 120);
+            let bear = document.getElementById('bear-node');
+            bear.style.transform = "scale(1.2)";
+            setTimeout(() => bear.style.transform = "scale(1)", 130);
 
-            updateGameUI();
+            refreshUI();
 
-            // Sənin mürəkkəb reklam dövrün: Hər 3 dəfədə bir tam ekran reklam
+            // Sənin mürəkkəb video dövrün (Hər 3 yedizdirmədən bir)
             if (feedCount % 3 === 0) {
                 if (AdController) AdController.show().catch(e => console.log(e));
             }
         } else {
-            alert("🐻 Ayı acdır! Onu yedizdirmək üçün kifayət qədər balınız yoxdur.");
+            alert("🐻 Ayını yedizdirmək üçün ən azı 50 bal toplamalısınız!");
         }
     }
 
@@ -321,18 +305,18 @@
         if (AdController) {
             AdController.show().then(() => {
                 energy = 100;
-                updateGameUI();
+                refreshUI();
             }).catch(() => {
-                energy = 100; // Test rejimində dərhal doldurur
-                updateGameUI();
+                energy = 100; 
+                refreshUI();
             });
         } else {
             energy = 100;
-            updateGameUI();
+            refreshUI();
         }
     }
 
-    updateGameUI();
+    refreshUI();
 </script>
 
 </body>
