@@ -235,10 +235,10 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 🌟 ADSGRAM AYARI
+        // 🌟 ADSGRAM INITIALIZATION (TEST REJİMİ AKTİVDİR)
         const AdController = window.Adsgram?.createAdController("bot-30462");
         if (AdController) {
-            AdController.isTestMode = true; // Reklam mütləq açılsın deyə başlanğıcda TEST rejimini aktiv etdik
+            AdController.isTestMode = true; 
         }
 
         const DB_URL = "https://ykfrzkcfxkgvselmtewg.supabase.co/rest/v1/users";
@@ -247,19 +247,23 @@
         let userId = tg.initDataUnsafe?.user?.id ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
 
-        // Tab keçid funksiyası tam bərpa edildi
+        // Tab keçid funksiyası sadələşdirildi və xətasızlaşdırıldı
         function switchTab(tabId) {
-            document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
+            try {
+                document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                
+                document.getElementById(tabId).classList.add('active');
+                document.getElementById('btn-' + tabId).classList.add('active');
+            } catch (e) {
+                console.error("Tab keçid xətası:", e);
+            }
         }
 
-        // Adsgram Video Düyməsi
+        // Adsgram Video İzləmə funksiyası
         function watchAdsgramVideo() {
             if (!AdController) {
-                tg.showAlert("Adsgram yüklənmədi. Bloklayıcıları yoxlayın.");
+                tg.showAlert("Adsgram yüklənmədi.");
                 return;
             }
 
@@ -293,6 +297,7 @@
             tg.showAlert(`✅ Balansınıza +${reward} Data yazıldı.`);
         }
 
+        // Baza yüklənməsindəki donma maneəsi aradan qaldırıldı (Try-Catch bloku gücləndirildi)
         async function loadUserData() {
             try {
                 let res = await fetch(`${DB_URL}?user_id=eq.${userId}`, {
@@ -302,6 +307,7 @@
                 if (data && data.length > 0) { 
                     userStats = data[0]; 
                 } else {
+                    // Cədvəlinizdə fərqli sütunlar varsa xəta verməsin deyə minimal struktur göndəririk
                     let createRes = await fetch(DB_URL, {
                         method: "POST",
                         headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" },
@@ -310,17 +316,24 @@
                     let newData = await createRes.json();
                     if(newData && newData.length > 0) userStats = newData[0];
                 }
-                updateUI();
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.log("Supabase bağlantı xətası (Lokal rejim işləyir):", e); 
+                // Baza çöksə belə oyunun işləməsi üçün default statistikadan istifadə edirik
+            }
+            updateUI();
         }
 
         function updateUI() {
-            document.getElementById('txt-honey').innerText = userStats.honey;
-            document.getElementById('txt-level').innerText = userStats.level + " KG";
-            document.getElementById('txt-energy').innerText = userStats.energy + "/100";
-            document.getElementById('fill-energy').style.width = userStats.energy + "%";
-            document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance).toFixed(2) + " TON";
-            document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
+            try {
+                document.getElementById('txt-honey').innerText = userStats.honey !== undefined ? userStats.honey : 0;
+                document.getElementById('txt-level').innerText = (userStats.level !== undefined ? userStats.level : 1) + " KG";
+                document.getElementById('txt-energy').innerText = (userStats.energy !== undefined ? userStats.energy : 100) + "/100";
+                document.getElementById('fill-energy').style.width = (userStats.energy !== undefined ? userStats.energy : 100) + "%";
+                document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance || 0).toFixed(2) + " TON";
+                document.getElementById('txt-ads').innerText = (userStats.reklam_baxis || 0) + " / 50";
+            } catch(err) {
+                console.error("UI Yeniləmə xətası:", err);
+            }
         }
 
         async function syncToDatabase(updates) {
@@ -330,12 +343,12 @@
                     headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify(updates)
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Sinxronizasiya xətası:", e); }
         }
 
         function triggerTap() {
             if (userStats.energy > 0) {
-                userStats.honey += userStats.level; 
+                userStats.honey = (userStats.honey || 0) + (userStats.level || 1); 
                 userStats.energy -= 1; 
                 updateUI();
                 if (userStats.honey % 5 === 0) syncToDatabase({ honey: userStats.honey, energy: userStats.energy });
@@ -345,7 +358,7 @@
         async function upgradeCore() {
             if (userStats.honey >= 100) { 
                 userStats.honey -= 100; 
-                userStats.level += 1; 
+                userStats.level = (userStats.level || 1) + 1; 
                 updateUI(); 
                 await syncToDatabase({ honey: userStats.honey, level: userStats.level }); 
             } else { tg.showAlert("Nüvəni təkmilləşdirmək üçün 100 Data lazımdır."); }
@@ -365,7 +378,7 @@
         async function swapDataToTon() {
             if (userStats.honey >= 20000) { 
                 userStats.honey -= 20000; 
-                userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2); 
+                userStats.ton_balance = (parseFloat(userStats.ton_balance || 0) + 1.0).toFixed(2); 
                 updateUI(); 
                 await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) }); 
             } else { tg.showAlert("Çevirmək üçün minimum 20,000 Data lazımdır."); }
@@ -403,3 +416,4 @@
     </script>
 </body>
 </html>
+
