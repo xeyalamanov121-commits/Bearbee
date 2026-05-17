@@ -1,78 +1,57 @@
-import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
-
-# Sənin rəsmi Bot Tokenin
-BOT_TOKEN = "8906294746:AAHQAdKCbhuv4GRLdl3GDFQsZW184pcHSe4"
-
-# Botun daha sürətli və donmadan cavab verməsi üçün 5 fərqli axın (thread) aktiv edirik
-bot = telebot.TeleBot(BOT_TOKEN, num_threads=5)
-
-# İstifadəçi məlumatları bazası
-users_data = {}
-
-def get_user_data(user_id):
-    if user_id not in users_data:
-        users_data[user_id] = {"bal": 0.0, "lvl": 1}
-    return users_data[user_id]
-
-# /start əmri gələndə işləyən hissə
-@bot.message_handler(commands=['start'])
-def start_cmd(message):
-    user_id = message.from_user.id
-    get_user_data(user_id) # Qeydiyyatı yoxla
-    
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    
-    # 🎯 SƏNİN DƏQİQ VƏ DÜZGÜN GITHUB LINKIN (Bearbee layihəsi üçün)
-    GITHUB_LINK = "https://xeyalanonov121-commits.github.io/Bearbee/"
-    
-    # Telegram daxilində oyunu açan Mini App düyməsi
-    mini_app_btn = KeyboardButton(text="🚀 Oyunu Aç (Mini App)", web_app=WebAppInfo(url=GITHUB_LINK))
-    
-    # Digər köhnə düymələrin
-    btn1 = KeyboardButton(text="🍯 Pətəkdən Bal Topla")
-    btn2 = KeyboardButton(text="🐻 Ayını Yedizdir (Bal Ye)")
-    btn3 = KeyboardButton(text="👥 Dostlarını Dəvət Et")
-    btn4 = KeyboardButton(text="💰 Balans & Pul Çıxar")
-    
-    # Düymələrin ekrana düzülüşü
-    markup.add(mini_app_btn) # Mini App düyməsi ən üstdə tək və böyük qalır
-    markup.add(btn1, btn2, btn3, btn4)
-    
-    bot.send_message(
-        message.chat.id,
-        "🐻 **Bearbee Dünyasına Xoş Gəldiniz!**\n\n"
-        "Yenilənmiş və sürətli sistemimiz aktivdir. Aşağıdakı **🚀 Oyunu Aç (Mini App)** düyməsinə basaraq veb oyunumuzu birbaşa Telegram daxilində oynaya bilərsiniz!",
-        reply_markup=markup,
-        parse_mode="Markdown"
-    )
-
-# Düymələrin funksiyaları
-@bot.message_handler(func=lambda message: True)
-def handle_buttons(message):
-    user_id = message.from_user.id
-    data = get_user_data(user_id)
-    
-    if message.text == "🍯 Pətəkdən Bal Topla":
-        data["bal"] += 1.5
-        bot.send_message(message.chat.id, f"🐝 Arılar pətəyə bal daşıdı! +1.5 qram bal toplandı.\n🍯 Cari Balınız: {data['bal']} qram.")
-        
-    elif message.text == "🐻 Ayını Yedizdir (Bal Ye)":
-        if data["bal"] >= 10:
-            data["bal"] -= 10
-            data["lvl"] += 1
-            bot.send_message(message.chat.id, f"🐻 Ayı balı yedi və doydu!\n📈 Ayının Səviyyəsi Artdı: {data['lvl']} LVL!")
-        else:
-            bot.send_message(message.chat.id, f"❌ Ayını yedizdirmək üçün 10 qram bal lazımdır. Səndə isə {data['bal']} qram bal var.")
-            
-    elif message.text == "💰 Balans & Pul Çıxar":
-        bot.send_message(message.chat.id, f"📊 **Sizin Statistika:**\n\n🍯 Bal stoku: {data['bal']} qram\n📈 Ayı Səviyyəsi: {data['lvl']} LVL\n\n(Pul çıxarmaq üçün minimum 500 qram bal olmalıdır).")
-        
-    elif message.text == "👥 Dostlarını Dəvət Et":
-        bot.send_message(message.chat.id, f"🔗 Sizin dəvət linkiniz:\nhttps://t.me/Bearbee_bot?start={user_id}\n\nHər dəvətə +5 qram bal!")
-
-if __name__ == "__main__":
-    print("=====================================")
-    print("Sürətləndirilmiş Yeni Bot Uğurla Başladıldı!")
-    print("=====================================")
-    bot.infinity_polling()
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bearbee Mini App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(180deg, #fff2a3 0%, #ff9900 100%);
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0px 15px 30px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 350px;
+        }
+        h1 { color: #6d4c41; font-size: 26px; margin-bottom: 10px; }
+        p { font-size: 16px; color: #555; }
+        .btn {
+            background-color: #6d4c41;
+            border: none;
+            color: white;
+            padding: 15px 35px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: bold;
+            width: 100%;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🐻 Bearbee Oyun 🐝</h1>
+        <p>Uğurla alındı! Bu sənin Telegram-da açılan ilk rəsmi Mini App oyunundur!</p>
+        <button class="btn" onclick="alert('Bal balansınıza əlavə olundu!')">🍯 Bal Topla</button>
+    </div>
+</body>
+</html>
