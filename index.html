@@ -2,56 +2,114 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bearbee Mini App</title>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(180deg, #fff2a3 0%, #ff9900 100%);
-            color: #333;
-            text-align: center;
-            padding: 20px;
             margin: 0;
-            height: 100vh;
+            padding: 0;
+            background-color: #ffaa00; /* Narıncı fon */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+            overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
-        .card {
-            background: white;
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
             padding: 30px;
-            border-radius: 30px;
-            box-shadow: 0px 15px 30px rgba(0,0,0,0.2);
-            width: 80%;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 85%;
             max-width: 350px;
         }
-        h1 { color: #6d4c41; font-size: 26px; margin-bottom: 10px; }
-        p { font-size: 16px; color: #555; }
-        .btn {
-            background-color: #6d4c41;
-            border: none;
-            color: white;
-            padding: 15px 35px;
-            font-size: 18px;
-            margin-top: 20px;
-            cursor: pointer;
-            border-radius: 50px;
-            font-weight: bold;
-            width: 100%;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-            transition: 0.2s;
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #d47a00;
         }
-        .btn:active {
-            transform: scale(0.98);
+
+        .honey-counter {
+            font-size: 22px;
+            font-weight: bold;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px solid #ffeeba;
+            margin-bottom: 25px;
+            display: inline-block;
+            width: 80%;
+        }
+
+        .click-btn {
+            background: #ffc107;
+            border: none;
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            font-size: 70px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            outline: none;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .click-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🐻 Bearbee Oyun 🐝</h1>
-        <p>Uğurla alındı! Bu sənin Telegram-da açılan ilk rəsmi Mini App oyunundur!</p>
-        <button class="btn" onclick="alert('Bal balansınıza əlavə olundu!')">🍯 Bal Topla</button>
+
+    <div class="game-container">
+        <h1>Bearbee Oyun</h1>
+        <div class="honey-counter">🍯 <span id="score">0.0</span> qram</div>
+        
+        <div>
+            <button class="click-btn" id="beeBtn">🐝</button>
+        </div>
+        
+        <div class="status-text">Pətəyə toxunaraq bal toplayın!</div>
     </div>
+
+    <script>
+        let score = 0.0;
+        const scoreEl = document.getElementById('score');
+        const btn = document.getElementById('beeBtn');
+
+        // Balansı yaddaşdan oxumaq (əgər əvvəl oynanılıbsa)
+        if (localStorage.getItem('bearbee_bal')) {
+            score = parseFloat(localStorage.getItem('bearbee_bal'));
+            scoreEl.innerText = score.toFixed(1);
+        }
+
+        btn.addEventListener('click', () => {
+            score += 0.5; // Hər klikdə 0.5 qram bal artır
+            scoreEl.innerText = score.toFixed(1);
+            
+            // Balansı telefonun yaddaşında saxlayır ki, səhifə bağlananda sıfırlanmasın
+            localStorage.setItem('bearbee_bal', score);
+        });
+    </script>
 </body>
 </html>
