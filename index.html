@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Premium Green</title>
+    <title>Bearbee Ultimate Premium</title>
     <script src="https://sad.adsgram.ai/js/adsgram-telegram-web-app.js"></script>
     <style>
+        :root {
+            --neon-green: #00ff66;
+            --gold-glow: #ffd700;
+            --premium-dark: #020b05;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            /* Zəngin tünd yaşıl və sirli meşə tonlarında premium fon */
-            background: linear-gradient(180deg, #0a2f1d 0%, #04140c 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #0a3a1f 0%, var(--premium-dark) 100%);
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
             color: #fff;
             text-align: center;
             user-select: none;
@@ -19,184 +24,240 @@
         }
 
         .container {
-            padding: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             height: 100vh;
             box-sizing: border-box;
-            background: radial-gradient(circle at center, rgba(16, 85, 49, 0.3) 0%, transparent 70%);
         }
 
-        /* 3D Qızılı-Yaşıl Başlıq Paneli */
+        /* 🌟 İşıldayan Neon Başlıq Paneli */
         .header-panel {
-            background: linear-gradient(135deg, #14492c 0%, #092516 100%);
-            border: 2px solid #b89742;
-            box-shadow: 0 0 15px rgba(184, 151, 66, 0.4), inset 0 0 10px rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 10px 25px;
+            background: linear-gradient(135deg, #0d381e 0%, #051a0d 100%);
+            border: 2px solid var(--gold-glow);
+            box-shadow: 0 0 25px rgba(0, 255, 102, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 12px 30px;
             margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            animation: borderPulse 2s infinite alternate;
         }
 
         .header-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffe082;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, var(--gold-glow), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineText 3s linear infinite;
             margin: 0;
         }
 
-        /* Lüks Şüşə (Glassmorphism) Göstərici Paneli */
+        /* 🔮 Cyber-Glass Göstərici Paneli */
         .status-card {
-            background: rgba(10, 40, 24, 0.65);
-            border: 2px solid rgba(184, 151, 66, 0.3);
-            border-radius: 20px;
-            width: 88%;
-            padding: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            margin-top: 10px;
+            background: rgba(4, 23, 12, 0.75);
+            border: 1px solid rgba(0, 255, 102, 0.25);
+            border-radius: 22px;
+            width: 90%;
+            padding: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0, 255, 102, 0.1);
+            backdrop-filter: blur(15px);
+            margin-top: 5px;
         }
 
         .status-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 6px 0;
-            color: #e0f2f1;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: 17px;
+            font-weight: 700;
+            margin: 8px 0;
+            letter-spacing: 0.5px;
         }
 
-        .gold-glow {
-            color: #ffd700;
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        .glow-text-green {
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.8);
         }
 
-        /* İldırımlı Enerji Barı */
+        .glow-text-gold {
+            color: var(--gold-glow);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        /* ⚡ İldırımlı və Plazmalı Enerji Barı */
         .energy-wrapper {
             width: 100%;
-            margin-top: 12px;
+            margin-top: 15px;
         }
 
         .energy-container {
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #b89742;
-            border-radius: 25px;
-            height: 22px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--neon-green);
+            border-radius: 30px;
+            height: 26px;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
             display: flex;
             align-items: center;
         }
 
         .energy-bar-fill {
-            background: linear-gradient(90deg, #1b5e20 0%, #4caf50 50%, #1b5e20 100%);
+            background: linear-gradient(90deg, #006622, var(--neon-green), #00ffcc);
+            background-size: 200% 100%;
             height: 100%;
             width: 100%;
-            border-radius: 25px;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 12px #4caf50;
+            border-radius: 30px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px var(--neon-green);
+            animation: moveGradient 2s linear infinite;
         }
 
         .bolt {
             position: absolute;
-            left: 12px;
-            font-size: 13px;
+            left: 14px;
+            font-size: 14px;
             color: #fff;
-            z-index: 2;
-            text-shadow: 0 0 6px #fff, 0 0 12px #4caf50;
-            animation: flash 0.8s infinite alternate;
+            z-index: 3;
+            text-shadow: 0 0 8px #fff, 0 0 15px var(--neon-green);
+            animation: superFlash 0.5s infinite alternate;
         }
 
-        /* Oyun Sahəsi və Elementlər */
+        /* 🐻 Oyun Sahəsi (Parıldayan Aura) */
         .game-area {
             position: relative;
             width: 100%;
-            height: 38vh;
+            height: 35vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         .bear-avatar {
-            font-size: 115px;
+            font-size: 125px;
             cursor: pointer;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+            filter: drop-shadow(0 0 30px rgba(0, 255, 102, 0.2)) drop-shadow(0 15px 35px rgba(0,0,0,0.7));
         }
 
         .bear-avatar:active {
-            transform: scale(1.18);
+            transform: scale(1.2) rotate(3deg);
         }
 
         .bee-avatar {
             position: absolute;
-            font-size: 40px;
+            font-size: 45px;
             left: 20%;
-            top: 25%;
-            transition: all 0.6s ease-in-out;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4));
+            top: 20%;
+            transition: all 0.5s cubic-bezier(0.42, 0, 0.58, 1);
+            filter: drop-shadow(0 0 15px var(--gold-glow));
         }
 
-        /* 3D Premium Qızılı-Yaşıl Düymələr */
+        /* 🚀 SON DƏRƏCƏ İŞILDAYAN 3D DÜYMƏLƏR */
         .control-panel {
             width: 100%;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
 
-        .luxury-btn {
-            background: linear-gradient(135deg, #1b5e20 0%, #0c290e 100%);
-            border: 2px solid #ffd700;
-            color: #ffd700;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 16px 0;
-            width: 86%;
-            border-radius: 30px;
+        .ultimate-btn {
+            position: relative;
+            background: linear-gradient(135deg, #004d1a 0%, #001a06 100%);
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            font-size: 17px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 18px 0;
+            width: 88%;
+            border-radius: 40px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.2);
-            transition: all 0.1s ease;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.2);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            text-shadow: 0 0 5px rgba(0,255,102,0.5);
         }
 
-        .luxury-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+        /* Düymə üzərində hərəkət edən parlaq işıq dalğası (Shimmer) */
+        .ultimate-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(30deg);
+            transition: none;
+            animation: shimmerEffect 2.5s infinite linear;
+        }
+
+        .ultimate-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
         }
 
         .btn-feed {
-            background: linear-gradient(135deg, #795548 0%, #3e2723 100%);
-            border-color: #ffb300;
-            color: #ffb300;
+            background: linear-gradient(135deg, #4d2600 0%, #1a0d00 100%);
+            border-color: var(--gold-glow);
+            color: var(--gold-glow);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            text-shadow: 0 0 5px rgba(255,215,0,0.5);
+        }
+
+        .btn-feed::after {
+            background: rgba(255, 215, 0, 0.3);
         }
 
         .btn-video {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px dashed #4caf50;
-            color: #a5d6a7;
-            box-shadow: none;
+            background: rgba(0, 255, 102, 0.05);
+            border: 2px dashed #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+            animation: pulseBlue 1.5s infinite alternate;
         }
+        
+        .btn-video::after { background: rgba(0, 255, 255, 0.3); }
 
         .hidden { display: none !important; }
 
-        @keyframes flash {
-            from { opacity: 0.7; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1.15); }
+        /* 🎭 ANIMASİYALAR */
+        @keyframes borderPulse {
+            from { box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); border-color: var(--gold-glow); }
+            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); border-color: var(--neon-green); }
+        }
+
+        @keyframes shineText {
+            to { background-position: 200% center; }
+        }
+
+        @keyframes shimmerEffect {
+            0% { left: -60%; }
+            100% { left: 130%; }
+        }
+
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes superFlash {
+            from { opacity: 0.5; transform: scale(0.9) rotate(-5deg); }
+            to { opacity: 1; transform: scale(1.2) rotate(5deg); text-shadow: 0 0 15px #fff; }
+        }
+
+        @keyframes pulseBlue {
+            from { box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+            to { box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); }
         }
     </style>
 </head>
@@ -204,23 +265,21 @@
 
 <div class="container">
     <div class="header-panel">
-        <span>🐻</span>
-        <h1 class="header-title">Bearbee Oyun Sahəsi</h1>
-        <span>🐝</span>
+        <h1 class="header-title">Bearbee Ultimate</h1>
     </div>
 
     <div class="status-card">
         <div class="status-row">
-            <span>🍯 Toplanan Bal:</span>
-            <span id="honey-display" class="gold-glow">0</span>
+            <span>🍯 BALANS:</span>
+            <span id="honey-display" class="glow-text-gold">0</span>
         </div>
         <div class="status-row">
-            <span>🐻 Ayının Çəkisi:</span>
-            <span id="weight-display" style="color: #81c784;">10 kg</span>
+            <span>🐻 AYI ÇƏKİSİ:</span>
+            <span id="weight-display" class="glow-text-green">10 KG</span>
         </div>
         <div class="status-row" style="margin-bottom: 0;">
-            <span>⚡ Arı Enerjisi:</span>
-            <span id="energy-display">100/100</span>
+            <span>⚡ ARI ENERJİSİ:</span>
+            <span id="energy-display" style="color: #00ffcc;">100/100</span>
         </div>
         
         <div class="energy-wrapper">
@@ -237,9 +296,9 @@
     </div>
 
     <div class="control-panel">
-        <button id="btn-collect" class="luxury-btn" onclick="balTopla()">🐝 Bal Toplamağa Uç (-10 ⚡)</button>
-        <button id="btn-feed" class="luxury-btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Yedizdir (50 Bal)</button>
-        <button id="btn-video" class="luxury-btn btn-video hidden" onclick="reklamIzle()">🎬 Video İzlə - Enerji Qazan</button>
+        <button id="btn-collect" class="ultimate-btn" onclick="balTopla()">🐝 Sürətli Bal Topla</button>
+        <button id="btn-feed" class="ultimate-btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Yedizdir (50 Bal)</button>
+        <button id="btn-video" class="ultimate-btn btn-video hidden" onclick="reklamIzle()">🎬 REKLAM İZLƏ - 2X ENERJİ</button>
     </div>
 </div>
 
@@ -254,7 +313,7 @@
 
     function refreshUI() {
         document.getElementById('honey-display').innerText = honey;
-        document.getElementById('weight-display').innerText = bearWeight + " kg";
+        document.getElementById('weight-display').innerText = bearWeight + " KG";
         document.getElementById('energy-display').innerText = energy + "/100";
         document.getElementById('energy-bar').style.width = energy + "%";
 
@@ -270,11 +329,11 @@
     function balTopla() {
         if (energy >= 10) {
             energy -= 10;
-            honey += Math.floor(Math.random() * 8) + 6; 
+            honey += Math.floor(Math.random() * 12) + 8; 
 
             let bee = document.getElementById('bee-node');
-            bee.style.left = (Math.random() * 55 + 15) + "%";
-            bee.style.top = (Math.random() * 35 + 15) + "%";
+            bee.style.left = (Math.random() * 50 + 20) + "%";
+            bee.style.top = (Math.random() * 30 + 20) + "%";
 
             refreshUI();
         }
@@ -287,17 +346,16 @@
             feedCount++;
 
             let bear = document.getElementById('bear-node');
-            bear.style.transform = "scale(1.2)";
-            setTimeout(() => bear.style.transform = "scale(1)", 130);
+            bear.style.transform = "scale(1.25) rotate(-5deg)";
+            setTimeout(() => bear.style.transform = "scale(1) rotate(0deg)", 120);
 
             refreshUI();
 
-            // Sənin mürəkkəb video dövrün (Hər 3 yedizdirmədən bir)
             if (feedCount % 3 === 0) {
                 if (AdController) AdController.show().catch(e => console.log(e));
             }
         } else {
-            alert("🐻 Ayını yedizdirmək üçün ən azı 50 bal toplamalısınız!");
+            alert("🐻 Kifayət qədər bal yoxdur! Öncə bal toplayın.");
         }
     }
 
@@ -321,4 +379,3 @@
 
 </body>
 </html>
-
