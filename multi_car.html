@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiber Şəbəkə Yarışı</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background: #010603; color: white; font-family: monospace; text-align: center; margin: 0; padding: 20px; }
+        .track { width: 90%; max-width: 400px; background: #080808; border-left: 2px solid #00ff66; border-right: 2px solid #00ff66; margin: 20px auto; padding: 20px 0; border-radius: 8px; }
+        .car-lane { height: 50px; margin: 15px 0; background: #111; position: relative; display: flex; align-items: center; }
+        
+        /* Neon blok kiber-maşınlar */
+        .car { width: 40px; height: 18px; position: absolute; left: 15px; transition: left 0.15s ease; border-radius: 4px; }
+        #car1 { background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        #car2 { background: #ff0055; box-shadow: 0 0 10px #ff0055; }
+        #car3 { background: #ffcc00; box-shadow: 0 0 10px #ffcc00; }
+
+        .player-label { position: absolute; font-size: 10px; color: #666; top: 2px; left: 5px; text-transform: uppercase; }
+        .btn-gas { background: none; border: 2px solid #00ff66; color: #00ff66; width: 100px; height: 100px; border-radius: 50%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 0 15px rgba(0,255,102,0.2); letter-spacing: 1px; }
+        .btn-gas:active { transform: scale(0.95); background: rgba(0,255,102,0.1); }
+    </style>
+</head>
+<body>
+
+    <h3>NEON GRID MULTIPLAYER RACE</h3>
+    <p>FINISH LINE PRIZE: 0.60 TON</p>
+
+    <div class="track">
+        <div class="car-lane">
+            <span class="player-label" id="p1-lbl">YOU</span>
+            <div class="car" id="car1"></div>
+        </div>
+        <div class="car-lane">
+            <span class="player-label">CORE_NOD_1</span>
+            <div class="car" id="car2"></div>
+        </div>
+        <div class="car-lane">
+            <span class="player-label">CORE_NOD_2</span>
+            <div class="car" id="car3"></div>
+        </div>
+    </div>
+
+    <button class="btn-gas" onclick="pushGas()">OVERDRIVE</button>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let myName = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "PLAYER_1";
+    document.getElementById('p1-lbl').innerText = "YOU: " + myName;
+
+    let myPos = 15, r1Pos = 15, r2Pos = 15, gameEnded = false;
+
+    let botInterval = setInterval(() => {
+        if(gameEnded) return;
+        r1Pos += Math.floor(Math.random() * 14);
+        r2Pos += Math.floor(Math.random() * 14);
+        document.getElementById('car2').style.left = r1Pos + "px";
+        document.getElementById('car3').style.left = r2Pos + "px";
+        checkWin();
+    }, 250);
+
+    function pushGas() {
+        if(gameEnded) return;
+        myPos += 18;
+        document.getElementById('car1').style.left = myPos + "px";
+        checkWin();
+    }
+
+    function checkWin() {
+        let finishLine = 280;
+        if(myPos >= finishLine && !gameEnded) {
+            gameEnded = true; clearInterval(botInterval);
+            alert("RACE COMPLETE: 1ST PLACE!");
+            tg.sendData("MULTIPLAYER_LIVE,WIN_1ST,0.50");
+            tg.close();
+        } else if((r1Pos >= finishLine || r2Pos >= finishLine) && !gameEnded) {
+            gameEnded = true; clearInterval(botInterval);
+            alert("RACE FAILED: SYSTEM OFFLINE");
+            tg.sendData("MULTIPLAYER_LIVE,LOSE,0.50");
+            tg.close();
+        }
+    }
+</script>
+</body>
+</html>
+
