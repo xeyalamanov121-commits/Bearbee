@@ -3,113 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Mini App</title>
+    <title>Bearbee Game Portal</title>
+    <script src="https://sad.adsgram.ai/js/adsgram-telegram-web-app.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #ffaa00; /* Narıncı fon */
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            text-align: center;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .container {
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             height: 100vh;
-            color: #333;
-            overflow: hidden;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        .game-container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 85%;
-            max-width: 350px;
+            box-sizing: border-box;
         }
 
         h1 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
-            color: #d47a00;
+            font-size: 24px;
+            margin: 5px 0;
+            color: #5d4037;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.6);
         }
 
-        .honey-counter {
-            font-size: 22px;
+        /* Status Paneli (Balans və Enerji) */
+        .status-panel {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 20px;
+            width: 85%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .stat {
+            font-size: 18px;
             font-weight: bold;
-            background: #fff3cd;
-            padding: 10px;
-            border-radius: 12px;
-            border: 2px solid #ffeeba;
-            margin-bottom: 25px;
-            display: inline-block;
-            width: 80%;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .click-btn {
-            background: #ffc107;
-            border: none;
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            font-size: 70px;
-            cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-            outline: none;
-            margin-bottom: 20px;
-            display: inline-flex;
-            align-items: center;
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            height: 15px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #4caf50;
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Oyun Sahəsi (Ayı və Arı) */
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 40vh;
+            display: flex;
             justify-content: center;
+            align-items: center;
         }
 
-        .click-btn:active {
-            transform: scale(0.92);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .bear-container {
+            font-size: 90px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            position: relative;
         }
 
-        .status-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
+        .bear-container:active {
+            transform: scale(1.1);
         }
+
+        .bee {
+            position: absolute;
+            font-size: 35px;
+            left: 20%;
+            top: 20%;
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* Düymələr */
+        .btn-group {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background: #5d4037;
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            transition: background 0.2s, transform 0.1s;
+            width: 80%;
+            margin: 8px 0;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-honey { background: #ffb300; color: #5d4037; }
+        .btn-feed { background: #e65100; }
+        .btn-ad { background: #2e7d32; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <h1>Bearbee Oyun</h1>
-        <div class="honey-counter">🍯 <span id="score">0.0</span> qram</div>
-        
-        <div>
-            <button class="click-btn" id="beeBtn">🐝</button>
-        </div>
-        
-        <div class="status-text">Pətəyə toxunaraq bal toplayın!</div>
+<div class="container">
+    <div>
+        <h1>🐻 Bearbee Oyun Sahəsi 🐝</h1>
     </div>
 
-    <script>
-        let score = 0.0;
-        const scoreEl = document.getElementById('score');
-        const btn = document.getElementById('beeBtn');
+    <div class="status-panel">
+        <div class="stat"><span>🍯 Toplanan Bal:</span> <span id="honey-count">0</span></div>
+        <div class="stat"><span>🐻 Ayının Çəkisi:</span> <span id="bear-weight">10 kg</span></div>
+        <div class="stat"><span>⚡ Arı Enerjisi:</span> <span id="energy-text">100/100</span></div>
+        <div class="progress-bar">
+            <div id="energy-bar" class="progress-fill"></div>
+        </div>
+    </div>
 
-        // Balansı yaddaşdan oxumaq (əgər əvvəl oynanılıbsa)
-        if (localStorage.getItem('bearbee_bal')) {
-            score = parseFloat(localStorage.getItem('bearbee_bal'));
-            scoreEl.innerText = score.toFixed(1);
+    <div class="game-area">
+        <div id="bee-sprite" class="bee">🐝</div>
+        <div id="bear-sprite" class="bear-container" onclick="ayiniYedizdir()">🐻</div>
+    </div>
+
+    <div class="btn-group">
+        <button id="btn-collect" class="btn btn-honey" onclick="balTopla()">🐝 Bal Toplamağa Uç (-10 ⚡)</button>
+        <button id="btn-feed" class="btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Yedizdir (50 Bal)</button>
+        <button id="btn-ad" class="btn btn-ad hidden" onclick="reklamlaEnerjiDoldur()">📺 Video İzlə - Enerji Doldur (PULSUZ)</button>
+    </div>
+</div>
+
+<script>
+    // Oyun Dəyişənləri
+    let honey = 0;
+    let bearWeight = 10;
+    let energy = 100;
+    let feedCount = 0; // Reklam dövrünü tutmaq üçün
+
+    // 📢 Adsgram Blok ID-si (Bura gələcəkdə Adsgram-dan aldığın rəsmi ID-ni qoyacaqsan)
+    const ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID"; 
+    let AdController = null;
+
+    // Adsgram tətbiqini başladırıq
+    if (window.Adsgram) {
+        AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+    }
+
+    // Arayüzü Yeniləmə Funksiyası
+    function updateUI() {
+        document.getElementById('honey-count').innerText = honey;
+        document.getElementById('bear-weight').innerText = bearWeight + " kg";
+        document.getElementById('energy-text').innerText = energy + "/100";
+        
+        let energyBar = document.getElementById('energy-bar');
+        energyBar.style.width = energy + "%";
+
+        // Enerji vəziyyətinə görə rəng dəyişimi
+        if (energy <= 20) {
+            energyBar.style.backgroundColor = "#f44336"; // Qırmızı
+        } else {
+            energyBar.style.backgroundColor = "#4caf50"; // Yaşıl
         }
 
-        btn.addEventListener('click', () => {
-            score += 0.5; // Hər klikdə 0.5 qram bal artır
-            scoreEl.innerText = score.toFixed(1);
+        // Düymələrin aktivlik vəziyyəti
+        if (energy < 10) {
+            document.getElementById('btn-collect').classList.add('hidden');
+            document.getElementById('btn-ad').classList.remove('hidden');
+        } else {
+            document.getElementById('btn-collect').classList.remove('hidden');
+            document.getElementById('btn-ad').classList.add('hidden');
+        }
+    }
+
+    // 1. Arı Bal Toplayır (Animasiyalı)
+    function balTopla() {
+        if (energy >= 10) {
+            energy -= 10;
+            honey += Math.floor(Math.random() * 8) + 5; // 5-12 arası bal tapır
             
-            // Balansı telefonun yaddaşında saxlayır ki, səhifə bağlananda sıfırlanmasın
-            localStorage.setItem('bearbee_bal', score);
-        });
-    </script>
+            // Arı uçma animasiyası
+            let bee = document.getElementById('bee-sprite');
+            let randomX = Math.floor(Math.random() * 60) + 10;
+            let randomY = Math.floor(Math.random() * 50) + 10;
+            bee.style.left = randomX + "%";
+            bee.style.top = randomY + "%";
+            
+            updateUI();
+        }
+    }
+
+    // 2. Ayını Yedizdirmək (Hər 3 dəfədə bir Keçid/Video Reklam çıxır)
+    function ayiniYedizdir() {
+        if (honey >= 50) {
+            honey -= 50;
+            bearWeight += 1; // Ayı böyüyür
+            feedCount++;
+            
+            // Ayı yemək yeyəndə sıçrama effekti
+            let bear = document.getElementById('bear-sprite');
+            bear.style.transform = "scale(1.2)";
+            setTimeout(() => bear.style.transform = "scale(1)", 150);
+
+            updateUI();
+
+            // Sənin istədiyin mürəkkəb dövr: Hər 3 yedizdirmədən bir məcburi reklam çıxır
+            if (feedCount % 3 === 0) {
+                interstitialReklamGoster();
+            }
+        } else {
+            alert("🐻 Ayını yedizdirmək üçün ən azı 50 bal toplamalısınız! Arını uçurun.");
+        }
+    }
+
+    // 3. Enerji Bitəndə İzlənilən Video Reklam (Rewarded Video)
+    function reklamlaEnerjiDoldur() {
+        if (AdController) {
+            // Canlı Adsgram Reklamı Çağırılır
+            AdController.show().then((result) => {
+                // Reklam uğurla sona qədər izlənildi
+                energy = 100;
+                alert("✅ Video reklam tam izlənildi! Arının enerjisi 100% dolduruldu. Uçmağa davam!");
+                updateUI();
+            }).catch((result) => {
+                // Reklam izlənilmədi və ya yarıda kəsildi
+                alert("⚠️ Reklam tamamlanmadı. Enerji bərpa olunmadı.");
+            });
+        } else {
+            // Əgər Adsgram hələ qoşulmayıbsa (Test rejimində sistemi yoxlamaq üçün)
+            energy = 100;
+            alert("🤖 (Test Modu) Video reklam simulyasiya olundu! Enerji dolduruldu.");
+            updateUI();
+        }
+    }
+
+    // Ayı hər 3 dəfə doyanda çıxan Interstitial (Keçid) Reklam funksiyası
+    function interstitialReklamGoster() {
+        if (AdController) {
+            AdController.show().then((result) => {
+                console.log("Ayı doydu, reklam uğurla göstərildi.");
+            }).catch((err) => {
+                console.log("Reklam yüklənmədi.");
+            });
+        } else {
+            alert("📺 [Reklam Şəbəkəsi]: Ayı çox dadlı yedi! Sürətli keçid reklamı nümayiş olundu.");
+        }
+    }
+
+    // İlk yüklənişdə ekranı nizamla
+    updateUI();
+</script>
+
 </body>
 </html>
