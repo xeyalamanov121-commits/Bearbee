@@ -2,11 +2,10 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bearbee Mega-Monetized Hub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <script type='text/javascript' src='//pl26000000.highratecpm.com/aa/bb/cc/aabbcc123456.js'></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
     <style>
         :root {
@@ -171,14 +170,14 @@
         </div>
 
         <div class="cyber-panel" style="border-color: var(--neon-blue);">
-            <h3>Mükafatlı Video Sistemi</h3>
-            <p style="font-size:11px; color:#aaa; margin-bottom:10px;">Hər izlənilən reklam sənə +1 Giriş Logu verir.</p>
-            <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsterraAd()">📺 REKLAM VİDEOSU İZLƏ</button>
+            <h3>Adsgram Video Sistemi</h3>
+            <p style="font-size:11px; color:#aaa; margin-bottom:10px;">Telegram daxili video reklam izləyin, sistem loguna +1 baxış əldə edin.</p>
+            <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsgramVideo()">📺 ADSGRAM VİDEOSU İZLƏ</button>
         </div>
 
         <div class="cyber-panel" style="border-color: var(--neon-red);">
             <h3 style="color: var(--neon-red);">Sürətli Enerji Doldurma</h3>
-            <p style="font-size: 11px; color: #aaa;">Gözləmək istəmirsən? 0.1 TON ödəyərək enerjini dərhal 100% et.</p>
+            <p style="font-size: 11px; color: #aaa;">0.1 TON ödəyərək enerjini dərhal 100% et.</p>
             <button class="cyber-btn danger" onclick="buyPremiumEnergy()">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
         </div>
 
@@ -193,16 +192,9 @@
     <div id="task-tab" class="app-section">
         <div class="cyber-panel">
             <h2>Sponsorlu Tapşırıqlar</h2>
-            <p style="font-size: 12px; color: #aaa;">Buradakı kanallara qoşulun. Hər tapşırıq adminə reklam gəliri, sənə isə böyük xal qazandırır!</p>
-            
             <div class="stat-line" style="align-items: center;">
-                <span style="font-size: 13px;">Sponsor Telegram Kanalı</span>
+                <span>Sponsor Telegram Kanalı</span>
                 <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 8px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)">+500 Data</button>
-            </div>
-            
-            <div class="stat-line" style="align-items: center; margin-top: 10px;">
-                <span style="font-size: 13px;">YouTube Layihəsinə Baxış</span>
-                <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 8px 15px;" onclick="completeSponsorTask('https://youtube.com/your_video', 800)">+800 Data</button>
             </div>
         </div>
     </div>
@@ -229,8 +221,6 @@
 
         <div class="cyber-panel" style="border-color: var(--neon-gold);">
             <h3 style="color: var(--neon-gold); margin:0 0 5px 0;">Depozit Modulu</h3>
-            <div class="stat-line" style="font-size:10px; background:#000; padding:5px; border-radius:4px; overflow-x:auto;"><span>EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</span></div>
-            <div class="stat-line"><span>MEMO TAG:</span><span class="stat-val" style="color: var(--neon-gold)">9947429</span></div>
             <button class="cyber-btn gold" onclick="confirmDepositSignal()">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
         </div>
 
@@ -245,28 +235,44 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // 🌟 ADSGRAM INITIALIZATION (Sənin rəsmi Blok ID-n yerləşdirildi)
+        const AdController = window.Adsgram?.createAdController("bot-30462");
+
         const DB_URL = "https://ykfrzkcfxkgvselmtewg.supabase.co/rest/v1/users";
         const DB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZnJ6a2NmeGtndnNlbG10ZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDMzMjEsImV4cCI6MjA5NDYxOTMyMX0.V66_ZbIE2OT_VSv9l6s4Ktnt4QliB_Ay5gIBSJ4Rwbw";
 
-        let userId = tg.initDataUnsafe?.user?.id || 8591374417; 
+        let userId = tg.initDataUnsafe?.user?.id ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
 
         function switchTab(tabId) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if(event) {
+                event.currentTarget.classList.add('active');
+            }
         }
 
-        async function watchAdsterraAd() {
-            window.open("https://www.highratecpm.com/your-direct-link-id", "_blank");
-            userStats.reklam_baxis += 1;
-            updateUI();
-            await syncToDatabase({ reklam_baxis: userStats.reklam_baxis });
-            tg.showAlert("📺 Reklam qeydə alındı!");
+        // 🌟 ADSGRAM VİDEO REKLAM FUNKSİYASI
+        function watchAdsgramVideo() {
+            if (!AdController) {
+                tg.showAlert("Adsgram reklam paneli hələ tam yüklənməyib. Bloklayıcıları yoxlayın.");
+                return;
+            }
+
+            AdController.show().then(async (result) => {
+                // Reklam uğurla sona çatdıqda sənə +1 baxış və mükafat olaraq +100 Data balans verir
+                userStats.reklam_baxis += 1;
+                userStats.honey += 100;
+                updateUI();
+                await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
+                tg.showAlert("📺 Təbriklər! Adsgram reklamı tam izlənildi. Hesabınıza +100 Data yazıldı.");
+            }).catch((err) => {
+                console.error(err);
+                tg.showAlert("Reklam tam izlənmədi və ya yarıda buraxıldı.");
+            });
         }
 
-        // Premium Enerji Satışı (Adminə birbaşa gəlir gedir)
         async function buyPremiumEnergy() {
             if (userStats.ton_balance >= 0.1) {
                 userStats.ton_balance = parseFloat(userStats.ton_balance) - 0.1;
@@ -275,18 +281,15 @@
                 await syncToDatabase({ ton_balance: userStats.ton_balance, energy: userStats.energy });
                 tg.sendData(`PREMIUM_ENERGY_PURCHASE:0.1`);
                 tg.showAlert("⚡ Enerjiniz dərhal 100% bərpa olundu!");
-            } else {
-                tg.showAlert("Balansınızda minimum 0.1 TON olmalıdır. Zəhmət olmasa əvvəlcə depozit edin.");
-            }
+            } else { tg.showAlert("Balansınızda minimum 0.1 TON olmalıdır."); }
         }
 
-        // Sponsorlu Keçid Mexanizmi
         async function completeSponsorTask(link, reward) {
             window.open(link, "_blank");
             userStats.honey += reward;
             updateUI();
             await syncToDatabase({ honey: userStats.honey });
-            tg.showAlert(`✅ Tapşırıq tamamlandı! Balansınıza +${reward} Data yazıldı.`);
+            tg.showAlert(`✅ Balansınıza +${reward} Data yazıldı.`);
         }
 
         async function loadUserData() {
@@ -295,7 +298,19 @@
                     headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}` }
                 });
                 let data = await res.json();
-                if (data && data.length > 0) { userStats = data[0]; updateUI(); }
+                if (data && data.length > 0) { 
+                    userStats = data[0]; 
+                } else {
+                    // İstifadəçi yoxdursa bazada yeni profil yaradırıq
+                    let createRes = await fetch(DB_URL, {
+                        method: "POST",
+                        headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" },
+                        body: JSON.stringify({ user_id: userId, honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 })
+                    });
+                    let newData = await createRes.json();
+                    if(newData && newData.length > 0) userStats = newData[0];
+                }
+                updateUI();
             } catch (e) { console.error(e); }
         }
 
@@ -331,21 +346,27 @@
 
         async function triggerLuckySpin() {
             if (userStats.reklam_baxis >= 5) { userStats.reklam_baxis -= 5; let prizes = [5, 15, 30]; let win = prizes[Math.floor(Math.random() * prizes.length)]; userStats.honey += win; updateUI(); await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis }); }
+            else { tg.showAlert("Çarxı fırlatmaq üçün ən azı 5 reklam izləməlisiniz."); }
         }
 
         async function swapDataToTon() {
             if (userStats.honey >= 20000) { userStats.honey -= 20000; userStats.ton_balance = parseFloat(userStats.ton_balance) + 1.0; updateUI(); await syncToDatabase({ honey: userStats.honey, ton_balance: userStats.ton_balance }); }
+            else { tg.showAlert("Çevirmək üçün minimum 20,000 Data lazımdır."); }
         }
 
         async function startRaceGame() {
             if (userStats.ton_balance >= 0.30) { userStats.ton_balance = parseFloat(userStats.ton_balance) - 0.30; updateUI(); await syncToDatabase({ ton_balance: userStats.ton_balance }); tg.sendData(`RACE_ENTRY_FEE:0.30`); let room = Math.floor(1000 + Math.random() * 9000); window.location.href = `multi_car.html?room=${room}`; }
+            else { tg.showAlert("Balansınızda kifayət qədər TON yoxdur (Min. 0.30 TON)."); }
         }
 
-        function confirmDepositSignal() { tg.sendData(`DEPOSIT_CONFIRM_SIGNAL:${userId}`); }
+        function confirmDepositSignal() { tg.sendData(`DEPOSIT_CONFIRM_SIGNAL:${userId}`); tg.showAlert("Ödəniş sorğusu idarəçiyə göndərildi!"); }
         function requestWithdraw() {
             let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet || userStats.ton_balance < 5.0 || userStats.reklam_baxis < 50) return;
+            if(!wallet) { tg.showAlert("Zəhmət olmasa TON cüzdan ünvanınızı yazın."); return; }
+            if(userStats.ton_balance < 5.0) { tg.showAlert("Minimum çıxarış 5 TON-dur."); return; }
+            if(userStats.reklam_baxis < 50) { tg.showAlert("Çıxarış üçün ən azı 50 reklam izləməlisiniz."); return; }
             tg.sendData(`WITHDRAW_REQUEST:${wallet}:${userStats.ton_balance}`);
+            tg.showAlert("Çıxarış sorğunuz uğurla qeydə alındı.");
         }
 
         setInterval(() => {
