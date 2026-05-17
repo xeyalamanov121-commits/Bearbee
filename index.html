@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Game Portal</title>
+    <title>Bearbee Premium</title>
     <script src="https://sad.adsgram.ai/js/adsgram-telegram-web-app.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            /* Şəkildəki kimi tünd meşə yaşılı və qara keçidli premium fon */
+            background: linear-gradient(180deg, #0b2914 0%, #05140a 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
+            color: #fff;
             text-align: center;
             user-select: none;
             overflow: hidden;
         }
 
         .container {
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,254 +28,313 @@
             box-sizing: border-box;
         }
 
-        h1 {
-            font-size: 24px;
-            margin: 5px 0;
-            color: #5d4037;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.6);
+        /* Loqo və Başlıq Hissəsi */
+        .header {
+            margin-top: 10px;
+        }
+        .logo {
+            font-size: 45px;
+            margin: 0;
+        }
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 2px 0;
+            background: linear-gradient(135deg, #ffe082 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #81c784;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
         }
 
-        /* Status Paneli (Balans və Enerji) */
-        .status-panel {
-            background: rgba(255, 255, 255, 0.85);
-            padding: 15px;
-            border-radius: 20px;
-            width: 85%;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        /* Şəkildəki 3-lü Premium Grid Panel */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 92%;
+            margin-top: 15px;
         }
 
-        .stat {
-            font-size: 18px;
+        .stat-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 15px;
+            padding: 10px 5px;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.02);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #a5d6a7;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 15px;
             font-weight: bold;
-            margin: 5px 0;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .progress-bar {
-            background: #e0e0e0;
-            border-radius: 10px;
-            width: 100%;
-            height: 15px;
-            margin-top: 5px;
-            overflow: hidden;
+        .gold-text {
+            color: #ffd54f;
         }
 
-        .progress-fill {
-            background: #4caf50;
-            height: 100%;
-            width: 100%;
-            transition: width 0.3s ease;
-        }
-
-        /* Oyun Sahəsi (Ayı və Arı) */
+        /* Oyun Sahəsi (Premium Ayı və Arı) */
         .game-area {
             position: relative;
             width: 100%;
-            height: 40vh;
+            height: 35vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .bear-container {
-            font-size: 90px;
+        .bear-display {
+            font-size: 110px;
             cursor: pointer;
-            transition: transform 0.1s ease;
-            position: relative;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
         }
 
-        .bear-container:active {
-            transform: scale(1.1);
+        .bear-display:active {
+            transform: scale(1.15);
         }
 
-        .bee {
+        .bee-display {
             position: absolute;
-            font-size: 35px;
-            left: 20%;
+            font-size: 38px;
+            left: 25%;
             top: 20%;
-            transition: all 0.5s ease-in-out;
+            transition: all 0.6s ease-in-out;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
-        /* Düymələr */
-        .btn-group {
+        /* Şəkildəki İldırımlı Yaşıl Enerji Barı */
+        .energy-section {
+            width: 88%;
+        }
+
+        .energy-title {
+            font-size: 13px;
+            color: #e8f5e9;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .energy-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #2e7d32;
+            border-radius: 30px;
+            height: 24px;
             width: 100%;
-            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+            display: flex;
+            align-items: center;
         }
 
-        .btn {
-            background: #5d4037;
+        .energy-bar-fill {
+            background: linear-gradient(90deg, #4caf50 0%, #81c784 50%, #4caf50 100%);
+            height: 100%;
+            width: 100%;
+            border-radius: 30px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 12px #4caf50;
+        }
+
+        /* İldırım İkonu */
+        .bolt-icon {
+            position: absolute;
+            left: 10px;
+            font-size: 14px;
             color: #fff;
-            border: none;
-            padding: 14px 28px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            transition: background 0.2s, transform 0.1s;
-            width: 80%;
-            margin: 8px 0;
+            z-index: 2;
+            text-shadow: 0 0 5px #fff;
+            animation: pulse 1s infinite alternate;
         }
 
-        .btn:active {
+        /* Şəkildəki Qızılı Premium Düymələr */
+        .controls {
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .premium-btn {
+            background: linear-gradient(135deg, #b58d3d 0%, #866323 100%);
+            border: 1px solid #ffd700;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px 0;
+            width: 85%;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2);
+            transition: transform 0.1s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .premium-btn:active {
             transform: scale(0.98);
         }
 
-        .btn-honey { background: #ffb300; color: #5d4037; }
-        .btn-feed { background: #e65100; }
-        .btn-ad { background: #2e7d32; }
+        /* Video Düyməsi (Şəkildəki alt sətir dizaynı) */
+        .video-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 215, 0, 0.4);
+            color: #ffe082;
+            font-size: 14px;
+        }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.8; }
+            to { transform: scale(1.2); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div>
-        <h1>🐻 Bearbee Oyun Sahəsi 🐝</h1>
+    <div class="header">
+        <div class="logo">👑</div>
+        <h1 class="title">Bearbee Premium</h1>
+        <p class="subtitle">Meşə İqtisadiyyatı</p>
     </div>
 
-    <div class="status-panel">
-        <div class="stat"><span>🍯 Toplanan Bal:</span> <span id="honey-count">0</span></div>
-        <div class="stat"><span>🐻 Ayının Çəkisi:</span> <span id="bear-weight">10 kg</span></div>
-        <div class="stat"><span>⚡ Arı Enerjisi:</span> <span id="energy-text">100/100</span></div>
-        <div class="progress-bar">
-            <div id="energy-bar" class="progress-fill"></div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Balans</div>
+            <div class="stat-value gold-text"><span id="honey-val">0</span> 🍯</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" style="color: #ffd54f;">⭐ VIP</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Xoşbəxtlik</div>
+            <div class="stat-value" style="color: #ff5252;">❤️ <span id="weight-val">10</span></div>
         </div>
     </div>
 
     <div class="game-area">
-        <div id="bee-sprite" class="bee">🐝</div>
-        <div id="bear-sprite" class="bear-container" onclick="ayiniYedizdir()">🐻</div>
+        <div id="bee-obj" class="bee-display">🐝</div>
+        <div id="bear-obj" class="bear-display" onclick="ayiniYedizdir()">🐻</div>
     </div>
 
-    <div class="btn-group">
-        <button id="btn-collect" class="btn btn-honey" onclick="balTopla()">🐝 Bal Toplamağa Uç (-10 ⚡)</button>
-        <button id="btn-feed" class="btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Yedizdir (50 Bal)</button>
-        <button id="btn-ad" class="btn btn-ad hidden" onclick="reklamlaEnerjiDoldur()">📺 Video İzlə - Enerji Doldur (PULSUZ)</button>
+    <div class="energy-section">
+        <div class="energy-title">Enerji (<span id="energy-num">100</span>/100)</div>
+        <div class="energy-container">
+            <span class="bolt-icon">⚡</span>
+            <div id="energy-fill" class="energy-bar-fill"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="btn-honey" class="premium-btn" onclick="balTopla()">🐝 Maksimum Sürətlə Bal Topla</button>
+        <button id="btn-feed" class="premium-btn" onclick="ayiniYedizdir()" style="background: linear-gradient(135deg, #a6621e 0%, #6d3b0d 100%); border-color: #ff9800;">🍯 Ayını Yedizdir (50 Bal)</button>
+        <button id="btn-video" class="premium-btn video-btn hidden" onclick="reklamIzle()">🎬 Video İzlə - 2X Enerji Qazan</button>
     </div>
 </div>
 
 <script>
-    // Oyun Dəyişənləri
     let honey = 0;
     let bearWeight = 10;
     let energy = 100;
-    let feedCount = 0; // Reklam dövrünü tutmaq üçün
+    let feedCount = 0;
 
-    // 📢 Adsgram Blok ID-si (Bura gələcəkdə Adsgram-dan aldığın rəsmi ID-ni qoyacaqsan)
-    const ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID"; 
-    let AdController = null;
+    const ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID";
+    let AdController = window.Adsgram ? window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID }) : null;
 
-    // Adsgram tətbiqini başladırıq
-    if (window.Adsgram) {
-        AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-    }
+    function updateGameUI() {
+        document.getElementById('honey-val').innerText = honey;
+        document.getElementById('weight-val').innerText = bearWeight;
+        document.getElementById('energy-num').innerText = energy;
+        document.getElementById('energy-fill').style.width = energy + "%";
 
-    // Arayüzü Yeniləmə Funksiyası
-    function updateUI() {
-        document.getElementById('honey-count').innerText = honey;
-        document.getElementById('bear-weight').innerText = bearWeight + " kg";
-        document.getElementById('energy-text').innerText = energy + "/100";
-        
-        let energyBar = document.getElementById('energy-bar');
-        energyBar.style.width = energy + "%";
-
-        // Enerji vəziyyətinə görə rəng dəyişimi
-        if (energy <= 20) {
-            energyBar.style.backgroundColor = "#f44336"; // Qırmızı
-        } else {
-            energyBar.style.backgroundColor = "#4caf50"; // Yaşıl
-        }
-
-        // Düymələrin aktivlik vəziyyəti
         if (energy < 10) {
-            document.getElementById('btn-collect').classList.add('hidden');
-            document.getElementById('btn-ad').classList.remove('hidden');
+            document.getElementById('btn-honey').classList.add('hidden');
+            document.getElementById('btn-video').classList.remove('hidden');
         } else {
-            document.getElementById('btn-collect').classList.remove('hidden');
-            document.getElementById('btn-ad').classList.add('hidden');
+            document.getElementById('btn-honey').classList.remove('hidden');
+            document.getElementById('btn-video').classList.add('hidden');
         }
     }
 
-    // 1. Arı Bal Toplayır (Animasiyalı)
     function balTopla() {
         if (energy >= 10) {
             energy -= 10;
-            honey += Math.floor(Math.random() * 8) + 5; // 5-12 arası bal tapır
-            
-            // Arı uçma animasiyası
-            let bee = document.getElementById('bee-sprite');
-            let randomX = Math.floor(Math.random() * 60) + 10;
-            let randomY = Math.floor(Math.random() * 50) + 10;
-            bee.style.left = randomX + "%";
-            bee.style.top = randomY + "%";
-            
-            updateUI();
+            honey += Math.floor(Math.random() * 10) + 8; // Sürətli bal qazancı
+
+            // Arının premium uçuş hərəkəti
+            let bee = document.getElementById('bee-obj');
+            bee.style.left = (Math.random() * 50 + 15) + "%";
+            bee.style.top = (Math.random() * 40 + 10) + "%";
+
+            updateGameUI();
         }
     }
 
-    // 2. Ayını Yedizdirmək (Hər 3 dəfədə bir Keçid/Video Reklam çıxır)
     function ayiniYedizdir() {
         if (honey >= 50) {
             honey -= 50;
-            bearWeight += 1; // Ayı böyüyür
+            bearWeight += 1;
             feedCount++;
-            
-            // Ayı yemək yeyəndə sıçrama effekti
-            let bear = document.getElementById('bear-sprite');
-            bear.style.transform = "scale(1.2)";
-            setTimeout(() => bear.style.transform = "scale(1)", 150);
 
-            updateUI();
+            let bear = document.getElementById('bear-obj');
+            bear.style.transform = "scale(1.25)";
+            setTimeout(() => bear.style.transform = "scale(1)", 120);
 
-            // Sənin istədiyin mürəkkəb dövr: Hər 3 yedizdirmədən bir məcburi reklam çıxır
+            updateGameUI();
+
+            // Sənin mürəkkəb reklam dövrün: Hər 3 dəfədə bir tam ekran reklam
             if (feedCount % 3 === 0) {
-                interstitialReklamGoster();
+                if (AdController) AdController.show().catch(e => console.log(e));
             }
         } else {
-            alert("🐻 Ayını yedizdirmək üçün ən azı 50 bal toplamalısınız! Arını uçurun.");
+            alert("🐻 Ayı acdır! Onu yedizdirmək üçün kifayət qədər balınız yoxdur.");
         }
     }
 
-    // 3. Enerji Bitəndə İzlənilən Video Reklam (Rewarded Video)
-    function reklamlaEnerjiDoldur() {
+    function reklamIzle() {
         if (AdController) {
-            // Canlı Adsgram Reklamı Çağırılır
-            AdController.show().then((result) => {
-                // Reklam uğurla sona qədər izlənildi
+            AdController.show().then(() => {
                 energy = 100;
-                alert("✅ Video reklam tam izlənildi! Arının enerjisi 100% dolduruldu. Uçmağa davam!");
-                updateUI();
-            }).catch((result) => {
-                // Reklam izlənilmədi və ya yarıda kəsildi
-                alert("⚠️ Reklam tamamlanmadı. Enerji bərpa olunmadı.");
+                updateGameUI();
+            }).catch(() => {
+                energy = 100; // Test rejimində dərhal doldurur
+                updateGameUI();
             });
         } else {
-            // Əgər Adsgram hələ qoşulmayıbsa (Test rejimində sistemi yoxlamaq üçün)
             energy = 100;
-            alert("🤖 (Test Modu) Video reklam simulyasiya olundu! Enerji dolduruldu.");
-            updateUI();
+            updateGameUI();
         }
     }
 
-    // Ayı hər 3 dəfə doyanda çıxan Interstitial (Keçid) Reklam funksiyası
-    function interstitialReklamGoster() {
-        if (AdController) {
-            AdController.show().then((result) => {
-                console.log("Ayı doydu, reklam uğurla göstərildi.");
-            }).catch((err) => {
-                console.log("Reklam yüklənmədi.");
-            });
-        } else {
-            alert("📺 [Reklam Şəbəkəsi]: Ayı çox dadlı yedi! Sürətli keçid reklamı nümayiş olundu.");
-        }
-    }
-
-    // İlk yüklənişdə ekranı nizamla
-    updateUI();
+    updateGameUI();
 </script>
 
 </body>
 </html>
+
