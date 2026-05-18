@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bearbee Cyber Empire</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=2.0"></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js?v=29483"></script>
 
     <style>
         :root {
@@ -236,19 +236,18 @@
             } catch (e) { console.error("Tab keçid xətası:", e); }
         }
 
-        // 📺 YENİ VƏ RAM REKLAM SƏNƏDLƏRİNƏ UYĞUN ADSGRAM SİSTEMİ
+        // 📺 YENİ SƏNƏDLƏRƏ UYĞUN REKLAM SİSTEMİ
         let AdController = null;
         
         function watchAdsgramVideo() {
-            if (typeof window.Adsgram !== 'undefined') {
+            // Həm window.Adsgram-ın, həm də daxili init funksiyasının tam sığortası
+            if (typeof window.Adsgram !== 'undefined' && typeof window.Adsgram.init === 'function') {
                 try {
-                    // Əgər controller yaradılmayıbsa, yeni .init metodu ilə çağırırıq
                     if (!AdController) {
                         AdController = window.Adsgram.init({ blockId: "29483" });
                     }
                     
                     AdController.show().then(async (result) => {
-                        // Reklam uğurla sona çatdı
                         userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                         userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                         updateUI();
@@ -258,15 +257,14 @@
                         else alert("📺 Reklam izlənildi! Balansınıza +100 Data yazıldı.");
                     }).catch((err) => {
                         console.error("Adsgram Göstərmə Xətası:", err);
-                        let errMsg = err && err.message ? err.message : JSON.stringify(err);
                         if(tg) tg.showAlert("Reklam tam izlənmədi və ya dayandırıldı.");
                     });
                 } catch(x) {
                     console.error("Adsgram Başlatma Xətası:", x);
-                    if(tg) tg.showAlert("Başlatma xətası: " + x.message);
+                    if(tg) tg.showAlert("Sistem xətası: " + x.message);
                 }
             } else {
-                if(tg) tg.showAlert("⚠️ Adsgram yüklənə bilmədi! Reklam əngəlləyici (AdBlock) istifadə etmədiyinizdən əmin olun.");
+                if(tg) tg.showAlert("⚠️ Adsgram skripti hələ tam yüklənməyib və ya bloklanıb. Bir neçə saniyə sonra yenidən klikləyin.");
             }
         }
 
