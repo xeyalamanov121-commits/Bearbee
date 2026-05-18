@@ -437,7 +437,7 @@
 
     <script>
         // =================================================================
-        // 🔥 FIREBASE STRUKTURU
+        // 🔥 FIREBASE KONFİQURASİYASI
         // =================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB79GGNtakyfCwkGrIsuRsR03jFI8bB1rs",
@@ -452,8 +452,6 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-
-        // MASTER ADMİN DOĞRULAMA ID-Sİ
         const MASTER_ADMIN_ID = "8591374417";
 
         let tg = window.Telegram?.WebApp || null;
@@ -590,7 +588,6 @@
             document.getElementById('lbl-withdraw-title').innerText = l.withdrawTitle;
             document.getElementById('inp-wallet').placeholder = l.placeholderWallet;
             document.getElementById('btn-withdraw-action').innerText = l.withdrawAction;
-            
             document.getElementById('lbl-chat-title').innerText = l.chatTitle;
             document.getElementById('chat-input').placeholder = l.chatPlaceholder;
             updateUI();
@@ -616,15 +613,13 @@
         }
 
         function switchTab(tabId) {
-            try {
-                document.getElementById('game-tab').style.display = 'none';
-                document.getElementById('task-tab').style.display = 'none';
-                document.getElementById('race-tab').style.display = 'none';
-                document.getElementById('wallet-tab').style.display = 'none';
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(tabId).style.display = 'block';
-                document.getElementById('btn-' + tabId).classList.add('active');
-            } catch (e) {}
+            document.getElementById('game-tab').style.display = 'none';
+            document.getElementById('task-tab').style.display = 'none';
+            document.getElementById('race-tab').style.display = 'none';
+            document.getElementById('wallet-tab').style.display = 'none';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).style.display = 'block';
+            document.getElementById('btn-' + tabId).classList.add('active');
         }
 
         let AdController = null;
@@ -637,7 +632,7 @@
         function watchAdsgramVideo() {
             if (!AdController) { initAdsgramSafe(); }
             if (AdController) {
-                AdController.show().then(async (result) => {
+                AdController.show().then((result) => {
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI(); saveToLocalStorage(); triggerLazySync(); 
@@ -649,7 +644,7 @@
         function watchAdForEnergy() {
             if (!AdController) { initAdsgramSafe(); }
             if (AdController) {
-                AdController.show().then(async (result) => {
+                AdController.show().then((result) => {
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.energy = 100; 
                     updateUI(); saveToLocalStorage(); triggerLazySync(); 
@@ -697,7 +692,7 @@
             if (userStats.honey >= 100) {
                 userStats.honey -= 100; userStats.level += 1;
                 updateUI(); saveToLocalStorage(); triggerLazySync();
-            } else { showAlert(translations[currentLang].alertNotEnoughData || "100 Data"); }
+            } else { showAlert(translations[currentLang].alertNotEnoughData); }
         }
 
         async function triggerLuckySpin() {
@@ -757,7 +752,7 @@
             else alert(msg);
         }
 
-        // 👑 ADMİN REYESTR
+        // 👑 ADMİN REYESTR VƏ FIRESTORE INTEGRASIYASI
         function checkAdminIdentity() {
             if (userId === MASTER_ADMIN_ID) {
                 const adminPanel = document.getElementById('admin-root-panel');
@@ -766,25 +761,31 @@
             }
         }
 
-        function saveUserIdToGlobalRegistry(id) {
-            let list = JSON.parse(localStorage.getItem("bearbee_global_user_ids") || "[]");
-            if (!list.includes(id)) {
-                list.push(id);
-                localStorage.setItem("bearbee_global_user_ids", JSON.stringify(list));
-            }
+        // Hər bir aktiv oyunçu ID-sini bazada qeydiyyata alır
+        async function registerUserIdInFirestore(id) {
+            try {
+                await db.collection("users").doc(id).set({
+                    user_id: id,
+                    last_seen: Date.now()
+                }, { merge: true });
+            } catch(e) { console.error("Qeydiyyat xətası:", e); }
         }
 
-        function refreshAdminUserList() {
+        // Bütün sistemdəki real oyunçuların siyahısını çəkir
+        async function refreshAdminUserList() {
             let select = document.getElementById('adm-user-list');
             if(!select) return;
             select.innerHTML = '<option value="">-- Bir İstifadəçi Seçin --</option>';
-            let list = JSON.parse(localStorage.getItem("bearbee_global_user_ids") || "[]");
             
-            list.forEach(id => {
-                let opt = document.createElement('option');
-                opt.value = id; opt.innerText = `İstifadəçi ID: ${id}`;
-                select.appendChild(opt);
-            });
+            try {
+                let snapshot = await db.collection("users").get();
+                snapshot.forEach(doc => {
+                    let id = doc.id;
+                    let opt = document.createElement('option');
+                    opt.value = id; opt.innerText = `İstifadəçi ID: ${id}`;
+                    select.appendChild(opt);
+                });
+            } catch(e) { console.error("Siyahı çəkilə bilmədi:", e); }
         }
 
         async function executeAdminEdit() {
@@ -826,9 +827,8 @@
 
         async function loadUserData() {
             loadFromLocalStorage(); updateLanguageUI();
-            if(userId !== MASTER_ADMIN_ID) {
-                saveUserIdToGlobalRegistry(userId);
-            }
+            await registerUserIdInFirestore(userId);
+            
             try {
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
@@ -879,16 +879,15 @@
         }
 
         setInterval(() => {
-            if (userStats.energy < 100) {
+            if (typeof userStats.energy !== 'undefined' && userStats.energy < 100) {
                 userStats.energy += 1;
                 updateUI(); 
                 saveToLocalStorage();
             }
         }, 5000);
 
-
         // =================================================================
-        // 💬 FIREBASE FİRESTORE YENİLƏNMİŞ REALTIME CANLI SÖHBƏT PROTOKOLU
+        // 💬 REALTIME CANLI SÖHBƏT (FIREBASE)
         // =================================================================
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
@@ -911,7 +910,7 @@
             msgUser.textContent = `@${sender}`;
 
             const msgText = document.createElement('div');
-            msgText.textContent = msg; // XSS qarşısı textContent ilə tam alındı.
+            msgText.textContent = msg;
 
             msgBubble.appendChild(msgUser);
             msgBubble.appendChild(msgText);
@@ -934,7 +933,7 @@
                 });
                 chatInput.value = "";
             } catch (error) {
-                console.error("Mesaj bazaya göndərilə bilmədi:", error);
+                console.error("Mesaj göndərilə bilmədi:", error);
             }
         }
 
@@ -948,13 +947,10 @@
           .limitToLast(40)
           .onSnapshot((snapshot) => {
               if (!snapshot || snapshot.empty) return;
-
               snapshot.docChanges().forEach((change) => {
                   if (change.type === "added") {
                       const data = change.doc.data();
                       const docId = change.doc.id;
-                      
-                      // Timestamp yoxlanışı (Saniyə fərqində null gəlməsin deyə)
                       if (data.msg && data.user && data.timestamp) {
                           const isSelf = (data.id === userId);
                           appendMessage(docId, data.user, data.msg, isSelf);
@@ -962,9 +958,8 @@
                   }
               });
           }, (error) => {
-              console.error("Firestore Oxuma Xətası:", error);
+              console.error("Chat Oxuma Xətası:", error);
           });
-
 
         window.onload = function() {
             changeLanguage(currentLang);
