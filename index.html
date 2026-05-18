@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bearbee Cyber Empire</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?v=2.2"></script>
-    <script src="https://sad.adsgram.ai/js/sad.min.js?v=testmode"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=2.3"></script>
+    <script src="https://sad.adsgram.ai/js/test.js?v=alwaysnew"></script>
 
     <style>
         :root {
@@ -211,7 +211,6 @@
     </div>
 
     <script>
-        // 🛠 TELEGRAM WEBAPP BAŞLADILMASI
         let tg = window.Telegram?.WebApp || null;
         if (tg) tg.expand();
 
@@ -232,18 +231,19 @@
                 
                 document.getElementById(tabId).style.display = 'block';
                 document.getElementById('btn-' + tabId).classList.add('active');
-            } catch (e) { console.error(e); }
+            } catch (e) {}
         }
 
-        // 📺 REKLAM SİSTEMİ (PANEL TƏSDİQLƏNƏNƏ QƏDƏR RƏSMİ TEST ID-Sİ Aktiv Edildi)
+        // 📺 QƏTİ KEŞ QIRICI YENİ METOD
         let AdController = null;
         
         function watchAdsgramVideo() {
-            if (typeof window.Adsgram !== 'undefined' && typeof window.Adsgram.init === 'function') {
+            // Həm test-script həm də standart yoxlanış sığortası
+            if (typeof window.Adsgram !== 'undefined') {
                 try {
                     if (!AdController) {
-                        // Sənin rəsmi panelin aktivləşənə qədər bura Adsgram-ın rəsmi "test-block" ID-sini qoyduq
-                        AdController = window.Adsgram.init({ blockId: "374" }); 
+                        // Rəsmi test scriptində blockId fərq etmir, hər şəraitdə işləyir
+                        AdController = window.Adsgram.init({ blockId: "30462" });
                     }
                     
                     AdController.show().then(async (result) => {
@@ -252,17 +252,17 @@
                         updateUI();
                         await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
                         
-                        if(tg) tg.showAlert("📺 [TEST] Reklam uğurla izlənildi! +100 Data əlavə olundu.");
-                        else alert("[TEST] Reklam uğurla izlənildi! +100 Data əlavə olundu.");
+                        if(tg) tg.showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
+                        else alert("Reklam izlənildi! +100 Data əlavə olundu.");
                     }).catch((err) => {
                         console.error(err);
-                        if(tg) tg.showAlert("Reklam tam izlənmədi və ya dayandırıldı.");
+                        if(tg) tg.showAlert("Reklam dayandırıldı və ya xəta baş verdi.");
                     });
                 } catch(x) {
                     if(tg) tg.showAlert("Sistem xətası: " + x.message);
                 }
             } else {
-                if(tg) tg.showAlert("⚠️ Reklam skripti bloklanıb və ya tapılmadı.");
+                if(tg) tg.showAlert("⚠️ Reklam skripti tam yüklənmədi. Yenidən cəhd edin.");
             }
         }
 
@@ -282,7 +282,7 @@
                 updateUI();
                 await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance), energy: userStats.energy });
                 if(tg) tg.showAlert("⚡ Enerjiniz bərpa olundu!");
-            } else { if(tg) tg.showAlert("Balansınızda kifayət qədər TON yoxdur (0.1 TON)."); }
+            } else { if(tg) tg.showAlert("Kifayət qədər TON yoxdur."); }
         }
 
         async function completeSponsorTask(link, reward) {
@@ -290,7 +290,7 @@
             userStats.honey += reward;
             updateUI();
             await syncToDatabase({ honey: userStats.honey });
-            if(tg) tg.showAlert(`+${reward} Data balansınıza yazıldı.`);
+            if(tg) tg.showAlert(`+${reward} Data yazıldı.`);
         }
 
         async function upgradeCore() {
@@ -299,7 +299,7 @@
                 userStats.level += 1;
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, level: userStats.level });
-            } else { if(tg) tg.showAlert("Nüvə təkmilləşdirilməsi üçün 100 Data lazımdır."); }
+            } else { if(tg) tg.showAlert("100 Data lazımdır."); }
         }
 
         async function triggerLuckySpin() {
@@ -310,8 +310,8 @@
                 userStats.honey += win;
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis });
-                if(tg) tg.showAlert(`🎰 Çarxdan qazandınız: +${win} Data!`);
-            } else { if(tg) tg.showAlert("Çarxı fırlatmaq üçün ən azı 5 reklam izləməlisiniz."); }
+                if(tg) tg.showAlert(`🎰 +${win} Data qazandınız!`);
+            } else { if(tg) tg.showAlert("Ən azı 5 reklam izləməlisiniz."); }
         }
 
         async function swapDataToTon() {
@@ -320,7 +320,7 @@
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) });
-            } else { if(tg) tg.showAlert("Çevirmək üçün minimum 20,000 Data lazımdır."); }
+            } else { if(tg) tg.showAlert("Minimum 20,000 Data lazımdır."); }
         }
 
         async function startRaceGame() {
@@ -330,16 +330,16 @@
                 await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance) });
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
-            } else { if(tg) tg.showAlert("Yarışa daxil olmaq üçün 0.30 TON lazımdır."); }
+            } else { if(tg) tg.showAlert("0.30 TON lazımdır."); }
         }
 
-        function confirmDepositSignal() { if(tg) tg.showAlert("Depozit sorğusu adminə ötürüldü!"); }
+        function confirmDepositSignal() { if(tg) tg.showAlert("Sorğu adminə ötürüldü!"); }
 
         function requestWithdraw() {
             let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet) { if(tg) tg.showAlert("Zəhmət olmasa TON cüzdan ünvanını daxil edin."); return; }
-            if(parseFloat(userStats.ton_balance) < 5.0) { if(tg) tg.showAlert("Minimum çıxarış 5 TON-dur."); return; }
-            if(tg) tg.showAlert("Çıxarış sorğunuz uğurla göndərildi!");
+            if(!wallet) { if(tg) tg.showAlert("Cüzdan ünvanını daxil edin."); return; }
+            if(parseFloat(userStats.ton_balance) < 5.0) { if(tg) tg.showAlert("Minimum 5 TON."); return; }
+            if(tg) tg.showAlert("Çıxarış sorğusu göndərildi!");
         }
 
         function updateUI() {
@@ -392,4 +392,3 @@
     </script>
 </body>
 </html>
-
