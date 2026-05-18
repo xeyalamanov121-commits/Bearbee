@@ -1,21 +1,23 @@
 const { Telegraf } = require('telegraf');
-const { MongoClient, ObjectId } = require('mongodb');
+// Firebase-i idarə etmək üçün lazım olan rəsmi modul
+const admin = require('firebase-admin');
 
-// Bot və Baza obyektlərini qlobalda saxlayırıq (Vercel-in sürətli işləməsi üçün)
-const bot = new Telegraf(process.env.BOT_TOKEN);
-let dbClient = null;
-
-// Verilənlər bazasına qoşulma funksiyası
-async function getDB() {
-    if (!dbClient) {
-        dbClient = new MongoClient(process.env.MONGO_URI);
-        await dbClient.connect();
-    }
-    return dbClient.db();
+// 1. FIREBASE BAĞLANTISI (Əgər tətbiqinizdə artıq başladılıbsa, təkrar başladılmır)
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined
+        })
+    });
 }
 
-// 1. ADMİNƏ DÜYMƏLİ BİLDİRİŞ GÖNDƏRƏN FUNKSİYA
-async function sendAdminPanel(transaction) {
+const db = admin.firestore();
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+// 2. ADMİNƏ DÜYMƏLİ BİLDİRİŞ GÖNDƏRƏN FUNKSİYA
+async function sendAdminPanel(txId, transaction) {
     const adminId = process.env.ADMIN_CHAT_ID;
     const message = `🔔 *Yeni Tranzaksiya Daxil Oldu!*\n\n` +
                     `👤 *İstifadəçi ID:* ${transaction.userId}\n` +
@@ -27,54 +29,52 @@ async function sendAdminPanel(transaction) {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: 'Təsdiqlə ✅', callback_data: `approve_${transaction._id}` },
-                    { text: 'Ləğv et ❌', callback_data: `reject_${transaction._id}` }
+                    { text: 'Təsdiqlə ✅', callback_data: `approve_${txId}` },
+                    { text: 'Ləğv et ❌', callback_data: `reject_${txId}` }
                 ]
             ]
         }
     });
 }
 
-// 2. İSTİFADƏÇİ BOTA TXID (TEQ) GÖNDƏRDİKDƏ
+// 3. İSTİFADƏÇİ BOTA TXID (TEQ) GÖNDƏRDİKDƏ
 bot.on('text', async (ctx) => {
     const text = ctx.message.text.trim();
     const userId = ctx.from.id;
 
-    // Səhvən qısa mətn yazılmasının qarşısını almaq üçün
     if (text.length < 10) {
         return ctx.reply("⚠️ Lütfən düzgün bir tranzaksiya teqi (TxID) göndərin.");
     }
 
     try {
-        const db = await getDB();
-        
-        // Eyni TxID-nin sistemdə olub-olmadığını yoxlayırıq (Fırıldaqçılığın qarşısını almaq üçün)
-        const existingTx = await db.collection('transactions').findOne({ txHash: text });
-        if (existingTx) {
+        // Firebase Firestore-da eyni TxID-nin olub-olmadığını yoxlayırıq
+        const txCheck = await db.collection('transactions').where('txHash', '==', text).get();
+        if (!txCheck.empty) {
             return ctx.reply("❌ Bu tranzaksiya teqi artıq sistemdə istifadə olunub!");
         }
 
-        // Yeni tranzaksiyanı bazaya qeyd edirik
-        const newTx = { 
-            userId: userId, 
-            txHash: text, 
-            status: 'pending', 
-            createdAt: new Date() 
+        // Yeni tranzaksiya məlumatı
+        const newTx = {
+            userId: userId,
+            txHash: text,
+            status: 'pending',
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
         };
-        const result = await db.collection('transactions').insertOne(newTx);
-        newTx._id = result.insertedId;
+
+        // Firebase-ə yazırıq və sənədin unikal ID-sini alırıq
+        const docRef = await db.collection('transactions').add(newTx);
 
         // Adminə (Sizə) təsdiq/ləğv düymələrini göndəririk
-        await sendAdminPanel(newTx);
+        await sendAdminPanel(docRef.id, newTx);
         
         ctx.reply("Tranzaksiya teqiniz qəbul olundu. Admin təsdiqi gözlənilir... ⏳");
     } catch (error) {
-        console.error("Baza xətası:", error);
+        console.error("Firebase xətası:", error);
         ctx.reply("Sistemdə xəta baş verdi, bir az sonra yenidən yoxlayın.");
     }
 });
 
-// 3. SİZ (ADMİN) DÜYMƏLƏRDƏN BİRİNƏ BASDIQDA
+// 4. SİZ (ADMİN) DÜYMƏLƏRDƏN BİRİNƏ BASDIQDA
 bot.on('callback_query', async (ctx) => {
     const data = ctx.callbackQuery.data;
     
@@ -83,18 +83,19 @@ bot.on('callback_query', async (ctx) => {
         const status = action === 'approve' ? 'approved' : 'rejected';
         
         try {
-            const db = await getDB();
-            
-            // Bazada statusu yeniləyirik
-            await db.collection('transactions').updateOne(
-                { _id: new ObjectId(id) }, 
-                { $set: { status: status } }
-            );
-            
-            // Yenilənmiş məlumatı bazadan çəkirik
-            const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
+            const docRef = db.collection('transactions').doc(id);
+            const doc = await docRef.get();
 
-            // Sizin çatdakı düymələri silirik və mesajı nəticə ilə əvəzləyirik (Təkrar basılmasın)
+            if (!doc.exists) {
+                return ctx.answerCbQuery("⚠️ Tranzaksiya tapılmadı!");
+            }
+
+            const tx = doc.data();
+
+            // Firebase-də statusu yeniləyirik
+            await docRef.update({ status: status });
+
+            // Düymələri silib mesajı nəticə ilə əvəzləyirik
             const resultText = status === 'approved' ? '✅ TƏSDİQLƏNDİ' : '❌ LƏĞV EDİLDİ';
             await ctx.editMessageText(
                 `📋 *Tranzaksiya Nəticəsi:*\n` +
@@ -104,7 +105,7 @@ bot.on('callback_query', async (ctx) => {
                 { parse_mode: 'Markdown' }
             );
 
-            // İstifadəçiyə qərar barədə avtomatik mesaj göndəririk
+            // İstifadəçiyə bildiriş göndəririk
             const userMessage = status === 'approved' 
                 ? `🎉 Tranzaksiyanız (${tx.txHash}) admin tərəfindən təsdiqləndi!` 
                 : `⚠️ Göndərdiyiniz tranzaksiya teqi (${tx.txHash}) keçərsiz sayıldı və admin tərəfindən ləğv edildi.`;
@@ -115,21 +116,21 @@ bot.on('callback_query', async (ctx) => {
             console.error("Düymə işlənmə xətası:", error);
         }
     }
-    // Telegram-a düymə klikinin tamamlandığını bildiririk
     await ctx.answerCbQuery();
 });
 
-// 4. VERCEL SERVERLESS İNTEQRASİYASI
+// 5. VERCEL SERVERLESS İNTEQRASİYASI
 module.exports = async (req, res) => {
     try {
         if (req.method === 'POST') {
             await bot.handleUpdate(req.body, res);
             res.status(200).send('OK');
         } else {
-            res.status(200).send('Bot hal-hazırda aktivdir və işləyir.');
+            res.status(200).send('Bot hal-hazırda Firebase ilə aktivdir.');
         }
     } catch (err) {
         console.error("Vercel xətası:", err);
         res.status(500).send('Internal Server Error');
     }
 };
+
