@@ -249,8 +249,7 @@
     <div class="main-content">
 
         <div id="game-tab" class="app-section active">
-            <div class="guide-box" id="guide-text">
-                </div>
+            <div class="guide-box" id="guide-text"></div>
 
             <div class="cyber-panel">
                 <div class="stat-line"><span id="lbl-data-balance">Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
@@ -356,8 +355,10 @@
 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, deposit_balance: 0.0, reklam_baxis: 0 };
         let currentLang = localStorage.getItem("bearbee_lang") || "az";
+        let isSyncing = false; 
+        let syncTimeout = null;
 
-        // LOKALİZASİYA DATASI
+        // MULTI-LANGUAGE TRANSLATIONS
         const translations = {
             az: {
                 guide: `<strong style="color: var(--neon-green);">💡 SİSTEM TƏLİMATI VƏ QAYDALAR:</strong><br>1. <strong>AI CORE</strong> nüvəsinə klikləyərək Data Balansınızı sürətlə artırın.<br>2. Enerjiniz bitdikdə <strong>reklam izləyərək</strong> dərhal və pulsuz şəkildə fullləyə bilərsiniz.<br>3. Hər <strong>20,000 Data</strong> xalını Cüzdandan <strong>1 TON Çıxarış Balansına</strong> konvertasiya edə bilərsiniz.<br>4. 🏎️ <strong>Yarış Reqlamenti:</strong> Multiplayer maşın yarışlarına giriş haqqı 0.50 TON-dur və <strong>yalnız Depozit Balansı ilə</strong> aktivləşir. Oyun daxili çevrilən pullarla yarışa girmək qadağandır.`,
@@ -418,62 +419,48 @@
         function changeLanguage(lang) {
             currentLang = lang;
             localStorage.setItem("bearbee_lang", lang);
-            
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`lang-${lang}`).classList.add('active');
-            
             updateLanguageUI();
         }
 
         function updateLanguageUI() {
             let l = translations[currentLang];
-            
             document.getElementById('guide-text').innerHTML = l.guide;
             document.getElementById('lbl-tab-tasks').innerText = l.tasks;
             document.getElementById('lbl-tab-race').innerText = l.race;
             document.getElementById('lbl-tab-wallet').innerText = l.wallet;
-            
             document.getElementById('lbl-data-balance').innerText = l.dataBal;
             document.getElementById('lbl-core-level').innerText = l.coreLev;
             document.getElementById('lbl-quantum-energy').innerText = l.quantEng;
-            
             document.getElementById('lbl-fast-race-title').innerText = l.fastRaceTitle;
             document.getElementById('lbl-fast-race-desc').innerText = l.fastRaceDesc;
             document.getElementById('btn-fast-race-start').innerText = l.fastRaceStart;
-            
             document.getElementById('lbl-adsgram-title').innerText = l.adsTitle;
             document.getElementById('btn-watch-ad').innerText = l.watchAd;
             document.getElementById('btn-energy-ad').innerText = l.energyAd;
-            
             document.getElementById('lbl-premium-energy-title').innerText = l.premEnergyTitle;
             document.getElementById('btn-buy-energy').innerText = l.buyEnergy;
-            
             document.getElementById('lbl-lucky-spin-title').innerText = l.luckySpinTitle;
             document.getElementById('btn-lucky-spin').innerText = l.luckySpinBtn;
             document.getElementById('btn-upgrade-core').innerText = l.upgradeCore;
-            
             document.getElementById('lbl-sponsor-tasks-title').innerText = l.sponsorTitle;
             document.getElementById('lbl-sponsor-desc').innerHTML = l.sponsorDesc;
             document.getElementById('btn-task-earn').innerText = l.earn;
-            
             document.getElementById('lbl-multi-race-title').innerText = l.multiRaceTitle;
             document.getElementById('lbl-race-fee').innerText = l.raceFee;
             document.getElementById('lbl-race-warning').innerText = l.raceWarning;
             document.getElementById('btn-race-tab-start').innerText = l.fastRaceStart; 
-            
             document.getElementById('lbl-wallet-deposit').innerText = l.walletDeposit;
             document.getElementById('lbl-wallet-withdraw-bal').innerText = l.walletWithdrawBal;
             document.getElementById('lbl-wallet-logs').innerText = l.walletLogs;
-            
             document.getElementById('lbl-deposit-title').innerText = l.depositTitle;
             document.getElementById('lbl-deposit-desc').innerText = l.depositDesc;
             document.getElementById('btn-deposit-send').innerText = l.depositSend;
-            
             document.getElementById('btn-swap-action').innerText = l.swapAction;
             document.getElementById('lbl-withdraw-title').innerText = l.withdrawTitle;
             document.getElementById('inp-wallet').placeholder = l.placeholderWallet;
             document.getElementById('btn-withdraw-action').innerText = l.withdrawAction;
-            
             updateUI();
         }
 
@@ -645,14 +632,16 @@
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
                     let b = await res.json();
+                    
+                    // Müdafiə Bloku: Buluddan gələn köhnə enerjinin lokal azalmanı üstələməsinə icazə vermirik
                     if ((parseInt(b.honey) || 0) >= userStats.honey) {
                         userStats.honey = parseInt(b.honey) || 0;
                         userStats.level = parseInt(b.level) || 1;
                         userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
                         userStats.deposit_balance = parseFloat(b.deposit_balance) || 0.0;
                         userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
+                        userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
                     }
-                    userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
                     
                     let raceBonus = localStorage.getItem("race_bonus_reward");
                     if (raceBonus) {
@@ -688,10 +677,12 @@
             } catch(e) {} finally { isSyncing = false; }
         }
 
+        // Saniyəlik bərpa alqoritmi optimallaşdırıldı (Üst-üstə minmənin qarşısı alındı)
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
-                updateUI(); saveToLocalStorage();
+                updateUI(); 
+                saveToLocalStorage();
             }
         }, 5000);
 
