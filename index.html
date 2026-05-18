@@ -6,7 +6,6 @@
     <title>Bearbee Cyber Empire</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js?v=2.3"></script>
-    
     <script src="https://sad.adsgram.ai/js/adsgram-api.js"></script>
 
     <style>
@@ -284,11 +283,12 @@
             } catch(e) {}
         }
 
-        // 🛠️ INTEGRASIYA: Birbaşa verilənlər bazası yerinə Python FastAPI Backend API linkimiz
+        // 🛠️ INTEGRASIYA: Pydroid 3-də işləyən Python API lokal linkimiz
         const API_BASE_URL = "http://localhost:8000/api/user";
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
+        let isSyncing = false; // Eyni anda çoxlu klik atanda backend-i yormamaq üçün qoruyucu flag
 
         // Tab Keçid Sistemi
         function switchTab(tabId) {
@@ -313,7 +313,6 @@
             if (window.Adsgram) {
                 try {
                     AdController = window.Adsgram.init({ blockHash: "bg-5063" });
-                    console.log("Adsgram uğurla konfiqurasiya olundu.");
                 } catch(e) {
                     console.error("Adsgram init xətası:", e);
                 }
@@ -328,13 +327,13 @@
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI();
-                    await syncToBackend(); // Python üzərindən sinxronizasiya
+                    await syncToBackend(); 
                     showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
                 }).catch((err) => {
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
                 });
             } else {
-                showAlert("⚠️ Reklam şəbəkəsi hələ tam yüklənməyib. AdBlocker və ya VPN aktivdirsə, söndürüb bir neçə saniyə gözləyin.");
+                showAlert("⚠️ Reklam şəbəkəsi yüklənmədi. Yenidən cəhd edin.");
                 initAdsgramSafe();
             }
         }
@@ -345,7 +344,9 @@
                 userStats.honey += userStats.level;
                 userStats.energy -= 1;
                 updateUI();
-                if (userStats.honey % 5 === 0) {
+                
+                // Hər 5 klikdən bir və ya enerji tam bitəndə bazaya sinxronizasiya atır
+                if (userStats.honey % 5 === 0 || userStats.energy === 0) {
                     syncToBackend();
                 }
             }
@@ -379,7 +380,7 @@
             userStats.honey += reward;
             updateUI();
             await syncToBackend();
-            showAlert(`+${reward} Data yazıldı.`);
+            showAlert(`+${reward} Data qazanıldı.`);
         }
 
         async function upgradeCore() {
@@ -447,7 +448,7 @@
             else alert(msg);
         }
 
-        // 🛠️ YENİLƏNMİŞ VƏ PYTHON BACKEND-Ə BAĞLANMIŞ OXUMA METODU
+        // 📥 Python-dan Məlumatı Oxumaq
         async function loadUserData() {
             updateUI();
             try {
@@ -461,34 +462,36 @@
                     userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                 }
             } catch(e) {
-                console.log("Python Backend ilə əlaqə qurulmadı, lokal rejim aktivdir.");
+                console.log("Python Server offline-dır. Lokal rejim aktivdir.");
             }
             updateUI();
         }
 
-        // 🛠️ YENİLƏNMİŞ VƏ PYTHON BACKEND-Ə BAĞLANMIŞ YAZMA METODU
+        // 📤 Klikləri Python-a Göndərmək
         async function syncToBackend() {
+            if (isSyncing) return; // Əgər əvvəlki sorğu hələ bitməyibsə, yenisini göndərib sistemi sıxışdırma
+            isSyncing = true;
             try {
                 await fetch(`${API_BASE_URL}/sync`, {
                     method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         user_id: userId,
-                        honey: userStats.honey,
-                        level: userStats.level,
-                        energy: userStats.energy,
+                        honey: parseInt(userStats.honey),
+                        level: parseInt(userStats.level),
+                        energy: parseInt(userStats.energy),
                         ton_balance: parseFloat(userStats.ton_balance),
-                        reklam_baxis: userStats.reklam_baxis
+                        reklam_baxis: parseInt(userStats.reklam_baxis)
                     })
                 });
             } catch(e) {
-                console.log("Sinxronizasiya xətası.");
+                console.log("Sinxronizasiya dayandı.");
+            } finally {
+                isSyncing = false;
             }
         }
 
-        // Enerji doldurma dövrü
+        // Avtomatik Enerji Bərpası (Hər 5 saniyədən bir +1 Enerji)
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
@@ -498,9 +501,8 @@
 
         window.onload = function() {
             loadUserData();
-            setTimeout(initAdsgramSafe, 1200); // Skriptlərin tam oturması üçün kiçik bir asinxron gözləmə qatıldı
+            setTimeout(initAdsgramSafe, 1200);
         };
     </script>
 </body>
 </html>
-
