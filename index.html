@@ -9,6 +9,9 @@
     <script src="https://sad.adsgram.ai/js/adsgram-api.js"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <style>
         :root {
             --neon-green: #00ff66;
@@ -231,13 +234,13 @@
             color: #a0b0a8;
         }
 
-        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ */
+        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ (MÜKƏMMƏLLƏŞDİRİLDİ) */
         .chat-panel {
             border-color: var(--neon-blue) !important;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.1) !important;
         }
         .chat-messages {
-            height: 160px;
+            height: 200px;
             overflow-y: auto;
             border: 1px solid rgba(0, 255, 255, 0.2);
             background: #000;
@@ -246,9 +249,42 @@
             text-align: left;
             font-size: 13px;
             margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-        .msg-item { margin-bottom: 6px; word-break: break-all; line-height: 1.4; }
-        .msg-user { color: var(--neon-green); font-weight: bold; }
+        .msg-wrapper {
+            display: flex;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+        .msg-wrapper.self { justify-content: flex-end; }
+        .msg-wrapper.other { justify-content: flex-start; }
+        
+        .msg-bubble {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            word-break: break-all;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+        .msg-wrapper.self .msg-bubble {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .msg-wrapper.other .msg-bubble {
+            background: rgba(0, 255, 102, 0.06);
+            border: 1px solid rgba(0, 255, 102, 0.2);
+        }
+        .msg-user { 
+            color: var(--neon-green); 
+            font-weight: bold; 
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        .msg-wrapper.self .msg-user { color: var(--neon-blue); }
+
         .chat-input-area { display: flex; gap: 8px; }
         .chat-input-area input { margin-bottom: 0; text-align: left; padding: 10px; border-color: var(--neon-blue); }
         .chat-input-area button { width: auto; margin-top: 0; padding: 0 20px; border-color: var(--neon-green); color: var(--neon-green); }
@@ -325,7 +361,7 @@
             </div>
 
             <div class="cyber-panel chat-panel">
-                <h3 style="color: var(--neon-blue); text-align: left;" id="lbl-chat-title">💬 MATRIX GLOBAL CHAT</h3>
+                <h3 style="color: var(--neon-blue); text-align: left;" id="lbl-chat-title">💬 LIVE CHAT</h3>
                 <div class="chat-messages" id="chat-box"></div>
                 <div class="chat-input-area">
                     <input type="text" id="chat-input" placeholder="Mesajı bura daxil edin...">
@@ -400,6 +436,23 @@
     </div>
 
     <script>
+        // =================================================================
+        // 🔥 FIREBASE INITIALIZATION VƏ AYARLARI (SƏNİN ÖZ BAZAN)
+        // =================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB79GGNtakyfCwkGrIsuRsR03jFI8bB1rs",
+            authDomain: "bearbee-196c8.firebaseapp.com",
+            projectId: "bearbee-196c8",
+            storageBucket: "bearbee-196c8.firebasestorage.app",
+            messagingSenderId: "867367473240",
+            appId: "1:867367473240:web:5921d199233d4b1f303a2d"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
         // MASTER ADMİN DOĞRULAMA ID-Sİ
         const MASTER_ADMIN_ID = "8591374417";
 
@@ -410,7 +463,7 @@
 
         const BACKEND_URL = "https://bearbee.vercel.app";
         const API_BASE_URL = `${BACKEND_URL}/api/user`;
-        const socket = io(BACKEND_URL);
+        const socket = io(BACKEND_URL); // Mövcud digər multiplayer yarışlar üçün websocket sabit saxlanıldı
 
         let userId = "";
         let username = "Guest";
@@ -431,7 +484,7 @@
         let isSyncing = false; 
         let syncTimeout = null;
 
-        // MULTI-LANGUAGE TRANSLATIONS
+        // MULTI-LANGUAGE TRANSLATIONS (SABİT LIVE CHAT ADI İLƏ YENİLƏNDİ)
         const translations = {
             az: {
                 guide: `<strong style="color: var(--neon-green);">💡 SİSTEM TƏLİMATI VƏ QAYDALAR:</strong><br>1. <strong>AI CORE</strong> nüvəsinə klikləyərək Data Balansınızı sürətlə artırın.<br>2. Enerjiniz bitdikdə <strong>reklam izləyərək</strong> dərhal və pulsuz şəkildə fullləyə bilərsiniz.<br>3. Hər <strong>20,000 Data</strong> xalını Cüzdandan <strong>1 TON Çıxarış Balansına</strong> konvertasiya edə bilərsiniz.<br>4. 🏎️ <strong>Yarış Reqlamenti:</strong> Multiplayer maşın yarışlarına giriş haqqı 0.50 TON-dur və <strong>yalnız Depozit Balansı ilə</strong> aktivləşir. Oyun daxili çevrilən pullarla yarışa girmək qadağandır.`,
@@ -450,7 +503,7 @@
                 alertEnergyEmpty: "🔋 Kvant enerjiniz bitib! Reklam izləyərək pulsuz doldurun.", alertNoTon: "Kifayət qədər TON yoxdur.", alertTaskDone: "+500 Data yazıldı.", alertNoData: "Minimum 20,000 Data lazımdır.", alertSwapDone: "🔄 1 TON Çıxarış balansınıza əlavə edildi!",
                 alertRaceError: "❌ Yarışa daxil olmaq üçün balansınızda 0.50 TON Depozit pulu olmalıdır! Reklamlardan qazanılan balans burada keçərli deyil.", alertDepositSent: "🧾 Depozit sorğunuz admin panelə ötürüldü! Təsdiqdən sonra yarış balansınız yenilənəcək.",
                 alertInpWallet: "Cüzdan ünvanını daxil edin.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Çıxarış sorğusu göndərildi!", alertRaceEnd: "🏎️ Yarış başa çatdı! Balansınıza +{amt} Data əlavə edildi.",
-                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Mesajı bura daxil edin..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Mesajı bura daxil edin..."
             },
             en: {
                 guide: `<strong style="color: var(--neon-green);">💡 SYSTEM GUIDE & RULES:</strong><br>1. Click on the <strong>AI CORE</strong> to quickly increase your Data Balance.<br>2. When out of energy, <strong>watch an ad</strong> to refill instantly and for free.<br>3. Convert every <strong>20,000 Data</strong> into <strong>1 TON Withdrawal Balance</strong> from the Wallet.<br>4. 🏎️ <strong>Race Regulation:</strong> Entry fee for multiplayer races is 0.50 TON and is <strong>valid ONLY via Deposit Balance</strong>. Entering with converted game money is forbidden.`,
@@ -469,7 +522,7 @@
                 alertEnergyEmpty: "🔋 Your quantum energy is depleted! Refill for free by watching an ad.", alertNoTon: "Not enough TON.", alertTaskDone: "+500 Data credited.", alertNoData: "Minimum 20,000 Data required.", alertSwapDone: "🔄 1 TON added to your withdrawal balance!",
                 alertRaceError: "❌ You must have 0.50 TON Deposit funds in your balance to enter the race! Game-converted balances are not valid here.", alertDepositSent: "🧾 Your deposit request has been sent to the admin panel! Your race balance will update after confirmation.",
                 alertInpWallet: "Please enter your wallet address.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Withdrawal request submitted!", alertRaceEnd: "🏎️ Race finished! +{amt} Data added to your balance.",
-                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Type message here..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Type message here..."
             },
             ru: {
                 guide: `<strong style="color: var(--neon-green);">💡 ИНСТРУКЦИЯ И ПРАВИЛА:</strong><br>1. Кликайте по <strong>AI CORE</strong>, чтобы быстро увеличить баланс данных.<br>2. Когда закончится энергия, <strong>посмотрите рекламу</strong>, чтобы мгновенно и бесплатно пополнить её.<br>3. Каждые <strong>20,000 Data</strong> можно конвертировать в <strong>1 TON баланса для вывода</strong> в Кошельке.<br>4. 🏎️ <strong>Регламент гонок:</strong> Вход в мультиплеерные гонки стоит 0.50 TON и возможен <strong>ТОЛЬКО через Депозитный баланс</strong>. Вход за игровые деньги запрещен.`,
@@ -488,7 +541,7 @@
                 alertEnergyEmpty: "🔋 Ваша квантовая энергия истощена! Пополните бесплатно, посмотрев рекламу.", alertNoTon: "Недостаточно TON.", alertTaskDone: "+500 Data зачислено.", alertNoData: "Требуется минимум 20,000 Data.", alertSwapDone: "🔄 1 TON добавлен на ваш баланс для вывода!",
                 alertRaceError: "❌ Для участия в гонке на вашем балансе должно быть 0.50 TON Депозита! Игровой баланс здесь недействителен.", alertDepositSent: "🧾 Ваш запрос на депозит отправлен в админ-панель! Гонка-баланс обновится после подтверждения.",
                 alertInpWallet: "Пожалуйста, введите адрес кошелька.", alertMinWithdraw: "Минимум 5 TON.", alertWithdrawSent: "Запрос на вывод отправлен!", alertRaceEnd: "🏎️ Гонка завершена! +{amt} Data добавлено на ваш баланс.",
-                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Введите сообщение..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Введите сообщение..."
             }
         };
 
@@ -741,7 +794,7 @@
             let newWith = document.getElementById('adm-with-val').value;
 
             let targetKey = `bearbee_stats_${targetId}`;
-            let targetStats = JSON.parse(localStorage.getItem(targetKey) || '{"honey":0,"level":1,"energy":100,"ton_balance":0.0,"deposit_balance":0.0,"reklam_baxis:0"}');
+            let targetStats = JSON.parse(localStorage.getItem(targetKey) || '{"honey":0,"level":1,"energy":100,"ton_balance":0.0,"deposit_balance":0.0,"reklam_baxis":0}');
 
             if(newData !== "") targetStats.honey = parseInt(newData);
             if(newDep !== "") targetStats.deposit_balance = parseFloat(newDep);
@@ -832,43 +885,81 @@
         }, 5000);
 
 
-        // ==========================================
-        // 💬 WEBSOCKET CANLI SÖHBƏT ALQORİTMİ
-        // ==========================================
+        // =================================================================
+        // 💬 FIREBASE FİRESTORE REALTIME CANLI SÖHBƏT PROTOKOLU
+        // =================================================================
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
         const sendMsgBtn = document.getElementById('send-msg-btn');
 
-        function appendMessage(sender, msg) {
-            const formattedMsg = `<div class="msg-item"><span class="msg-user">@${sender}:</span> ${msg}</div>`;
-            chatBox.innerHTML += formattedMsg;
+        // Mesajların təkrarlanmaması üçün keş sistemi
+        let renderedMessageIds = new Set();
+
+        function appendMessage(docId, sender, msg, isSelf = false) {
+            if (renderedMessageIds.has(docId)) return;
+            renderedMessageIds.add(docId);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `msg-wrapper ${isSelf ? 'self' : 'other'}`;
+            
+            wrapper.innerHTML = `
+                <div class="msg-bubble">
+                    <div class="msg-user">@${sender}</div>
+                    <div>${msg}</div>
+                </div>
+            `;
+            
+            chatBox.appendChild(wrapper);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        sendMsgBtn.addEventListener('click', () => {
+        async function sendMessageAction() {
             const text = chatInput.value.trim();
             if (text === "") return;
 
-            appendMessage(username, text);
-
-            socket.emit('send_chat_message', {
-                user: username,
-                msg: text,
-                id: userId
-            });
-
-            chatInput.value = "";
-        });
-
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMsgBtn.click();
-        });
-
-        socket.on('receive_chat_message', (data) => {
-            if(data.id !== userId) { 
-                appendMessage(data.user, data.msg);
+            try {
+                await db.collection("messages").add({
+                    user: username,
+                    msg: text,
+                    id: userId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                chatInput.value = "";
+            } catch (error) {
+                console.error("Firestore mesaj göndərilmə xətası:", error);
             }
+        }
+
+        sendMsgBtn.addEventListener('click', sendMessageAction);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessageAction();
         });
+
+        // KƏSİNTİSİZ REAL-TIME LİSTEN ALQORİTMİ
+        db.collection("messages")
+          .orderBy("timestamp", "asc")
+          .limitToLast(40)
+          .onSnapshot((snapshot) => {
+              if (snapshot.empty) {
+                  chatBox.innerHTML = "";
+                  renderedMessageIds.clear();
+                  return;
+              }
+
+              snapshot.docChanges().forEach((change) => {
+                  if (change.type === "added") {
+                      const data = change.doc.data();
+                      const docId = change.doc.id;
+                      
+                      if (data.msg && data.user) {
+                          const isSelf = (data.id === userId || data.user === username);
+                          appendMessage(docId, data.user, data.msg, isSelf);
+                      }
+                  }
+              });
+          }, (error) => {
+              console.error("Firestore anlıq oxuma xətası:", error);
+          });
 
 
         window.onload = function() {
