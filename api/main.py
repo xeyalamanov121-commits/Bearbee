@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any
 
 # FastAPI tətbiqini başladırıq
-app = FastAPI(title="Bearbee Cyber Empire - Production Backend")
+app = FastAPI(title="Bearbee Cyber Empire - Vercel Backend")
 
-# CORS Tənzimləmələri (GitHub Pages və Telegram Botun koda problemsiz qoşulması üçün)
+# CORS Tənzimləmələri (GitHub Pages-dən gələn sorğuların bloklanmaması üçün)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,7 +27,7 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
-# Yeni oyunçular üçün standart Bearbee şablonu
+# Yeni oyunçular üçün standart şablon
 def get_default_user_template(user_id: str):
     return {
         "user_id": str(user_id),
@@ -40,7 +40,7 @@ def get_default_user_template(user_id: str):
 
 # --- API ENDPOINT-LƏRİ ---
 
-# 1. 📥 Oyunçu məlumatlarını bazadan oxumaq (İstifadəçi yoxdursa avtomatik qeydiyyat edir)
+# 1. 📥 Oyunçu məlumatlarını bazadan oxumaq
 @app.get("/api/user/{user_id}")
 async def get_or_create_user(user_id: str):
     try:
@@ -52,7 +52,7 @@ async def get_or_create_user(user_id: str):
             if data and len(data) > 0:
                 return data[0]
             
-            # Əgər istifadəçi bazada tapılmadısa, yenisini yaradırıq
+            # İstifadəçi yoxdursa yenisini yaradırıq
             new_user_data = get_default_user_template(user_id)
             insert_response = requests.post(SUPABASE_URL, headers=HEADERS, json=new_user_data)
             if insert_response.status_code in [200, 201]:
@@ -63,15 +63,14 @@ async def get_or_create_user(user_id: str):
     except Exception:
         return get_default_user_template(user_id)
 
-# 2. 📤 Oyundakı klikləri, reklam baxışlarını və balans yeniləmələrini sinxronizasiya etmək
+# 2. 📤 Məlumatları sinxronizasiya etmək
 @app.post("/api/user/sync")
 async def sync_user_data(data: Dict[Any, Any]):
     try:
         user_id = data.get("user_id")
         if not user_id:
-            raise HTTPException(status_code=400, detail="user_id mütləq göndərilməlidir.")
+            raise HTTPException(status_code=400, detail="user_id mütləqdir.")
         
-        # Gələn boş olmayan dataları süzgəcdən keçiririk
         update_fields = {k: v for k, v in data.items() if v is not None and k != "user_id"}
         
         if not update_fields:
@@ -81,17 +80,9 @@ async def sync_user_data(data: Dict[Any, Any]):
         response = requests.patch(update_url, headers=HEADERS, json=update_fields)
         
         if response.status_code in [200, 201, 204]:
-            return {"status": "success", "synced_fields": list(update_fields.keys())}
+            return {"status": "success"}
         else:
             raise HTTPException(status_code=response.status_code, detail=response.text)
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Serverin başladılması hissəsi (Render və digər Cloud serverləri üçün xüsusi optimallaşdırılıb)
-if __name__ == "__main__":
-    import uvicorn
-    # Render serverinin təyin etdiyi dinamik portu oxuyur, tapmasa lokal rejimdə 8000-də işləyir
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
-
