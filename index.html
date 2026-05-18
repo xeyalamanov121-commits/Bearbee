@@ -283,10 +283,22 @@
             } catch(e) {}
         }
 
-        // 🔗 SƏNİN RƏSMİ CANLI BACKEND API LİNKİN:
         const API_BASE_URL = "https://bearbee.vercel.app/api/user";
 
-        let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
+        // 🆔 UNİKAL İSTİFADƏÇİ TƏYİNATI (BALANSIN İTMƏSİNİ QƏTİ ŞƏKİLDƏ ÖNLƏYİR)
+        let userId = "";
+        if (tg && tg.initDataUnsafe?.user?.id) {
+            userId = tg.initDataUnsafe.user.id.toString();
+        } else {
+            // Əgər Telegram xaricində brauzerlə açılıbsa, unikal yerli cihaz ID-si yaradırıq
+            let localId = localStorage.getItem("bearbee_player_uuid");
+            if (!localId) {
+                localId = "device_" + Math.floor(10000000 + Math.random() * 90000000);
+                localStorage.setItem("bearbee_player_uuid", localId);
+            }
+            userId = localId;
+        }
+
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
         let isSyncing = false; 
 
@@ -308,7 +320,6 @@
             } catch (e) {}
         }
 
-        // Adsgram Təhlükəsiz İzolasiya Sistemi
         let AdController = null;
         function initAdsgramSafe() {
             if (window.Adsgram) {
@@ -444,7 +455,6 @@
             else alert(msg);
         }
 
-        // TƏHLÜKƏSİZ DATA YÜKLƏMƏ (Adsgram xətası bu funksiyanı qıra bilməz)
         async function loadUserData() {
             updateUI();
             try {
@@ -468,7 +478,7 @@
                     }
                 }
             } catch(e) {
-                console.log("Datalar Vercel-dən çəkilərkən xəta yarandı, yerli saxlanılır.");
+                console.log("Datalar yüklənərkən xəta.");
             }
             updateUI();
         }
@@ -504,8 +514,8 @@
         }, 5000);
 
         window.onload = function() {
-            loadUserData(); // Səhifə yüklənəndə birinci verilənlər bazası oxunur
-            setTimeout(initAdsgramSafe, 1500); // Reklam skripti tam arxa planda müstəqil işə salınır
+            loadUserData(); 
+            setTimeout(initAdsgramSafe, 1500); 
         };
     </script>
 </body>
