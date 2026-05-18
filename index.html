@@ -285,24 +285,44 @@
 
         const API_BASE_URL = "https://bearbee.vercel.app/api/user";
 
+        // Telegram ID yoxdursa backendlə problem olmasın deyə yalnız rəqəmli alternativ ID yaradırıq
         let userId = "";
         if (tg && tg.initDataUnsafe?.user?.id) {
             userId = tg.initDataUnsafe.user.id.toString();
         } else {
-            let localId = localStorage.getItem("bearbee_player_uuid");
+            let localId = localStorage.getItem("bearbee_player_numeric_id");
             if (!localId) {
-                localId = "device_" + Math.floor(10000000 + Math.random() * 90000000);
-                localStorage.setItem("bearbee_player_uuid", localId);
+                localId = Math.floor(100000000 + Math.random() * 900000000).toString();
+                localStorage.setItem("bearbee_player_numeric_id", localId);
             }
             userId = localId;
         }
 
+        // İlkin məlumatları dərhal yerli yaddaşdan doldururuq ki, gözləmə və itmə olmasın
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
-        let isSyncing = false; 
-        let syncTimeout = null; // Sürətli klik qoruyucusu taymeri
+        loadFromLocalStorage(); 
 
-        function intValue(val) {
-            return parseInt(val) || 0;
+        let isSyncing = false; 
+        let syncTimeout = null;
+
+        function intValue(val) { return parseInt(val) || 0; }
+
+        function saveToLocalStorage() {
+            localStorage.setItem(`bearbee_stats_${userId}`, JSON.stringify(userStats));
+        }
+
+        function loadFromLocalStorage() {
+            let localData = localStorage.getItem(`bearbee_stats_${userId}`);
+            if (localData) {
+                try {
+                    let parsed = JSON.parse(localData);
+                    userStats.honey = parseInt(parsed.honey) || 0;
+                    userStats.level = parseInt(parsed.level) || 1;
+                    userStats.energy = parsed.energy !== undefined ? parseInt(parsed.energy) : 100;
+                    userStats.ton_balance = parseFloat(parsed.ton_balance) || 0.0;
+                    userStats.reklam_baxis = parseInt(parsed.reklam_baxis) || 0;
+                } catch(e) {}
+            }
         }
 
         function switchTab(tabId) {
@@ -324,7 +344,6 @@
             if (window.Adsgram) {
                 try {
                     AdController = window.Adsgram.init({ blockHash: "3742" });
-                    console.log("Adsgram hazırdır.");
                 } catch(e) {}
             }
         }
@@ -337,7 +356,8 @@
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI();
-                    triggerLazySync(); // Reklam mükafatını dərhal növbəyə salırıq
+                    saveToLocalStorage();
+                    triggerLazySync(); 
                     showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
                 }).catch((err) => {
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
@@ -348,24 +368,21 @@
             }
         }
 
-        // Tapper Mexanikası (Ağıllı Sinxronizasiya)
         function triggerTap() {
             if (userStats.energy > 0) {
                 userStats.honey += userStats.level;
                 userStats.energy -= 1;
                 updateUI();
-                
-                // Hər klikdə bazanı yormuruq, klik bitəndən sonra toplu göndəririk
+                saveToLocalStorage(); // Kliklənən an dərhal telefona yazılır (itə bilməz)
                 triggerLazySync(); 
             }
         }
 
-        // 🛡️ BAZANIN BLOKLANMASINI ÖNLƏYƏN FUNKSİYA (Debounce)
         function triggerLazySync() {
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(() => {
                 syncToBackend();
-            }, 1000); // İstifadəçi klikləməyi dayandırandan 1 saniyə sonra tək bir sorğu gedir
+            }, 1200); 
         }
 
         const coreBtn = document.getElementById('ai-core-btn');
@@ -385,6 +402,7 @@
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.1).toFixed(2);
                 userStats.energy = 100;
                 updateUI();
+                saveToLocalStorage();
                 triggerLazySync();
                 showAlert("⚡ Enerjiniz bərpa olundu!");
             } else { showAlert("Kifayət qədər TON yoxdur."); }
@@ -394,6 +412,7 @@
             window.open(link, "_blank");
             userStats.honey += reward;
             updateUI();
+            saveToLocalStorage();
             triggerLazySync();
             showAlert(`+${reward} Data yazıldı.`);
         }
@@ -403,6 +422,7 @@
                 userStats.honey -= 100;
                 userStats.level += 1;
                 updateUI();
+                saveToLocalStorage();
                 triggerLazySync();
             } else { showAlert("100 Data lazımdır."); }
         }
@@ -414,6 +434,7 @@
                 let win = prizes[Math.floor(Math.random() * prizes.length)];
                 userStats.honey += win;
                 updateUI();
+                saveToLocalStorage();
                 triggerLazySync();
                 showAlert(`🎰 +${win} Data qazandınız!`);
             } else { showAlert("Ən azı 5 reklam izləməlisiniz."); }
@@ -424,6 +445,7 @@
                 userStats.honey -= 20000;
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
                 updateUI();
+                saveToLocalStorage();
                 triggerLazySync();
             } else { showAlert("Minimum 20,000 Data lazımdır."); }
         }
@@ -432,8 +454,8 @@
             if (parseFloat(userStats.ton_balance) >= 0.30) {
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.30).toFixed(2);
                 updateUI();
+                saveToLocalStorage();
                 
-                // Yarış səhifəsinə keçməzdən əvvəl məlumatları məcburi şəkildə bazaya yazırıq
                 if (syncTimeout) clearTimeout(syncTimeout);
                 await syncToBackend();
                 
@@ -467,17 +489,25 @@
             else alert(msg);
         }
 
+        // HİBRİD DATA YÜKLƏMƏ
         async function loadUserData() {
+            // Birinci cihazdakı son datanı ekrana veririk (Sıfırlanma hissi tamamilə itir)
+            loadFromLocalStorage();
             updateUI();
+            
             try {
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
                     let b = await res.json();
-                    userStats.honey = parseInt(b.honey) || 0;
-                    userStats.level = parseInt(b.level) || 1;
-                    userStats.energy = b.energy !== undefined ? parseInt(b.energy) : 100;
-                    userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
-                    userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
+                    
+                    // Əgər buluddakı data telefondakından daha böyükdürsə, onu götürürük
+                    if ((parseInt(b.honey) || 0) >= userStats.honey) {
+                        userStats.honey = parseInt(b.honey) || 0;
+                        userStats.level = parseInt(b.level) || 1;
+                        userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
+                        userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
+                    }
+                    userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
                     
                     let raceBonus = localStorage.getItem("race_bonus_reward");
                     if (raceBonus) {
@@ -488,9 +518,10 @@
                         await syncToBackend();
                         showAlert(`🏎️ Yarış başa çatdı! Balansınıza +${bonusAmount} Data əlavə edildi.`);
                     }
+                    saveToLocalStorage();
                 }
             } catch(e) {
-                console.log("Datalar yüklənərkən xəta.");
+                console.log("Bulud əlaqəsi yoxdur, yerli data aktivdir.");
             }
             updateUI();
         }
@@ -511,9 +542,8 @@
                         reklam_baxis: intValue(userStats.reklam_baxis)
                     })
                 });
-                console.log("Bulut sinxronizasiyası uğurlu.");
             } catch(e) {
-                console.log("Sinxronizasiya xətası.");
+                console.log("Sinxronizasiya arxa planda növbəyə qaldı.");
             } finally {
                 isSyncing = false;
             }
@@ -523,6 +553,7 @@
             if (userStats.energy < 100) {
                 userStats.energy += 1;
                 updateUI();
+                saveToLocalStorage();
             }
         }, 5000);
 
