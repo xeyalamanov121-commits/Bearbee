@@ -234,13 +234,13 @@
             color: #a0b0a8;
         }
 
-        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ (MÜKƏMMƏLLƏŞDİRİLDİ) */
+        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ */
         .chat-panel {
             border-color: var(--neon-blue) !important;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.1) !important;
         }
         .chat-messages {
-            height: 200px;
+            height: 220px;
             overflow-y: auto;
             border: 1px solid rgba(0, 255, 255, 0.2);
             background: #000;
@@ -437,7 +437,7 @@
 
     <script>
         // =================================================================
-        // 🔥 FIREBASE INITIALIZATION VƏ AYARLARI (SƏNİN ÖZ BAZAN)
+        // 🔥 FIREBASE STRUKTURU
         // =================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB79GGNtakyfCwkGrIsuRsR03jFI8bB1rs",
@@ -463,7 +463,7 @@
 
         const BACKEND_URL = "https://bearbee.vercel.app";
         const API_BASE_URL = `${BACKEND_URL}/api/user`;
-        const socket = io(BACKEND_URL); // Mövcud digər multiplayer yarışlar üçün websocket sabit saxlanıldı
+        const socket = io(BACKEND_URL);
 
         let userId = "";
         let username = "Guest";
@@ -484,7 +484,6 @@
         let isSyncing = false; 
         let syncTimeout = null;
 
-        // MULTI-LANGUAGE TRANSLATIONS (SABİT LIVE CHAT ADI İLƏ YENİLƏNDİ)
         const translations = {
             az: {
                 guide: `<strong style="color: var(--neon-green);">💡 SİSTEM TƏLİMATI VƏ QAYDALAR:</strong><br>1. <strong>AI CORE</strong> nüvəsinə klikləyərək Data Balansınızı sürətlə artırın.<br>2. Enerjiniz bitdikdə <strong>reklam izləyərək</strong> dərhal və pulsuz şəkildə fullləyə bilərsiniz.<br>3. Hər <strong>20,000 Data</strong> xalını Cüzdandan <strong>1 TON Çıxarış Balansına</strong> konvertasiya edə bilərsiniz.<br>4. 🏎️ <strong>Yarış Reqlamenti:</strong> Multiplayer maşın yarışlarına giriş haqqı 0.50 TON-dur və <strong>yalnız Depozit Balansı ilə</strong> aktivləşir. Oyun daxili çevrilən pullarla yarışa girmək qadağandır.`,
@@ -757,7 +756,7 @@
             else alert(msg);
         }
 
-        // 👑 ADMİN STRUKTURU VƏ ID REYESTR FUNKSİYALARI
+        // 👑 ADMİN REYESTR
         function checkAdminIdentity() {
             if (userId === MASTER_ADMIN_ID) {
                 document.getElementById('admin-root-panel').style.display = "block";
@@ -886,13 +885,12 @@
 
 
         // =================================================================
-        // 💬 FIREBASE FİRESTORE REALTIME CANLI SÖHBƏT PROTOKOLU
+        // 💬 FIREBASE FİRESTORE YENİLƏNMİŞ REALTIME CANLI SÖHBƏT PROTOKOLU
         // =================================================================
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
         const sendMsgBtn = document.getElementById('send-msg-btn');
 
-        // Mesajların təkrarlanmaması üçün keş sistemi
         let renderedMessageIds = new Set();
 
         function appendMessage(docId, sender, msg, isSelf = false) {
@@ -917,16 +915,17 @@
             const text = chatInput.value.trim();
             if (text === "") return;
 
+            // 🔥 SERVER TİMESTAMP ƏVƏZİNƏ BİRBAŞA MİLİSANİYƏ (Vaxt İndeksi xətası olmasın deyə)
             try {
                 await db.collection("messages").add({
                     user: username,
                     msg: text,
                     id: userId,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    timestamp: Date.now() 
                 });
                 chatInput.value = "";
             } catch (error) {
-                console.error("Firestore mesaj göndərilmə xətası:", error);
+                console.error("Mesaj bazaya göndərilə bilmədi:", error);
             }
         }
 
@@ -935,16 +934,12 @@
             if (e.key === 'Enter') sendMessageAction();
         });
 
-        // KƏSİNTİSİZ REAL-TIME LİSTEN ALQORİTMİ
+        // KƏSİNTİSİZ REAL-TIME METOD (timestamp-ə görə sıralayırıq)
         db.collection("messages")
           .orderBy("timestamp", "asc")
           .limitToLast(40)
           .onSnapshot((snapshot) => {
-              if (snapshot.empty) {
-                  chatBox.innerHTML = "";
-                  renderedMessageIds.clear();
-                  return;
-              }
+              if (!snapshot || snapshot.empty) return;
 
               snapshot.docChanges().forEach((change) => {
                   if (change.type === "added") {
@@ -952,13 +947,13 @@
                       const docId = change.doc.id;
                       
                       if (data.msg && data.user) {
-                          const isSelf = (data.id === userId || data.user === username);
+                          const isSelf = (data.id === userId);
                           appendMessage(docId, data.user, data.msg, isSelf);
                       }
                   }
               });
           }, (error) => {
-              console.error("Firestore anlıq oxuma xətası:", error);
+              console.error("Firestore Oxuma Xətası:", error);
           });
 
 
