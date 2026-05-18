@@ -7,6 +7,7 @@
     
     <script src="https://telegram.org/js/telegram-web-app.js?v=2.3"></script>
     <script src="https://sad.adsgram.ai/js/adsgram-api.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <style>
         :root {
@@ -229,6 +230,28 @@
             line-height: 1.5;
             color: #a0b0a8;
         }
+
+        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ */
+        .chat-panel {
+            border-color: var(--neon-blue) !important;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1) !important;
+        }
+        .chat-messages {
+            height: 160px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .msg-item { margin-bottom: 6px; word-break: break-all; line-height: 1.4; }
+        .msg-user { color: var(--neon-green); font-weight: bold; }
+        .chat-input-area { display: flex; gap: 8px; }
+        .chat-input-area input { margin-bottom: 0; text-align: left; padding: 10px; border-color: var(--neon-blue); }
+        .chat-input-area button { width: auto; margin-top: 0; padding: 0 20px; border-color: var(--neon-green); color: var(--neon-green); }
     </style>
 </head>
 <body>
@@ -266,6 +289,15 @@
 
             <div class="core-container">
                 <div class="ai-core" id="ai-core-btn">AI CORE</div>
+            </div>
+
+            <div class="cyber-panel chat-panel">
+                <h3 style="color: var(--neon-blue); text-align: left;" id="lbl-chat-title">💬 MATRIX GLOBAL CHAT</h3>
+                <div class="chat-messages" id="chat-box"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Mesajı bura daxil edin...">
+                    <button class="cyber-btn" id="send-msg-btn">SEND</button>
+                </div>
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-blue);">
@@ -340,10 +372,17 @@
             try { tg.expand(); tg.ready(); } catch(e) {}
         }
 
-        const API_BASE_URL = "https://bearbee.vercel.app/api/user";
+        const BACKEND_URL = "https://bearbee.vercel.app";
+        const API_BASE_URL = `${BACKEND_URL}/api/user`;
+        
+        // Real-Time WebSocket əlaqəsi
+        const socket = io(BACKEND_URL);
+
         let userId = "";
+        let username = "Guest";
         if (tg && tg.initDataUnsafe?.user?.id) {
             userId = tg.initDataUnsafe.user.id.toString();
+            username = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name || "User";
         } else {
             let localId = localStorage.getItem("bearbee_player_numeric_id");
             if (!localId) {
@@ -373,10 +412,11 @@
                 walletDeposit: "🔒 Depozit Balansınız (Yarış):", walletWithdrawBal: "💰 Oyun Çıxarış Balansı:", walletLogs: "Sistem Reklam Logları:",
                 depositTitle: "💸 Hesaba TON Yüklə (Depozit)", depositDesc: "Yarışlarda iştirak haqqı üçün bildiriş göndərin.", depositSend: "Ödəniş Sorğusunu Adminə Göndər 🧾",
                 swapAction: "🔄 DATA -> 1 TON ÇEVİR", withdrawTitle: "Vəsait Çıxarılışı", placeholderWallet: "TON cüzdan ünvanınız", withdrawAction: "Çıxarış Tələb Et (Min. 5 TON)",
-                alertAdWatched: "📺 Reklam izlənildi! +100 Data əlavə olundu.", alertAdEnergy: "⚡ Reklam izlənildi! Enerjiniz 100/100 tamamilə bərpa olundu.", alertAdFail: "Mükafat üçün videonu sonadək izləməlisiniz.", alertAdBusy: "⚠️ Reklam provayderi məşğuldur. Bir az sonra yenidən klikləyin.",
+                alertAdWatched: "📺 Reklam izlənildi! +100 Data əlavə olundu.", alertAdEnergy: "⚡ Reklam izlənildi! Enerjiniz 100/100 tamabilitə bərpa olundu.", alertAdFail: "Mükafat üçün videonu sonadək izləməlisiniz.", alertAdBusy: "⚠️ Reklam provayderi məşğuldur. Bir az sonra yenidən klikləyin.",
                 alertEnergyEmpty: "🔋 Kvant enerjiniz bitib! Reklam izləyərək pulsuz doldurun.", alertNoTon: "Kifayət qədər TON yoxdur.", alertTaskDone: "+500 Data yazıldı.", alertNoData: "Minimum 20,000 Data lazımdır.", alertSwapDone: "🔄 1 TON Çıxarış balansınıza əlavə edildi!",
                 alertRaceError: "❌ Yarışa daxil olmaq üçün balansınızda 0.50 TON Depozit pulu olmalıdır! Reklamlardan qazanılan balans burada keçərli deyil.", alertDepositSent: "🧾 Depozit sorğunuz admin panelə ötürüldü! Təsdiqdən sonra yarış balansınız yenilənəcək.",
-                alertInpWallet: "Cüzdan ünvanını daxil edin.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Çıxarış sorğusu göndərildi!", alertRaceEnd: "🏎️ Yarış başa çatdı! Balansınıza +{amt} Data əlavə edildi."
+                alertInpWallet: "Cüzdan ünvanını daxil edin.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Çıxarış sorğusu göndərildi!", alertRaceEnd: "🏎️ Yarış başa çatdı! Balansınıza +{amt} Data əlavə edildi.",
+                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Mesajı bura daxil edin..."
             },
             en: {
                 guide: `<strong style="color: var(--neon-green);">💡 SYSTEM GUIDE & RULES:</strong><br>1. Click on the <strong>AI CORE</strong> to quickly increase your Data Balance.<br>2. When out of energy, <strong>watch an ad</strong> to refill instantly and for free.<br>3. Convert every <strong>20,000 Data</strong> into <strong>1 TON Withdrawal Balance</strong> from the Wallet.<br>4. 🏎️ <strong>Race Regulation:</strong> Entry fee for multiplayer races is 0.50 TON and is <strong>valid ONLY via Deposit Balance</strong>. Entering with converted game money is forbidden.`,
@@ -394,7 +434,8 @@
                 alertAdWatched: "📺 Ad watched! +100 Data added.", alertAdEnergy: "⚡ Ad watched! Energy completely refilled to 100/100.", alertAdFail: "You must watch the video until the end for the reward.", alertAdBusy: "⚠️ Ad provider is busy. Please click again in a moment.",
                 alertEnergyEmpty: "🔋 Your quantum energy is depleted! Refill for free by watching an ad.", alertNoTon: "Not enough TON.", alertTaskDone: "+500 Data credited.", alertNoData: "Minimum 20,000 Data required.", alertSwapDone: "🔄 1 TON added to your withdrawal balance!",
                 alertRaceError: "❌ You must have 0.50 TON Deposit funds in your balance to enter the race! Game-converted balances are not valid here.", alertDepositSent: "🧾 Your deposit request has been sent to the admin panel! Your race balance will update after confirmation.",
-                alertInpWallet: "Please enter your wallet address.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Withdrawal request submitted!", alertRaceEnd: "🏎️ Race finished! +{amt} Data added to your balance."
+                alertInpWallet: "Please enter your wallet address.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Withdrawal request submitted!", alertRaceEnd: "🏎️ Race finished! +{amt} Data added to your balance.",
+                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Type message here..."
             },
             ru: {
                 guide: `<strong style="color: var(--neon-green);">💡 ИНСТРУКЦИЯ И ПРАВИЛА:</strong><br>1. Кликайте по <strong>AI CORE</strong>, чтобы быстро увеличить баланс данных.<br>2. Когда закончится энергия, <strong>посмотрите рекламу</strong>, чтобы мгновенно и бесплатно пополнить её.<br>3. Каждые <strong>20,000 Data</strong> можно конвертировать в <strong>1 TON баланса для вывода</strong> в Кошельке.<br>4. 🏎️ <strong>Регламент гонок:</strong> Вход в мультиплеерные гонки стоит 0.50 TON и возможен <strong>ТОЛЬКО через Депозитный баланс</strong>. Вход за игровые деньги запрещен.`,
@@ -412,7 +453,8 @@
                 alertAdWatched: "📺 Реклама просмотрена! +100 Data добавлено.", alertAdEnergy: "⚡ Реклама просмотрена! Энергия полностью восстановлена до 100/100.", alertAdFail: "Вы должны досмотреть видео до конца для получения награды.", alertAdBusy: "⚠️ Рекламный провайдер занят. Попробуйте еще раз позже.",
                 alertEnergyEmpty: "🔋 Ваша квантовая энергия истощена! Пополните бесплатно, посмотрев рекламу.", alertNoTon: "Недостаточно TON.", alertTaskDone: "+500 Data зачислено.", alertNoData: "Требуется минимум 20,000 Data.", alertSwapDone: "🔄 1 TON добавлен на ваш баланс для вывода!",
                 alertRaceError: "❌ Для участия в гонке на вашем балансе должно быть 0.50 TON Депозита! Игровой баланс здесь недействителен.", alertDepositSent: "🧾 Ваш запрос на депозит отправлен в админ-панель! Гонка-баланс обновится после подтверждения.",
-                alertInpWallet: "Пожалуйста, введите адрес кошелька.", alertMinWithdraw: "Минимум 5 TON.", alertWithdrawSent: "Запрос на вывод отправлен!", alertRaceEnd: "🏎️ Гонка завершена! +{amt} Data добавлено на ваш баланс."
+                alertInpWallet: "Пожалуйста, введите адрес кошелька.", alertMinWithdraw: "Минимум 5 TON.", alertWithdrawSent: "Запрос на вывод отправлен!", alertRaceEnd: "🏎️ Гонка завершена! +{amt} Data добавлено на ваш баланс.",
+                chatTitle: "💬 MATRIX GLOBAL CHAT", chatPlaceholder: "Введите сообщение..."
             }
         };
 
@@ -461,6 +503,10 @@
             document.getElementById('lbl-withdraw-title').innerText = l.withdrawTitle;
             document.getElementById('inp-wallet').placeholder = l.placeholderWallet;
             document.getElementById('btn-withdraw-action').innerText = l.withdrawAction;
+            
+            // Çat dil yeniləmələri
+            document.getElementById('lbl-chat-title').innerText = l.chatTitle;
+            document.getElementById('chat-input').placeholder = l.chatPlaceholder;
             updateUI();
         }
 
@@ -615,7 +661,6 @@
                 document.getElementById('txt-energy').innerText = userStats.energy + "/100";
                 document.getElementById('fill-energy').style.width = userStats.energy + "%";
                 document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance).toFixed(2) + " TON";
-                document.getElementById('txt-deposit-main').innerText = parseFloat(userStats.deposit_balance).toFixed(2) + " TON";
                 document.getElementById('txt-deposit-wallet').innerText = parseFloat(userStats.deposit_balance).toFixed(2) + " TON";
                 document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
             } catch(e) {}
@@ -633,7 +678,6 @@
                 if (res && res.ok) {
                     let b = await res.json();
                     
-                    // Müdafiə Bloku: Buluddan gələn köhnə enerjinin lokal azalmanı üstələməsinə icazə vermirik
                     if ((parseInt(b.honey) || 0) >= userStats.honey) {
                         userStats.honey = parseInt(b.honey) || 0;
                         userStats.level = parseInt(b.level) || 1;
@@ -677,7 +721,6 @@
             } catch(e) {} finally { isSyncing = false; }
         }
 
-        // Saniyəlik bərpa alqoritmi optimallaşdırıldı (Üst-üstə minmənin qarşısı alındı)
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
@@ -685,6 +728,46 @@
                 saveToLocalStorage();
             }
         }, 5000);
+
+
+        // ==========================================
+        // 💬 WEBSOCKET CANLI SÖHBƏT ALQORİTMİ
+        // ==========================================
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendMsgBtn = document.getElementById('send-msg-btn');
+
+        function appendMessage(sender, msg) {
+            const formattedMsg = `<div class="msg-item"><span class="msg-user">@${sender}:</span> ${msg}</div>`;
+            chatBox.innerHTML += formattedMsg;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        sendMsgBtn.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (text === "") return;
+
+            appendMessage(username, text);
+
+            socket.emit('send_chat_message', {
+                user: username,
+                msg: text,
+                id: userId
+            });
+
+            chatInput.value = "";
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMsgBtn.click();
+        });
+
+        socket.on('receive_chat_message', (data) => {
+            if(data.id !== userId) { 
+                appendMessage(data.user, data.msg);
+            }
+        });
+
 
         window.onload = function() {
             changeLanguage(currentLang);
