@@ -288,7 +288,12 @@
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
-        let isSyncing = false; // Çoxlu klikləmə zamanı backend-i kilidləməmək üçün qoruyucu flag
+        let isSyncing = false; 
+
+        // Sığortalı tam ədədə çevirmə köməkçisi
+        function intValue(val) {
+            return parseInt(val) || 0;
+        }
 
         // Tab Keçid Sistemi
         function switchTab(tabId) {
@@ -312,9 +317,8 @@
         function initAdsgramSafe() {
             if (window.Adsgram) {
                 try {
-                    // 🛠️ DÜZƏLİŞ: Lokal test üçün mütləq aktiv olan rəsmi Adsgram test ID-si yazıldı
                     AdController = window.Adsgram.init({ blockHash: "3742" });
-                    printLog("Adsgram test rejimi aktivdir.");
+                    console.log("Adsgram test rejimi aktivdir.");
                 } catch(e) {
                     console.error("Adsgram init xətası:", e);
                 }
@@ -347,7 +351,6 @@
                 userStats.energy -= 1;
                 updateUI();
                 
-                // Hər 5 klikdən bir və ya enerji tam bitəndə sinxronizasiya atır
                 if (userStats.honey % 5 === 0 || userStats.energy === 0) {
                     syncToBackend();
                 }
@@ -450,10 +453,6 @@
             else alert(msg);
         }
 
-        function printLog(msg) {
-            printLog ? console.log(msg) : null;
-        }
-
         // 📥 Python-dan Məlumat Oxuma
         async function loadUserData() {
             updateUI();
@@ -468,7 +467,7 @@
                     userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                 }
             } catch(e) {
-                printLog("Lokal rejim aktivdir.");
+                console.log("Lokal rejim aktivdir.");
             }
             updateUI();
         }
@@ -493,15 +492,10 @@
                     })
                 });
             } catch(e) {
-                printLog("Sinxronizasiya xətası.");
+                console.log("Sinxronizasiya xətası.");
             } finally {
                 isSyncing = false;
             }
-        }
-
-        # Sığortalı tam ədədə çevirmə köməkçisi
-        function intValue(val) {
-            return parseInt(val) || 0;
         }
 
         // Enerji bərpa dövrü (Hər 5 saniyədə +1)
