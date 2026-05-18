@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Grid - Kiber Yarış</title>
+    <title>Bearbee Cyber Race - Track</title>
+    
     <script src="https://telegram.org/js/telegram-web-app.js?v=2.3"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
     <style>
         :root {
             --neon-green: #00ff66;
@@ -26,315 +29,256 @@
             background-color: var(--dark-bg);
             color: #ffffff;
             font-family: 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        #game-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            height: 100vh;
-            background: #0a0f0d;
-            border-left: 2px solid var(--neon-blue);
-            border-right: 2px solid var(--neon-blue);
-            display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 15px;
         }
 
         /* Üst Panel */
-        #ui-panel {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.8);
-            border-bottom: 1px solid var(--neon-blue);
-            font-weight: bold;
+        .race-header {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(10, 20, 15, 0.95);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .room-title {
             font-size: 14px;
+            color: var(--neon-gold);
             text-transform: uppercase;
             letter-spacing: 1px;
-            z-index: 10;
+            margin-bottom: 4px;
         }
 
-        #ui-panel span {
-            color: var(--neon-green);
-            text-shadow: 0 0 5px rgba(0, 255, 102, 0.5);
+        .race-status {
+            font-size: 12px;
+            color: #aaa;
         }
 
-        /* Oyun Sahəsi */
-        canvas {
-            flex: 1;
+        /* Oyun Sahəsi (Yarış Yolu) */
+        .canvas-container {
             width: 100%;
-            background: linear-gradient(to bottom, #07110e, #020504);
-        }
-
-        /* İdarəetmə Düymələri */
-        #controls {
-            display: flex;
-            width: 100%;
-            height: 80px;
-            background: rgba(0, 0, 0, 0.9);
-            border-top: 1px solid var(--neon-blue);
-            z-index: 10;
-        }
-
-        .control-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--neon-blue);
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            outline: none;
-            transition: background 0.1s;
-        }
-
-        .control-btn:active {
-            background: rgba(0, 255, 255, 0.1);
-            color: var(--neon-green);
-        }
-
-        /* Oyun Bitdi Ekranı */
-        #game-over-screen {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 10, 8, 0.95);
-            z-index: 20;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-
-        #game-over-screen h1 {
-            color: var(--neon-red);
-            font-size: 36px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
-            text-transform: uppercase;
-        }
-
-        .final-stat {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #ccc;
-        }
-        .final-stat span {
-            color: var(--neon-gold);
-            font-weight: bold;
-        }
-
-        .cyber-btn {
-            margin-top: 25px;
-            padding: 15px 40px;
-            background: #000;
+            max-width: 480px;
+            background: #111;
             border: 2px solid var(--neon-green);
-            color: var(--neon-green);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            background: #141916;
+        }
+
+        /* İdarəetmə Düyməsi */
+        .control-panel {
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 20px;
+        }
+
+        .gas-btn {
+            width: 100%;
+            padding: 25px;
+            background: linear-gradient(180deg, #00ff66 0%, #003311 100%);
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 20px;
             font-weight: bold;
             text-transform: uppercase;
-            border-radius: 8px;
+            border-radius: 14px;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 255, 102, 0.4);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            transition: transform 0.05s;
+            touch-action: manipulation;
         }
-        .cyber-btn:active {
-            transform: scale(0.98);
-            background: rgba(0, 255, 102, 0.1);
+
+        .gas-btn:active {
+            transform: scale(0.96);
+            background: linear-gradient(180deg, #00cc52 0%, #001a09 100%);
+        }
+
+        .gas-btn:disabled {
+            background: #333 !important;
+            border-color: #555;
+            color: #777;
+            box-shadow: none;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="ui-panel">
-            <div>Otaq: <span id="room-id">0000</span></div>
-            <div>Məsafə: <span id="score-val">0m</span></div>
-        </div>
+    <div class="race-header">
+        <div class="room-title" id="room-lbl">KİBER ÖTÜŞMƏ // OTAQ: ----</div>
+        <div class="race-status" id="status-lbl">Sistem yüklənir, gözləyin...</div>
+    </div>
 
-        <canvas id="gameCanvas"></canvas>
+    <div class="canvas-container">
+        <canvas id="raceCanvas" width="480" height="320"></canvas>
+    </div>
 
-        <div id="controls">
-            <button class="control-btn" id="left-btn">◀</button>
-            <button class="control-btn" id="right-btn">▶</button>
-        </div>
-
-        <div id="game-over-screen">
-            <h1>Sistem Çökdü</h1>
-            <p style="color: #777; font-size: 13px;">Kiber maneəyə çırpıldınız!</p>
-            <div class="final-stat">Yarış Məsafəsi: <span id="final-score">0m</span></div>
-            <div class="final-stat">Qazanılan Data: <span id="final-reward">+150 Data</span></div>
-            <button class="cyber-btn" onclick="goBackToEmpire()">Geri Dön 🐝</button>
-        </div>
+    <div class="control-panel">
+        <button class="gas-btn" id="gas-pedal" disabled>QAZA BAS 🏎️</button>
     </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // URL-dən Otaq ID-ni çəkirik (?room=1234)
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room') || Math.floor(1000 + Math.random() * 9000);
-        document.getElementById("room-id").innerText = roomId;
-
-        // Ekran ölçülərinə uyğunlaşdırma
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight - 145; // Panel və düymələri çıxırıq
-        }
-        resizeCanvas();
-
-        // Oyun Dəyişənləri
-        let gameActive = true;
-        let score = 0;
-        let speed = 4;
+        let tg = window.Telegram?.WebApp || null;
         
-        // Oyunçu Maşını
-        const player = {
-            x: canvas.width / 2 - 20,
-            y: canvas.height - 90,
-            width: 40,
-            height: 70,
-            speed: 5
+        // ⚠️ CANLIYA ÇIXARDIQDAN SONRA BU URL-İ ÖZ RENDER/RAILWAY KEÇİDİNİZLƏ DƏYİŞİN!
+        const BACKEND_URL = "https://bearbee.vercel.app";
+        const socket = io(BACKEND_URL);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room') || 'test_room';
+        let userId = urlParams.get('userId');
+        
+        if (!userId && tg && tg.initDataUnsafe?.user?.id) {
+            userId = tg.initDataUnsafe.user.id.toString();
+        } else if (!userId) {
+            userId = "player_" + Math.floor(Math.random() * 100000);
+        }
+
+        document.getElementById('room-lbl').innerText = `KİBER ÖTÜŞMƏ // OTAQ: ${roomId.replace('cyber_room_', '')}`;
+
+        const canvas = document.getElementById('raceCanvas');
+        const ctx = canvas.getContext('2d');
+        const gasBtn = document.getElementById('gas-pedal');
+        const statusLbl = document.getElementById('status-lbl');
+
+        let raceState = {
+            gameActive: false,
+            countdown: 3,
+            players: {}
         };
 
-        // Rəqib Maşınlar / Maneələr
-        let enemies = [];
-        const enemyColors = [window.getComputedStyle(document.documentElement).getPropertyValue('--neon-red').trim(), 
-                             window.getComputedStyle(document.documentElement).getPropertyValue('--neon-gold').trim()];
+        const laneColors = ["#00ff66", "#00ffff", "#ff0055", "#ffcc00"];
 
-        function spawnEnemy() {
-            if (!gameActive) return;
-            let lanes = [canvas.width * 0.15, canvas.width * 0.45, canvas.width * 0.75];
-            let randomLane = lanes[Math.floor(Math.random() * lanes.length)];
-            
-            enemies.push({
-                x: randomLane - 20,
-                y: -80,
-                width: 40,
-                height: 70,
-                color: enemyColors[Math.floor(Math.random() * enemyColors.length)]
-            });
-            
-            // Sürəti tədricən artırırıq
-            if (speed < 12) speed += 0.2;
+        // Otağa daxil oluruq
+        socket.emit('join_race_track', { room: roomId, userId: userId });
 
-            setTimeout(spawnEnemy, Math.random() * 1000 + 800);
-        }
-        spawnEnemy();
-
-        // Düymə İdarəetməsi (Mobil üçün toxunuşlar)
-        let moveLeft = false;
-        let moveRight = false;
-
-        document.getElementById("left-btn").addEventListener("touchstart", (e) => { e.preventDefault(); moveLeft = true; });
-        document.getElementById("left-btn").addEventListener("touchend", () => moveLeft = false);
-        document.getElementById("right-btn").addEventListener("touchstart", (e) => { e.preventDefault(); moveRight = true; });
-        document.getElementById("right-btn").addEventListener("touchend", () => moveRight = false);
-
-        // Kompüter testi üçün klaviatura düymələri
-        window.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft") moveLeft = true;
-            if (e.key === "ArrowRight") moveRight = true;
-        });
-        window.addEventListener("keyup", (e) => {
-            if (e.key === "ArrowLeft") moveLeft = false;
-            if (e.key === "ArrowRight") moveRight = false;
+        socket.on('race_state_update', (serverState) => {
+            raceState.players = serverState.players;
+            drawTrack();
         });
 
-        // Toqquşma Alqoritmi
-        function checkCollision(rect1, rect2) {
-            return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
+        // Geri sayım
+        socket.on('race_countdown', (count) => {
+            raceState.countdown = count;
+            if (count > 0) {
+                statusLbl.innerText = `Hazırlaşın! Yarışın başlamasına: ${count}`;
+            } else {
+                statusLbl.innerText = `YARIŞ BAŞLADI! SÜRÜN! 🏁`;
+                raceState.gameActive = true;
+                gasBtn.disabled = false;
+            }
+            drawTrack();
+        });
+
+        // Klikləmə/Toxunma hadisələri
+        gasBtn.addEventListener('touchstart', (e) => { e.preventDefault(); pushCar(); });
+        gasBtn.addEventListener('click', (e) => { e.preventDefault(); pushCar(); });
+
+        function pushCar() {
+            if (!raceState.gameActive) return;
+            socket.emit('gas_press', { room: roomId, userId: userId });
         }
 
-        // Əsas Oyun Dövrü (Game Loop)
-        function update() {
-            if (!gameActive) return;
+        // Yarış bitdikdə
+        socket.on('race_finished', (data) => {
+            raceState.gameActive = false;
+            gasBtn.disabled = true;
+            
+            if (data.winnerId === userId) {
+                statusLbl.innerText = `🏆 TƏBRİKLƏR! SİZ QALİB GƏLDİNİZ! (+1000 Data)`;
+                localStorage.setItem("race_bonus_reward", "1000");
+            } else {
+                statusLbl.innerText = `Finiş! Qalib: @${data.winnerName}. Siz uduzdunuz.`;
+            }
 
+            // 4 saniyə sonra əsas səhifəyə qaytarırıq
+            setTimeout(() => {
+                window.location.href = "index.html"; 
+            }, 4000);
+        });
+
+        // Kanvas üzərində vizualların çəkilməsi
+        function drawTrack() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Neon Yol Cizgilərinin animasiyası
-            ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
-            ctx.lineWidth = 2;
-            ctx.setLineDash([20, 20]);
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.33, 0); ctx.lineTo(canvas.width * 0.33, canvas.height);
-            ctx.moveTo(canvas.width * 0.66, 0); ctx.lineTo(canvas.width * 0.66, canvas.height);
-            ctx.stroke();
-
-            // Oyunçunun Hərəkəti
-            if (moveLeft && player.x > 10) player.x -= player.speed;
-            if (moveRight && player.x < canvas.width - player.width - 10) player.x += player.speed;
-
-            // Oyunçu Maşınının Çəkilməsi (Neon Göy)
-            ctx.fillStyle = "#00ffff";
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "#00ffff";
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            const laneHeight = canvas.height / 4;
             
-            // Farlar
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(player.x + 5, player.y, 8, 5);
-            ctx.fillRect(player.x + player.width - 13, player.y, 8, 5);
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = i % 2 === 0 ? "#141916" : "#1a211d";
+                ctx.fillRect(0, i * laneHeight, canvas.width, laneHeight);
+                
+                ctx.strokeStyle = "rgba(255,255,255,0.08)";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(0, i * laneHeight, canvas.width, laneHeight);
 
-            // Maneələrin Yenilənməsi
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                enemies[i].y += speed;
-
-                // Maneə Maşının Çəkilməsi
-                ctx.fillStyle = enemies[i].color;
-                ctx.shadowColor = enemies[i].color;
-                ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
-
-                // Toqquşma yoxlaması
-                if (checkCollision(player, enemies[i])) {
-                    endGame();
-                }
-
-                // Ekrandan çıxan maneələri silirik və xal yazırıq
-                if (enemies[i].y > canvas.height) {
-                    enemies.splice(i, 1);
-                    score += 10;
-                    document.getElementById("score-val").innerText = score + "m";
+                // Dama-dama finiş xətti
+                let finishX = canvas.width - 40;
+                ctx.fillStyle = "#fff";
+                for (let j = 0; j < laneHeight; j += 10) {
+                    if ((i + j/10) % 2 === 0) {
+                        ctx.fillRect(finishX, i * laneHeight + j, 10, 10);
+                        ctx.fillRect(finishX + 20, i * laneHeight + j, 10, 10);
+                    } else {
+                        ctx.fillRect(finishX + 10, i * laneHeight + j, 10, 10);
+                    }
                 }
             }
 
-            // Kölgə effektini sıfırlayırıq ki, digər elementlər donmasın
-            ctx.shadowBlur = 0;
+            // Maşınları zolaqlar üzrə çəkmək
+            let index = 0;
+            for (let sId in raceState.players) {
+                let p = raceState.players[sId];
+                let yPos = (index * laneHeight) + (laneHeight / 2);
 
-            requestAnimationFrame(update);
+                ctx.fillStyle = laneColors[index] || "#ffffff";
+                let xPos = (p.x / 100) * (canvas.width - 80); 
+
+                ctx.fillRect(xPos + 10, yPos - 12, 35, 24); 
+                
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(xPos + 40, yPos - 10, 5, 4);
+                ctx.fillRect(xPos + 40, yPos + 6, 5, 4);
+
+                ctx.fillStyle = "#888";
+                ctx.font = "10px sans-serif";
+                ctx.fillText(p.name || "Player", xPos + 10, yPos - 18);
+
+                index++;
+            }
+
+            // Ekrandakı böyük geri sayım
+            if (raceState.countdown > 0) {
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "#ffcc00";
+                ctx.font = "bold 50px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(raceState.countdown, canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = "start"; 
+                ctx.textBaseline = "alphabetic"; 
+            }
         }
 
-        // Oyunu Bitirmək
-        function endGame() {
-            gameActive = false;
-            document.getElementById("game-over-screen").style.display = "flex";
-            document.getElementById("final-score").innerText = score + "m";
-            
-            // Məsafəyə görə bonus xal hesablanması
-            let rewardData = Math.floor(score * 1.5) + 50; 
-            document.getElementById("final-reward").innerText = `+${rewardData} Data`;
-
-            // Mükafatı müvəqqəti olaraq yaddaşda saxlayırıq ki, index.html bilsin
-            localStorage.setItem("race_bonus_reward", rewardData);
-        }
-
-        // Əsas imperiyaya geri qayıtmaq
-        function goBackToEmpire() {
-            window.location.href = "index.html";
-        }
-
-        // Oyunu başlat
-        requestAnimationFrame(update);
+        window.onload = () => { drawTrack(); };
     </script>
 </body>
 </html>
-
