@@ -44,12 +44,12 @@ bot.on('text', async (ctx) => {
 
     // === ADSGRAM REKLAM VƏ ENERJİ KOMANDASI ===
     if (text === '/reklam') {
-        return ctx.reply("📺 Aşağıdakı düyməyə basaraq reklam izləyə, +20 Xal və Tam Enerji qazana bilərsiniz⚡:", {
+        return ctx.reply("📺 Aşağıdakı düyməyə basaraq reklam izləyə, +20 Xal qazana və Enerjinizi Tam (100 ⚡) doldura bilərsiniz:", {
             reply_markup: {
                 inline_keyboard: [
                     [
                         {
-                            text: "🎬 Reklam İzlə (+20 Xal + ⚡Enerji)",
+                            text: "🎬 Reklam İzlə (+20 Xal + ⚡ Tam Enerji)",
                             web_app: { url: "https://bearbee.vercel.app/?tgWebAppStartParam=adsgram_test" }
                         }
                     ]
@@ -136,7 +136,7 @@ bot.on('callback_query', async (ctx) => {
     await ctx.answerCbQuery();
 });
 
-// 5. VERCEL SERVERLESS İNTEQRASİYASI VƏ ADSGRAM WEBHOOK + ENERJİ QORUMASI
+// 5. VERCEL SERVERLESS İNTEQRASİYASI VƏ ADSGRAM WEBHOOK + TAM ENERJİ (100)
 module.exports = async (req, res) => {
     try {
         // AdsGram serverlərindən backend-ə (Reward Callback) gəldikdə
@@ -145,16 +145,15 @@ module.exports = async (req, res) => {
             
             if (!userId) return res.status(400).send('Missing user_id');
 
-            // Firebase-də istifadəçinin xalını 20 xal artırırıq, 
-            // eyni zamanda enerjisini də doldururuq (Məsələn, enerjini birbaşa 500 və ya 1000-ə bərabər edə bilərsiniz)
-            // Əgər enerji limitiniz neçədirsə (örnək: 1000), 'energy' hissəsinə birbaşa o rəqəmi yaza bilərsiniz
+            // Firebase-da istifadəçinin xalını 20 vahid artırırıq, 
+            // enerjisini isə birbaşa MAKSİMUM limit olan 100-ə bərabər edirik!
             await db.collection('users').doc(userId.toString()).update({
-                points: admin.firestore.FieldValue.increment(20), // Xal +20 artır
-                energy: 1000 // Enerji tam olaraq 1000-ə doldurulur (Öz rəqəminizlə əvəzləyə bilərsiniz)
+                points: admin.firestore.FieldValue.increment(20),  // Xal +20 artır
+                energy: 100  // Enerji birbaşa 100-ə bərabər olur (Tam dolur)
             });
 
-            console.log(`AdsGram: ${userId} ID-li istifadəçiyə 20 xal verildi və enerjisi dolduruldu.`);
-            return res.status(200).json({ success: true, message: "Xal və enerji yeniləndi" });
+            console.log(`AdsGram: ${userId} ID-li istifadəçiyə 20 xal verildi və enerjisi 100-ə dolduruldu.`);
+            return res.status(200).json({ success: true, message: "Xal yeniləndi və enerji tam dolduruldu (100)" });
         }
 
         // Normal Telegram bot sorğularını qarşılayır (Webhook)
@@ -164,7 +163,7 @@ module.exports = async (req, res) => {
                 res.status(200).send('OK');
             }
         } else {
-            res.status(200).send('Bot hal-hazırda Firebase, +20 Xal və ⚡Enerji sistemi ilə aktivdir.');
+            res.status(200).send('Bot hal-hazırda Firebase, +20 Xal və 100 Maks Enerji sistemi ilə aktivdir.');
         }
     } catch (err) {
         console.error("Vercel xətası:", err);
@@ -173,3 +172,4 @@ module.exports = async (req, res) => {
         }
     }
 };
+
