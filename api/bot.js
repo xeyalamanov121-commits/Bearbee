@@ -37,11 +37,28 @@ async function sendAdminPanel(txId, transaction) {
     });
 }
 
-// 3. İSTİFADƏÇİ BOTA TXID (TEQ) GÖNDƏRDİKDƏ
+// 3. İSTİFADƏÇİ BOTA MESAJ VƏ YA KOMANDA GÖNDƏRDİKDƏ
 bot.on('text', async (ctx) => {
     const text = ctx.message.text.trim();
     const userId = ctx.from.id;
 
+    // === ADSGRAM REKLAM VƏ ENERJİ KOMANDASI ===
+    if (text === '/reklam') {
+        return ctx.reply("📺 Aşağıdakı düyməyə basaraq reklam izləyə, +20 Xal və Tam Enerji qazana bilərsiniz⚡:", {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text: "🎬 Reklam İzlə (+20 Xal + ⚡Enerji)",
+                            web_app: { url: "https://bearbee.vercel.app/?tgWebAppStartParam=adsgram_test" }
+                        }
+                    ]
+                ]
+            }
+        });
+    }
+
+    // === TRANZAKSİYA TXID PROSESİ ===
     if (text.length < 10) {
         return ctx.reply("⚠️ Lütfən düzgün bir tranzaksiya teqi (TxID) göndərin.");
     }
@@ -119,18 +136,40 @@ bot.on('callback_query', async (ctx) => {
     await ctx.answerCbQuery();
 });
 
-// 5. VERCEL SERVERLESS İNTEQRASİYASI
+// 5. VERCEL SERVERLESS İNTEQRASİYASI VƏ ADSGRAM WEBHOOK + ENERJİ QORUMASI
 module.exports = async (req, res) => {
     try {
+        // AdsGram serverlərindən backend-ə (Reward Callback) gəldikdə
+        if (req.method === 'GET' && req.query.adsgram_reward === 'true') {
+            const userId = req.query.user_id;
+            
+            if (!userId) return res.status(400).send('Missing user_id');
+
+            // Firebase-də istifadəçinin xalını 20 xal artırırıq, 
+            // eyni zamanda enerjisini də doldururuq (Məsələn, enerjini birbaşa 500 və ya 1000-ə bərabər edə bilərsiniz)
+            // Əgər enerji limitiniz neçədirsə (örnək: 1000), 'energy' hissəsinə birbaşa o rəqəmi yaza bilərsiniz
+            await db.collection('users').doc(userId.toString()).update({
+                points: admin.firestore.FieldValue.increment(20), // Xal +20 artır
+                energy: 1000 // Enerji tam olaraq 1000-ə doldurulur (Öz rəqəminizlə əvəzləyə bilərsiniz)
+            });
+
+            console.log(`AdsGram: ${userId} ID-li istifadəçiyə 20 xal verildi və enerjisi dolduruldu.`);
+            return res.status(200).json({ success: true, message: "Xal və enerji yeniləndi" });
+        }
+
+        // Normal Telegram bot sorğularını qarşılayır (Webhook)
         if (req.method === 'POST') {
             await bot.handleUpdate(req.body, res);
-            res.status(200).send('OK');
+            if (!res.writableEnded) {
+                res.status(200).send('OK');
+            }
         } else {
-            res.status(200).send('Bot hal-hazırda Firebase ilə aktivdir.');
+            res.status(200).send('Bot hal-hazırda Firebase, +20 Xal və ⚡Enerji sistemi ilə aktivdir.');
         }
     } catch (err) {
         console.error("Vercel xətası:", err);
-        res.status(500).send('Internal Server Error');
+        if (!res.writableEnded) {
+            res.status(500).send('Internal Server Error');
+        }
     }
 };
-
