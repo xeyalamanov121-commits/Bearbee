@@ -285,12 +285,10 @@
 
         const API_BASE_URL = "https://bearbee.vercel.app/api/user";
 
-        // 🆔 UNİKAL İSTİFADƏÇİ TƏYİNATI (BALANSIN İTMƏSİNİ QƏTİ ŞƏKİLDƏ ÖNLƏYİR)
         let userId = "";
         if (tg && tg.initDataUnsafe?.user?.id) {
             userId = tg.initDataUnsafe.user.id.toString();
         } else {
-            // Əgər Telegram xaricində brauzerlə açılıbsa, unikal yerli cihaz ID-si yaradırıq
             let localId = localStorage.getItem("bearbee_player_uuid");
             if (!localId) {
                 localId = "device_" + Math.floor(10000000 + Math.random() * 90000000);
@@ -301,6 +299,7 @@
 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
         let isSyncing = false; 
+        let syncTimeout = null; // Sürətli klik qoruyucusu taymeri
 
         function intValue(val) {
             return parseInt(val) || 0;
@@ -325,10 +324,8 @@
             if (window.Adsgram) {
                 try {
                     AdController = window.Adsgram.init({ blockHash: "3742" });
-                    console.log("Adsgram uğurla inteqrasiya olundu.");
-                } catch(e) {
-                    console.error("Adsgram blok xətası:", e);
-                }
+                    console.log("Adsgram hazırdır.");
+                } catch(e) {}
             }
         }
         
@@ -340,7 +337,7 @@
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI();
-                    await syncToBackend(); 
+                    triggerLazySync(); // Reklam mükafatını dərhal növbəyə salırıq
                     showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
                 }).catch((err) => {
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
@@ -351,13 +348,24 @@
             }
         }
 
+        // Tapper Mexanikası (Ağıllı Sinxronizasiya)
         function triggerTap() {
             if (userStats.energy > 0) {
                 userStats.honey += userStats.level;
                 userStats.energy -= 1;
                 updateUI();
-                syncToBackend(); 
+                
+                // Hər klikdə bazanı yormuruq, klik bitəndən sonra toplu göndəririk
+                triggerLazySync(); 
             }
+        }
+
+        // 🛡️ BAZANIN BLOKLANMASINI ÖNLƏYƏN FUNKSİYA (Debounce)
+        function triggerLazySync() {
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                syncToBackend();
+            }, 1000); // İstifadəçi klikləməyi dayandırandan 1 saniyə sonra tək bir sorğu gedir
         }
 
         const coreBtn = document.getElementById('ai-core-btn');
@@ -377,7 +385,7 @@
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.1).toFixed(2);
                 userStats.energy = 100;
                 updateUI();
-                await syncToBackend();
+                triggerLazySync();
                 showAlert("⚡ Enerjiniz bərpa olundu!");
             } else { showAlert("Kifayət qədər TON yoxdur."); }
         }
@@ -386,7 +394,7 @@
             window.open(link, "_blank");
             userStats.honey += reward;
             updateUI();
-            await syncToBackend();
+            triggerLazySync();
             showAlert(`+${reward} Data yazıldı.`);
         }
 
@@ -395,7 +403,7 @@
                 userStats.honey -= 100;
                 userStats.level += 1;
                 updateUI();
-                await syncToBackend();
+                triggerLazySync();
             } else { showAlert("100 Data lazımdır."); }
         }
 
@@ -406,7 +414,7 @@
                 let win = prizes[Math.floor(Math.random() * prizes.length)];
                 userStats.honey += win;
                 updateUI();
-                await syncToBackend();
+                triggerLazySync();
                 showAlert(`🎰 +${win} Data qazandınız!`);
             } else { showAlert("Ən azı 5 reklam izləməlisiniz."); }
         }
@@ -416,7 +424,7 @@
                 userStats.honey -= 20000;
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
                 updateUI();
-                await syncToBackend();
+                triggerLazySync();
             } else { showAlert("Minimum 20,000 Data lazımdır."); }
         }
 
@@ -424,7 +432,11 @@
             if (parseFloat(userStats.ton_balance) >= 0.30) {
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.30).toFixed(2);
                 updateUI();
+                
+                // Yarış səhifəsinə keçməzdən əvvəl məlumatları məcburi şəkildə bazaya yazırıq
+                if (syncTimeout) clearTimeout(syncTimeout);
                 await syncToBackend();
+                
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
             } else { showAlert("0.30 TON lazımdır."); }
@@ -499,6 +511,7 @@
                         reklam_baxis: intValue(userStats.reklam_baxis)
                     })
                 });
+                console.log("Bulut sinxronizasiyası uğurlu.");
             } catch(e) {
                 console.log("Sinxronizasiya xətası.");
             } finally {
@@ -515,8 +528,9 @@
 
         window.onload = function() {
             loadUserData(); 
-            setTimeout(initAdsgramSafe, 1500); 
+            setTimeout(initAdsgramSafe, 2000); 
         };
     </script>
 </body>
 </html>
+
