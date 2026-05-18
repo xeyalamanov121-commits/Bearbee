@@ -38,7 +38,7 @@
             overflow-x: hidden;
         }
 
-        /* TAB PANELİ - Klik bloklamaları tamamilə həll edildi */
+        /* TAB PANELİ - Klik sahəsi tam izolyasiya edildi */
         .tab-container {
             display: flex; 
             width: 100%;
@@ -48,7 +48,7 @@
             top: 0; 
             left: 0; 
             right: 0;
-            z-index: 9999;
+            z-index: 99999;
             box-shadow: 0 4px 20px rgba(0,0,0,0.8);
         }
 
@@ -64,6 +64,7 @@
             text-transform: uppercase;
             transition: all 0.2s;
             text-align: center;
+            outline: none;
         }
 
         .tab-btn.active {
@@ -77,7 +78,7 @@
             width: 100%;
             max-width: 480px;
             margin-top: 75px;
-            padding-bottom: 30px;
+            padding-bottom: 40px;
         }
 
         .app-section {
@@ -98,7 +99,6 @@
             padding: 20px; 
             margin-bottom: 20px;
             text-align: center;
-            position: relative;
         }
 
         h2, h3 { 
@@ -179,7 +179,6 @@
             width: 100%; 
             height: 100%; 
             background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); 
-            transition: width 0.2s linear;
         }
         
         input { 
@@ -280,17 +279,22 @@
     </div>
 
     <script>
+        // Sığortalanmış qlobal dəyişənlər
         let tg = window.Telegram?.WebApp || null;
-        if (tg) tg.expand();
+        if (tg) {
+            try {
+                tg.expand();
+                tg.ready();
+            } catch(e) {}
+        }
 
-        // Verilənlər bazası konfiqurasiyası
         const DB_URL = "https://ykfrzkcfxkgvselmtewg.supabase.co/rest/v1/users";
         const DB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZnJ6a2NmeGtndnNlbG10ZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDMzMjEsImV4cCI6MjA5NDYxOTMyMX0.V66_ZbIE2OT_VSv9l6s4Ktnt4QliB_Ay5gIBSJ4Rwbw";
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
 
-        // Tab Keçid Sistemi
+        // Tab Keçid Sistemi (İlişməni önləmək üçün funksiya qorundu)
         function switchTab(tabId) {
             try {
                 document.getElementById('game-tab').style.display = 'none';
@@ -303,35 +307,42 @@
                 document.getElementById(tabId).style.display = 'block';
                 document.getElementById('btn-' + tabId).classList.add('active');
             } catch (e) {
-                console.log("Tab keçid xətası:", e);
+                console.error("Tab keçid xətası:", e);
             }
         }
 
-        // 📺 SƏNƏ SƏRF EDƏN RESMİ ADSGRAM BLOK HASH INTEQRASIYASI (bg-5063)
-        const AdController = window.Adsgram?.init({ blockHash: "bg-5063" });
+        // Adsgram Rəsmi Blok Hash Sistemi (bg-5063)
+        let AdController = null;
+        if (window.Adsgram) {
+            try {
+                AdController = window.Adsgram.init({ blockHash: "bg-5063" });
+            } catch(e) {
+                console.error("Adsgram init xətası:", e);
+            }
+        }
         
         function watchAdsgramVideo() {
+            if (!AdController && window.Adsgram) {
+                AdController = window.Adsgram.init({ blockHash: "bg-5063" });
+            }
+
             if (AdController) {
                 AdController.show().then(async (result) => {
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI();
                     await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
-                    
-                    if(tg) tg.showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
-                    else alert("Reklam izlənildi! +100 Data əlavə olundu.");
+                    showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
                 }).catch((err) => {
-                    console.error("Reklam yüklənmədi:", err);
-                    if(tg) tg.showAlert("Mükafat qazanmaq üçün videonu tam izləməlisiniz.");
-                    else alert("Mükafat qazanmaq üçün videonu tam izləməlisiniz.");
+                    console.error("Reklam dayandı:", err);
+                    showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
                 });
             } else {
-                if(tg) tg.showAlert("⚠️ Reklam şəbəkəsi hazırda cavab vermir. Yenidən yoxlayın.");
-                else alert("⚠️ Reklam şəbəkəsi hazırda cavab vermir. Yenidən yoxlayın.");
+                showAlert("⚠️ Reklam şəbəkəsi yüklənmədi. Yenidən cəhd edin.");
             }
         }
 
-        // Tapper mexanikası (Həm klik, həm də mobil sensor sığortası ilə)
+        // Tapper Mexanikası
         function triggerTap() {
             if (userStats.energy > 0) {
                 userStats.honey += userStats.level;
@@ -343,14 +354,18 @@
             }
         }
 
-        // Sensor toxunuş xətalarını önləmək üçün Event Listener
-        document.getElementById('ai-core-btn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            triggerTap();
-        });
-        document.getElementById('ai-core-btn').addEventListener('click', (e) => {
-            triggerTap();
-        });
+        // Mobil və Web Klik Dinləyiciləri (Klik donmasını həll edir)
+        const coreBtn = document.getElementById('ai-core-btn');
+        if(coreBtn) {
+            coreBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerTap();
+            });
+            coreBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                triggerTap();
+            });
+        }
 
         async function buyPremiumEnergy() {
             if (parseFloat(userStats.ton_balance) >= 0.1) {
@@ -358,9 +373,9 @@
                 userStats.energy = 100;
                 updateUI();
                 await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance), energy: userStats.energy });
-                if(tg) tg.showAlert("⚡ Enerjiniz bərpa olundu!");
+                showAlert("⚡ Enerjiniz bərpa olundu!");
             } else { 
-                if(tg) tg.showAlert("Kifayət qədər TON balansınız yoxdur."); 
+                showAlert("Kifayət qədər TON yoxdur."); 
             }
         }
 
@@ -369,7 +384,7 @@
             userStats.honey += reward;
             updateUI();
             await syncToDatabase({ honey: userStats.honey });
-            if(tg) tg.showAlert(`+${reward} Data balansınıza yazıldı.`);
+            showAlert(`+${reward} Data yazıldı.`);
         }
 
         async function upgradeCore() {
@@ -379,7 +394,7 @@
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, level: userStats.level });
             } else { 
-                if(tg) tg.showAlert("Təkmilləşdirmə üçün 100 Data lazımdır."); 
+                showAlert("100 Data lazımdır."); 
             }
         }
 
@@ -391,9 +406,9 @@
                 userStats.honey += win;
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis });
-                if(tg) tg.showAlert(`🎰 Quantum Spin: +${win} Data qazandınız!`);
+                showAlert(`🎰 +${win} Data qazandınız!`);
             } else { 
-                if(tg) tg.showAlert("Şanslı çarxı fırlatmaq üçün ən azı 5 reklam izləməlisiniz."); 
+                showAlert("Ən azı 5 reklam izləməlisiniz."); 
             }
         }
 
@@ -404,7 +419,7 @@
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) });
             } else { 
-                if(tg) tg.showAlert("Minimum 20,000 Data lazımdır."); 
+                showAlert("Minimum 20,000 Data lazımdır."); 
             }
         }
 
@@ -416,25 +431,19 @@
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
             } else { 
-                if(tg) tg.showAlert("Yarışa qatılmaq üçün balansınızda 0.30 TON olmalıdır."); 
+                showAlert("0.30 TON lazımdır."); 
             }
         }
 
         function confirmDepositSignal() { 
-            if(tg) tg.showAlert("Ödəniş təsdiq sorğusu sistem inzibatçısına ötürüldü!"); 
+            showAlert("Sorğu adminə ötürüldü!"); 
         }
 
         function requestWithdraw() {
             let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet) { 
-                if(tg) tg.showAlert("Zəhmət olmasa TON cüzdan ünvanınızı daxil edin."); 
-                return; 
-            }
-            if(parseFloat(userStats.ton_balance) < 5.0) { 
-                if(tg) tg.showAlert("Vesait çıxarmaq üçün minimum balans 5 TON olmalıdır."); 
-                return; 
-            }
-            if(tg) tg.showAlert("Çıxarış sorğusu qəbul edildi və emal mərhələsinə göndərildi!");
+            if(!wallet) { showAlert("Cüzdan ünvanını daxil edin."); return; }
+            if(parseFloat(userStats.ton_balance) < 5.0) { showAlert("Minimum 5 TON."); return; }
+            showAlert("Çıxarış sorğusu göndərildi!");
         }
 
         function updateUI() {
@@ -446,28 +455,41 @@
                 document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance).toFixed(2) + " TON";
                 document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
             } catch(e) {
-                console.log("UI yeniləmə xətası:", e);
+                console.error("UI Yeniləmə xətası:", e);
             }
         }
 
+        // Sığortalı Bildiriş Funksiyası (Alert donmasının qarşısını alır)
+        function showAlert(msg) {
+            if (tg && tg.showAlert) {
+                tg.showAlert(msg);
+            } else {
+                alert(msg);
+            }
+        }
+
+        // Supabase-dən məlumatı sığortalı yükləmə funksiyası (Xəta olsa belə UI-ı dondurmur)
         async function loadUserData() {
+            updateUI(); // Əvvəlcə standart UI aktivləşsin
             try {
                 let res = await fetch(`${DB_URL}?user_id=eq.${userId}`, {
                     headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}` }
                 });
-                let data = await res.json();
-                if (data && data.length > 0) {
-                    let b = data[0];
-                    userStats.honey = b.honey || 0;
-                    userStats.level = b.level || 1;
-                    userStats.energy = b.energy !== undefined ? b.energy : 100;
-                    userStats.ton_balance = b.ton_balance || 0.0;
-                    userStats.reklam_baxis = b.reklam_baxis || 0;
+                if (res.ok) {
+                    let data = await res.json();
+                    if (data && data.length > 0) {
+                        let b = data[0];
+                        userStats.honey = b.honey || 0;
+                        userStats.level = b.level || 1;
+                        userStats.energy = b.energy !== undefined ? b.energy : 100;
+                        userStats.ton_balance = b.ton_balance || 0.0;
+                        userStats.reklam_baxis = b.reklam_baxis || 0;
+                    }
                 }
             } catch(e) {
-                console.log("Məlumat yükləmə xətası:", e);
+                console.error("Baza məlumatı oxunarkən xəta baş verdi, oyun lokal rejimdə davam edir:", e);
             }
-            updateUI();
+            updateUI(); // Bazadan gələn məlumatla yenilə
         }
 
         async function syncToDatabase(updates) {
@@ -482,7 +504,7 @@
                     body: JSON.stringify(updates)
                 });
             } catch(e) {
-                console.log("Baza sinxronizasiya xətası:", e);
+                console.error("Baza sinxronizasiya xətası:", e);
             }
         }
 
@@ -494,7 +516,11 @@
             }
         }, 5000);
 
-        window.onload = loadUserData;
+        // Oyun açılan kimi bu funksiya mütləq işləməlidir
+        window.onload = function() {
+            loadUserData();
+        };
     </script>
 </body>
 </html>
+
