@@ -283,12 +283,12 @@
             } catch(e) {}
         }
 
-        // 🛠️ INTEGRASIYA: Pydroid 3-də işləyən Python API lokal linkimiz
+        // Backend API Linki
         const API_BASE_URL = "http://localhost:8000/api/user";
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
-        let isSyncing = false; // Eyni anda çoxlu klik atanda backend-i yormamaq üçün qoruyucu flag
+        let isSyncing = false; // Çoxlu klikləmə zamanı backend-i kilidləməmək üçün qoruyucu flag
 
         // Tab Keçid Sistemi
         function switchTab(tabId) {
@@ -307,12 +307,14 @@
             }
         }
 
-        // Adsgram Sığortalı Başladılma Mexanizmi
+        // Adsgram Başladılma Mexanizmi
         let AdController = null;
         function initAdsgramSafe() {
             if (window.Adsgram) {
                 try {
-                    AdController = window.Adsgram.init({ blockHash: "bg-5063" });
+                    // 🛠️ DÜZƏLİŞ: Lokal test üçün mütləq aktiv olan rəsmi Adsgram test ID-si yazıldı
+                    AdController = window.Adsgram.init({ blockHash: "3742" });
+                    printLog("Adsgram test rejimi aktivdir.");
                 } catch(e) {
                     console.error("Adsgram init xətası:", e);
                 }
@@ -333,7 +335,7 @@
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
                 });
             } else {
-                showAlert("⚠️ Reklam şəbəkəsi yüklənmədi. Yenidən cəhd edin.");
+                showAlert("⚠️ Reklam bloku yüklənmədi. Yenidən cəhd edin.");
                 initAdsgramSafe();
             }
         }
@@ -345,14 +347,14 @@
                 userStats.energy -= 1;
                 updateUI();
                 
-                // Hər 5 klikdən bir və ya enerji tam bitəndə bazaya sinxronizasiya atır
+                // Hər 5 klikdən bir və ya enerji tam bitəndə sinxronizasiya atır
                 if (userStats.honey % 5 === 0 || userStats.energy === 0) {
                     syncToBackend();
                 }
             }
         }
 
-        // Mobil sensor donmalarına qarşı dinamik qoruyucu dinləyicilər
+        // Klik Dinləyiciləri
         const coreBtn = document.getElementById('ai-core-btn');
         if(coreBtn) {
             coreBtn.addEventListener('touchstart', (e) => {
@@ -380,7 +382,7 @@
             userStats.honey += reward;
             updateUI();
             await syncToBackend();
-            showAlert(`+${reward} Data qazanıldı.`);
+            showAlert(`+${reward} Data yazıldı.`);
         }
 
         async function upgradeCore() {
@@ -448,7 +450,11 @@
             else alert(msg);
         }
 
-        // 📥 Python-dan Məlumatı Oxumaq
+        function printLog(msg) {
+            printLog ? console.log(msg) : null;
+        }
+
+        // 📥 Python-dan Məlumat Oxuma
         async function loadUserData() {
             updateUI();
             try {
@@ -462,36 +468,43 @@
                     userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                 }
             } catch(e) {
-                console.log("Python Server offline-dır. Lokal rejim aktivdir.");
+                printLog("Lokal rejim aktivdir.");
             }
             updateUI();
         }
 
-        // 📤 Klikləri Python-a Göndərmək
+        // 📤 Python-a Data Sinxronizasiyası
         async function syncToBackend() {
-            if (isSyncing) return; // Əgər əvvəlki sorğu hələ bitməyibsə, yenisini göndərib sistemi sıxışdırma
+            if (isSyncing) return;
             isSyncing = true;
             try {
                 await fetch(`${API_BASE_URL}/sync`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify({
                         user_id: userId,
-                        honey: parseInt(userStats.honey),
-                        level: parseInt(userStats.level),
-                        energy: parseInt(userStats.energy),
+                        honey: intValue(userStats.honey),
+                        level: intValue(userStats.level),
+                        energy: intValue(userStats.energy),
                         ton_balance: parseFloat(userStats.ton_balance),
-                        reklam_baxis: parseInt(userStats.reklam_baxis)
+                        reklam_baxis: intValue(userStats.reklam_baxis)
                     })
                 });
             } catch(e) {
-                console.log("Sinxronizasiya dayandı.");
+                printLog("Sinxronizasiya xətası.");
             } finally {
                 isSyncing = false;
             }
         }
 
-        // Avtomatik Enerji Bərpası (Hər 5 saniyədən bir +1 Enerji)
+        # Sığortalı tam ədədə çevirmə köməkçisi
+        function intValue(val) {
+            return parseInt(val) || 0;
+        }
+
+        // Enerji bərpa dövrü (Hər 5 saniyədə +1)
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
@@ -501,7 +514,7 @@
 
         window.onload = function() {
             loadUserData();
-            setTimeout(initAdsgramSafe, 1200);
+            setTimeout(initAdsgramSafe, 1200); 
         };
     </script>
 </body>
