@@ -208,7 +208,7 @@
             background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); 
         }
         
-        input { 
+        input, select { 
             width: 100%; 
             padding: 12px; 
             background: #000; 
@@ -252,9 +252,42 @@
         .chat-input-area { display: flex; gap: 8px; }
         .chat-input-area input { margin-bottom: 0; text-align: left; padding: 10px; border-color: var(--neon-blue); }
         .chat-input-area button { width: auto; margin-top: 0; padding: 0 20px; border-color: var(--neon-green); color: var(--neon-green); }
+
+        /* 👑 ROOT ADMİN PANEL STİLİ */
+        #admin-root-panel {
+            display: none;
+            border: 2px solid var(--neon-red);
+            background: #120307;
+            padding: 20px;
+            margin-top: 80px;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
+        }
     </style>
 </head>
 <body>
+
+    <div id="admin-root-panel">
+        <h2 style="color: var(--neon-red); text-align: center;">👑 BEAR_BEE ROOT ADMİN PANEL</h2>
+        <p style="font-size: 11px; color: #888; text-align: center; margin-bottom: 15px;">Cihaz Doğrulaması Aktivdir // ID: 8591374417</p>
+        
+        <label style="color: var(--neon-gold); font-size: 13px; display:block; margin-bottom:5px; text-align: left; font-weight: bold;">Sistemdə Qeydə Alınan ID-lər:</label>
+        <select id="adm-user-list">
+            <option value="">-- Bir İstifadəçi Seçin --</option>
+        </select>
+
+        <button class="cyber-btn" style="border-color: var(--neon-blue); color: var(--neon-blue); padding:10px; margin-top: 0; margin-bottom:15px;" onclick="refreshAdminUserList()">🔄 ID Siyahısını Yenilə</button>
+
+        <div style="border: 1px solid rgba(255,0,85,0.2); padding: 15px; border-radius: 8px; background: #000;">
+            <h4 style="color:#fff; margin-bottom: 12px; font-size:14px; text-transform:uppercase; text-align: center;">⚙️ Seçilən ID-nin Balansını Dəyiş</h4>
+            <input type="number" id="adm-data-val" placeholder="Yeni Data Balansı">
+            <input type="number" step="0.1" id="adm-dep-val" placeholder="Yeni Depozit TON">
+            <input type="number" step="0.1" id="adm-with-val" placeholder="Yeni Çıxarış TON">
+            <button class="cyber-btn danger" onclick="executeAdminEdit()">YADDAŞDA VƏ BAZADA YENİLƏ</button>
+        </div>
+    </div>
 
     <div class="tab-container">
         <button id="btn-game-tab" class="tab-btn active" onclick="switchTab('game-tab')">🐝 Tapper</button>
@@ -367,6 +400,9 @@
     </div>
 
     <script>
+        // MASTER ADMİN DOĞRULAMA ID-Sİ
+        const MASTER_ADMIN_ID = "8591374417";
+
         let tg = window.Telegram?.WebApp || null;
         if (tg) {
             try { tg.expand(); tg.ready(); } catch(e) {}
@@ -374,8 +410,6 @@
 
         const BACKEND_URL = "https://bearbee.vercel.app";
         const API_BASE_URL = `${BACKEND_URL}/api/user`;
-        
-        // Real-Time WebSocket əlaqəsi
         const socket = io(BACKEND_URL);
 
         let userId = "";
@@ -449,7 +483,7 @@
                 multiRaceTitle: "Neon Grid Мультиплеер", raceFee: "Входной тариф:", raceWarning: "Внимание: Гонки запускаются не с игрового баланса, а только с депозитного.",
                 walletDeposit: "🔒 Ваш депозит (Для гонок):", walletWithdrawBal: "💰 Игровой баланс (Вывод):", walletLogs: "Системные логи рекламы:",
                 depositTitle: "💸 Пополнить TON (Депозит)", depositDesc: "Отправьте уведомление для оплаты участия в гонках.", depositSend: "Отправить запрос админу 🧾",
-                swapAction: "🔄 ОБМЕНЯТЬ DATA -> 1 TON", withdrawTitle: "Вывод Средств", placeholderWallet: "Ваш TON кошелек", withdrawAction: "Запросить вывод (Мин. 5 TON)",
+                swapAction: "🔄 ОБМЕНЯТЬ DATA -> 1 TON", withdrawTitle: "Вывод Средств", placeholderWallet: "Ваш TON кошелек", withdrawAction: "Запросить вывод (Минимум 5 TON)",
                 alertAdWatched: "📺 Реклама просмотрена! +100 Data добавлено.", alertAdEnergy: "⚡ Реклама просмотрена! Энергия полностью восстановлена до 100/100.", alertAdFail: "Вы должны досмотреть видео до конца для получения награды.", alertAdBusy: "⚠️ Рекламный провайдер занят. Попробуйте еще раз позже.",
                 alertEnergyEmpty: "🔋 Ваша квантовая энергия истощена! Пополните бесплатно, посмотрев рекламу.", alertNoTon: "Недостаточно TON.", alertTaskDone: "+500 Data зачислено.", alertNoData: "Требуется минимум 20,000 Data.", alertSwapDone: "🔄 1 TON добавлен на ваш баланс для вывода!",
                 alertRaceError: "❌ Для участия в гонке на вашем балансе должно быть 0.50 TON Депозита! Игровой баланс здесь недействителен.", alertDepositSent: "🧾 Ваш запрос на депозит отправлен в админ-панель! Гонка-баланс обновится после подтверждения.",
@@ -504,7 +538,6 @@
             document.getElementById('inp-wallet').placeholder = l.placeholderWallet;
             document.getElementById('btn-withdraw-action').innerText = l.withdrawAction;
             
-            // Çat dil yeniləmələri
             document.getElementById('lbl-chat-title').innerText = l.chatTitle;
             document.getElementById('chat-input').placeholder = l.chatPlaceholder;
             updateUI();
@@ -671,8 +704,76 @@
             else alert(msg);
         }
 
+        // 👑 ADMİN STRUKTURU VƏ ID REYESTR FUNKSİYALARI
+        function checkAdminIdentity() {
+            if (userId === MASTER_ADMIN_ID) {
+                document.getElementById('admin-root-panel').style.display = "block";
+                refreshAdminUserList();
+            }
+        }
+
+        function saveUserIdToGlobalRegistry(id) {
+            let list = JSON.parse(localStorage.getItem("bearbee_global_user_ids") || "[]");
+            if (!list.includes(id)) {
+                list.push(id);
+                localStorage.setItem("bearbee_global_user_ids", JSON.stringify(list));
+            }
+        }
+
+        function refreshAdminUserList() {
+            let select = document.getElementById('adm-user-list');
+            select.innerHTML = '<option value="">-- Bir İstifadəçi Seçin --</option>';
+            let list = JSON.parse(localStorage.getItem("bearbee_global_user_ids") || "[]");
+            
+            list.forEach(id => {
+                let opt = document.createElement('option');
+                opt.value = id; opt.innerText = `İstifadəçi ID: ${id}`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function executeAdminEdit() {
+            let targetId = document.getElementById('adm-user-list').value;
+            if(!targetId) { showAlert("Zəhmət olmasa siyahıdan bir ID seçin!"); return; }
+
+            let newData = document.getElementById('adm-data-val').value;
+            let newDep = document.getElementById('adm-dep-val').value;
+            let newWith = document.getElementById('adm-with-val').value;
+
+            let targetKey = `bearbee_stats_${targetId}`;
+            let targetStats = JSON.parse(localStorage.getItem(targetKey) || '{"honey":0,"level":1,"energy":100,"ton_balance":0.0,"deposit_balance":0.0,"reklam_baxis:0"}');
+
+            if(newData !== "") targetStats.honey = parseInt(newData);
+            if(newDep !== "") targetStats.deposit_balance = parseFloat(newDep);
+            if(newWith !== "") targetStats.ton_balance = parseFloat(newWith);
+
+            localStorage.setItem(targetKey, JSON.stringify(targetStats));
+
+            try {
+                await fetch(`${API_BASE_URL}/sync`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: targetId,
+                        honey: parseInt(targetStats.honey),
+                        level: parseInt(targetStats.level) || 1,
+                        energy: parseInt(targetStats.energy) || 100,
+                        ton_balance: parseFloat(targetStats.ton_balance),
+                        deposit_balance: parseFloat(targetStats.deposit_balance),
+                        reklam_baxis: parseInt(targetStats.reklam_baxis) || 0
+                    })
+                });
+                showAlert(`ID: ${targetId} uğurla yeniləndi!`);
+            } catch(e) { showAlert("Backend sinxronizasiya xətası."); }
+
+            if(targetId === userId) { userStats = targetStats; updateUI(); }
+        }
+
         async function loadUserData() {
             loadFromLocalStorage(); updateLanguageUI();
+            if(userId !== MASTER_ADMIN_ID) {
+                saveUserIdToGlobalRegistry(userId);
+            }
             try {
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
@@ -698,6 +799,7 @@
                     saveToLocalStorage();
                 }
             } catch(e) {}
+            checkAdminIdentity();
             updateLanguageUI();
         }
 
@@ -777,3 +879,4 @@
     </script>
 </body>
 </html>
+
