@@ -37,6 +37,36 @@
             overflow-x: hidden;
         }
 
+        /* LANG PANEL */
+        .lang-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            max-width: 480px;
+            padding: 10px 20px;
+            margin-top: 75px;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            color: #a0b0a8;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            border-color: var(--neon-green);
+            color: #fff;
+            background: rgba(0, 255, 102, 0.15);
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+        }
+
         /* TAB PANELİ */
         .tab-container {
             display: flex; 
@@ -76,7 +106,7 @@
         .main-content {
             width: 100%;
             max-width: 480px;
-            margin-top: 75px;
+            margin-top: 0px;
             padding-bottom: 40px;
         }
 
@@ -187,25 +217,52 @@
             margin-bottom: 15px; 
             text-align: center; 
         }
+
+        .guide-box {
+            background: rgba(0, 255, 102, 0.03);
+            border: 1px dashed rgba(0, 255, 102, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #a0b0a8;
+        }
     </style>
 </head>
 <body>
 
     <div class="tab-container">
         <button id="btn-game-tab" class="tab-btn active" onclick="switchTab('game-tab')">🐝 Tapper</button>
-        <button id="btn-task-tab" class="tab-btn" onclick="switchTab('task-tab')">📊 Tapşırıqlar</button>
-        <button id="btn-race-tab" class="tab-btn" onclick="switchTab('race-tab')">🏎️ Kiber Yarış</button>
-        <button id="btn-wallet-tab" class="tab-btn" onclick="switchTab('wallet-tab')">💎 Cüzdan</button>
+        <button id="btn-task-tab" class="tab-btn" onclick="switchTab('task-tab')">📊 <span id="lbl-tab-tasks">Tapşırıqlar</span></button>
+        <button id="btn-race-tab" class="tab-btn" onclick="switchTab('race-tab')">🏎️ <span id="lbl-tab-race">Kiber Yarış</span></button>
+        <button id="btn-wallet-tab" class="tab-btn" onclick="switchTab('wallet-tab')">💎 <span id="lbl-tab-wallet">Cüzdan</span></button>
+    </div>
+
+    <div class="lang-container">
+        <button id="lang-az" class="lang-btn active" onclick="changeLanguage('az')">AZ</button>
+        <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')">EN</button>
+        <button id="lang-ru" class="lang-btn" onclick="changeLanguage('ru')">RU</button>
     </div>
 
     <div class="main-content">
 
         <div id="game-tab" class="app-section active">
+            <div class="guide-box" id="guide-text">
+                </div>
+
             <div class="cyber-panel">
-                <div class="stat-line"><span>Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
-                <div class="stat-line"><span>Nüvə Səviyyəsi:</span><span id="txt-level" class="stat-val">1 KG</span></div>
-                <div class="stat-line"><span>Kvant Enerji:</span><span id="txt-energy">100/100</span></div>
+                <div class="stat-line"><span id="lbl-data-balance">Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
+                <div class="stat-line"><span id="lbl-core-level">Nüvə Səviyyəsi:</span><span id="txt-level" class="stat-val">1 KG</span></div>
+                <div class="stat-line"><span id="lbl-quantum-energy">Kvant Enerji:</span><span id="txt-energy">100/100</span></div>
                 <div class="progress-bar"><div id="fill-energy" class="progress-fill"></div></div>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-gold); background: rgba(255, 204, 0, 0.02);">
+                <h3 id="lbl-fast-race-title">🏎️ SÜRƏTLİ MAŞIN YARIŞI</h3>
+                <p style="font-size: 12px; color: #888; margin-bottom: 10px;" id="lbl-fast-race-desc">Giriş tarifi: 0.50 TON (Yalnız Depozit pulları etibarlıdır).</p>
+                <button class="cyber-btn gold" style="margin-top: 0;" onclick="startRaceGame()" id="btn-fast-race-start">Yarışı Başlat (0.50 TON)</button>
             </div>
 
             <div class="core-container">
@@ -213,62 +270,66 @@
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-blue);">
-                <h3>Adsgram Video Sistemi</h3>
-                <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsgramVideo()">📺 ADSGRAM VİDEOSU İZLƏ</button>
+                <h3 id="lbl-adsgram-title">Adsgram Video Sistemi</h3>
+                <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green); margin-bottom: 8px;" onclick="watchAdsgramVideo()" id="btn-watch-ad">📺 ADSGRAM VİDEOSU İZLƏ</button>
+                <button class="cyber-btn" style="border-color: var(--neon-blue); color: var(--neon-blue);" onclick="watchAdForEnergy()" id="btn-energy-ad">⚡ REKLAM İZLƏ VƏ ENERJİNİ FULLA (+100)</button>
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-red);">
-                <h3 style="color: var(--neon-red);">Sürətli Enerji Doldurma</h3>
-                <button class="cyber-btn danger" onclick="buyPremiumEnergy()">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
+                <h3 style="color: var(--neon-red);" id="lbl-premium-energy-title">Sürətli Enerji Doldurma</h3>
+                <button class="cyber-btn danger" onclick="buyPremiumEnergy()" id="btn-buy-energy">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-gold);">
-                <h3>Quantum Spin (🎰)</h3>
-                <button class="cyber-btn gold" onclick="triggerLuckySpin()">🎰 ŞANSLI ÇARX</button>
+                <h3 id="lbl-lucky-spin-title">Quantum Spin (🎰)</h3>
+                <button class="cyber-btn gold" onclick="triggerLuckySpin()" id="btn-lucky-spin">🎰 ŞANSLI ÇARX</button>
             </div>
 
-            <button class="cyber-btn" onclick="upgradeCore()">Nüvəni Təkmilləşdir (100 Data)</button>
+            <button class="cyber-btn" onclick="upgradeCore()" id="btn-upgrade-core">Nüvəni Təkmilləşdir (100 Data)</button>
         </div>
 
         <div id="task-tab" class="app-section">
             <div class="cyber-panel">
-                <h2>Sponsorlu Tapşırıqlar</h2>
+                <h2 id="lbl-sponsor-tasks-title">Sponsorlu Tapşırıqlar</h2>
                 <div class="stat-line" style="align-items: center; border-bottom: none;">
-                    <span style="text-align: left; font-size:14px; line-height: 1.4;">Sponsor Telegram Kanalı<br><small style="color:#666;">+500 Data qazandırır</small></span>
-                    <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 10px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)">Qazan</button>
+                    <span style="text-align: left; font-size:14px; line-height: 1.4;" id="lbl-sponsor-desc">Sponsor Telegram Kanalı<br><small style="color:#666;">+500 Data qazandırır</small></span>
+                    <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 10px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)" id="btn-task-earn">Qazan</button>
                 </div>
             </div>
         </div>
 
         <div id="race-tab" class="app-section">
             <div class="cyber-panel">
-                <h2>Neon Grid Multiplayer</h2>
-                <div class="stat-line"><span>Giriş Tarifi:</span><span class="stat-val">0.30 TON</span></div>
-                <p style="font-size:12px; color:#777; margin: 15px 0;">Digər real kiber idmançılarla sürət sınağı.</p>
-                <button class="cyber-btn" onclick="startRaceGame()">Yarışı Başlat 🏎️</button>
+                <h2 id="lbl-multi-race-title">Neon Grid Multiplayer</h2>
+                <div class="stat-line"><span id="lbl-race-fee">Giriş Tarifi:</span><span class="stat-val" style="color: var(--neon-gold);">0.50 TON</span></div>
+                <p style="font-size:12px; color: var(--neon-red); margin: 15px 0;" id="lbl-race-warning">Diqqət: Yarışlar oyun daxili balansla deyil, yalnız depozit balansınızla başlayır.</p>
+                <button class="cyber-btn" onclick="startRaceGame()" id="btn-race-tab-start">Yarışı Başlat 🏎️</button>
             </div>
         </div>
 
         <div id="wallet-tab" class="app-section">
             <div class="cyber-panel">
                 <h2>Crypto Cyber Wallet</h2>
-                <div class="stat-line"><span>Kripto TON Balans:</span><span id="txt-ton" class="stat-val">0.00 TON</span></div>
-                <div class="stat-line"><span>Sistem Reklam Logları:</span><span id="txt-ads" class="stat-val">0 / 50</span></div>
+                <div class="stat-line"><span id="lbl-wallet-deposit">🔒 Depozit Balansınız (Yarış):</span><span id="txt-deposit-wallet" class="stat-val" style="color: var(--neon-gold);">0.00 TON</span></div>
+                <div class="stat-line"><span id="lbl-wallet-withdraw-bal">💰 Oyun Çıxarış Balansı:</span><span id="txt-ton" class="stat-val" style="color: var(--neon-green);">0.00 TON</span></div>
+                <div class="stat-line"><span id="lbl-wallet-logs">Sistem Reklam Logları:</span><span id="txt-ads" class="stat-val">0 / 50</span></div>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-gold);">
+                <h3 id="lbl-deposit-title">💸 Hesaba TON Yüklə (Depozit)</h3>
+                <p style="font-size:12px; color:#777; margin-bottom: 10px;" id="lbl-deposit-desc">Yarışlarda iştirak haqqı üçün bildiriş göndərin.</p>
+                <button class="cyber-btn gold" onclick="confirmDepositSignal()" id="btn-deposit-send">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-blue);">
                 <h3>Data Swap Protocol</h3>
-                <button class="cyber-btn" onclick="swapDataToTon()">🔄 DATA -> 1 TON ÇEVİR</button>
-            </div>
-
-            <div class="cyber-panel" style="border-color: var(--neon-gold);">
-                <button class="cyber-btn gold" onclick="confirmDepositSignal()">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
+                <button class="cyber-btn" onclick="swapDataToTon()" id="btn-swap-action">🔄 DATA -> 1 TON ÇEVİR</button>
             </div>
 
             <div class="cyber-panel" style="border-color: var(--neon-red);">
-                <h3 style="color: var(--neon-red);">Vəsait Çıxarılışı</h3>
+                <h3 style="color: var(--neon-red);" id="lbl-withdraw-title">Vəsait Çıxarılışı</h3>
                 <input type="text" id="inp-wallet" placeholder="TON cüzdan ünvanınız">
-                <button class="cyber-btn danger" onclick="requestWithdraw()">Çıxarış Tələb Et (Min. 5 TON)</button>
+                <button class="cyber-btn danger" onclick="requestWithdraw()" id="btn-withdraw-action">Çıxarış Tələb Et (Min. 5 TON)</button>
             </div>
         </div>
 
@@ -277,15 +338,10 @@
     <script>
         let tg = window.Telegram?.WebApp || null;
         if (tg) {
-            try {
-                tg.expand();
-                tg.ready();
-            } catch(e) {}
+            try { tg.expand(); tg.ready(); } catch(e) {}
         }
 
         const API_BASE_URL = "https://bearbee.vercel.app/api/user";
-
-        // Telegram ID yoxdursa backendlə problem olmasın deyə yalnız rəqəmli alternativ ID yaradırıq
         let userId = "";
         if (tg && tg.initDataUnsafe?.user?.id) {
             userId = tg.initDataUnsafe.user.id.toString();
@@ -298,17 +354,127 @@
             userId = localId;
         }
 
-        // İlkin məlumatları dərhal yerli yaddaşdan doldururuq ki, gözləmə və itmə olmasın
-        let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
-        loadFromLocalStorage(); 
+        let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, deposit_balance: 0.0, reklam_baxis: 0 };
+        let currentLang = localStorage.getItem("bearbee_lang") || "az";
 
-        let isSyncing = false; 
-        let syncTimeout = null;
+        // LOKALİZASİYA DATASI
+        const translations = {
+            az: {
+                guide: `<strong style="color: var(--neon-green);">💡 SİSTEM TƏLİMATI VƏ QAYDALAR:</strong><br>1. <strong>AI CORE</strong> nüvəsinə klikləyərək Data Balansınızı sürətlə artırın.<br>2. Enerjiniz bitdikdə <strong>reklam izləyərək</strong> dərhal və pulsuz şəkildə fullləyə bilərsiniz.<br>3. Hər <strong>20,000 Data</strong> xalını Cüzdandan <strong>1 TON Çıxarış Balansına</strong> konvertasiya edə bilərsiniz.<br>4. 🏎️ <strong>Yarış Reqlamenti:</strong> Multiplayer maşın yarışlarına giriş haqqı 0.50 TON-dur və <strong>yalnız Depozit Balansı ilə</strong> aktivləşir. Oyun daxili çevrilən pullarla yarışa girmək qadağandır.`,
+                tasks: "Tapşırıqlar", race: "Kiber Yarış", wallet: "Cüzdan",
+                dataBal: "Data Balans:", coreLev: "Nüvə Səviyyəsi:", quantEng: "Kvant Enerji:",
+                fastRaceTitle: "🏎️ SÜRƏTLİ MAŞIN YARIŞI", fastRaceDesc: "Giriş tarifi: 0.50 TON (Yalnız Depozit pulları etibarlıdır).", fastRaceStart: "Yarışı Başlat (0.50 TON)",
+                adsTitle: "Adsgram Video Sistemi", watchAd: "📺 ADSGRAM VİDEOSU İZLƏ", energyAd: "⚡ REKLAM İZLƏ VƏ ENERJİNİ FULLA (+100)",
+                premEnergyTitle: "Sürətli Enerji Doldurma", buyEnergy: "⚡ ENERJİNİ SATIN AL (0.1 TON)",
+                luckySpinTitle: "Quantum Spin (🎰)", luckySpinBtn: "🎰 ŞANSLI ÇARX", upgradeCore: "Nüvəni Təkmilləşdir (100 Data)",
+                sponsorTitle: "Sponsorlu Tapşırıqlar", sponsorDesc: "Sponsor Telegram Kanalı<br><small style='color:#666;'>+500 Data qazandırır</small>", earn: "Qazan",
+                multiRaceTitle: "Neon Grid Multiplayer", raceFee: "Giriş Tarifi:", raceWarning: "Diqqət: Yarışlar oyun daxili balansla deyil, yalnız depozit balansınızla başlayır.",
+                walletDeposit: "🔒 Depozit Balansınız (Yarış):", walletWithdrawBal: "💰 Oyun Çıxarış Balansı:", walletLogs: "Sistem Reklam Logları:",
+                depositTitle: "💸 Hesaba TON Yüklə (Depozit)", depositDesc: "Yarışlarda iştirak haqqı üçün bildiriş göndərin.", depositSend: "Ödəniş Sorğusunu Adminə Göndər 🧾",
+                swapAction: "🔄 DATA -> 1 TON ÇEVİR", withdrawTitle: "Vəsait Çıxarılışı", placeholderWallet: "TON cüzdan ünvanınız", withdrawAction: "Çıxarış Tələb Et (Min. 5 TON)",
+                alertAdWatched: "📺 Reklam izlənildi! +100 Data əlavə olundu.", alertAdEnergy: "⚡ Reklam izlənildi! Enerjiniz 100/100 tamamilə bərpa olundu.", alertAdFail: "Mükafat üçün videonu sonadək izləməlisiniz.", alertAdBusy: "⚠️ Reklam provayderi məşğuldur. Bir az sonra yenidən klikləyin.",
+                alertEnergyEmpty: "🔋 Kvant enerjiniz bitib! Reklam izləyərək pulsuz doldurun.", alertNoTon: "Kifayət qədər TON yoxdur.", alertTaskDone: "+500 Data yazıldı.", alertNoData: "Minimum 20,000 Data lazımdır.", alertSwapDone: "🔄 1 TON Çıxarış balansınıza əlavə edildi!",
+                alertRaceError: "❌ Yarışa daxil olmaq üçün balansınızda 0.50 TON Depozit pulu olmalıdır! Reklamlardan qazanılan balans burada keçərli deyil.", alertDepositSent: "🧾 Depozit sorğunuz admin panelə ötürüldü! Təsdiqdən sonra yarış balansınız yenilənəcək.",
+                alertInpWallet: "Cüzdan ünvanını daxil edin.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Çıxarış sorğusu göndərildi!", alertRaceEnd: "🏎️ Yarış başa çatdı! Balansınıza +{amt} Data əlavə edildi."
+            },
+            en: {
+                guide: `<strong style="color: var(--neon-green);">💡 SYSTEM GUIDE & RULES:</strong><br>1. Click on the <strong>AI CORE</strong> to quickly increase your Data Balance.<br>2. When out of energy, <strong>watch an ad</strong> to refill instantly and for free.<br>3. Convert every <strong>20,000 Data</strong> into <strong>1 TON Withdrawal Balance</strong> from the Wallet.<br>4. 🏎️ <strong>Race Regulation:</strong> Entry fee for multiplayer races is 0.50 TON and is <strong>valid ONLY via Deposit Balance</strong>. Entering with converted game money is forbidden.`,
+                tasks: "Tasks", race: "Cyber Race", wallet: "Wallet",
+                dataBal: "Data Balance:", coreLev: "Core Level:", quantEng: "Quantum Energy:",
+                fastRaceTitle: "🏎️ FAST CYBER RACE", fastRaceDesc: "Entry fee: 0.50 TON (Only Deposit funds are valid).", fastRaceStart: "Start Race (0.50 TON)",
+                adsTitle: "Adsgram Video System", watchAd: "📺 WATCH ADSGRAM VIDEO", energyAd: "⚡ WATCH AD TO REFILL ENERGY (+100)",
+                premEnergyTitle: "Instant Energy Refill", buyEnergy: "⚡ BUY ENERGY (0.1 TON)",
+                luckySpinTitle: "Quantum Spin (🎰)", luckySpinBtn: "🎰 LUCKY SPIN", upgradeCore: "Upgrade Core (100 Data)",
+                sponsorTitle: "Sponsored Tasks", sponsorDesc: "Sponsor Telegram Channel<br><small style='color:#666;'>Gives +500 Data</small>", earn: "Earn",
+                multiRaceTitle: "Neon Grid Multiplayer", raceFee: "Entry Fee:", raceWarning: "Warning: Races do not start with in-game balance, only with your deposit balance.",
+                walletDeposit: "🔒 Your Deposit Balance (Race):", walletWithdrawBal: "💰 Game Withdrawal Balance:", walletLogs: "System Ad Logs:",
+                depositTitle: "💸 Load TON to Account (Deposit)", depositDesc: "Send a notification for race participation fee.", depositSend: "Send Payment Request to Admin 🧾",
+                swapAction: "🔄 CONVERT DATA -> 1 TON", withdrawTitle: "Funds Withdrawal", placeholderWallet: "Your TON wallet address", withdrawAction: "Request Withdrawal (Min. 5 TON)",
+                alertAdWatched: "📺 Ad watched! +100 Data added.", alertAdEnergy: "⚡ Ad watched! Energy completely refilled to 100/100.", alertAdFail: "You must watch the video until the end for the reward.", alertAdBusy: "⚠️ Ad provider is busy. Please click again in a moment.",
+                alertEnergyEmpty: "🔋 Your quantum energy is depleted! Refill for free by watching an ad.", alertNoTon: "Not enough TON.", alertTaskDone: "+500 Data credited.", alertNoData: "Minimum 20,000 Data required.", alertSwapDone: "🔄 1 TON added to your withdrawal balance!",
+                alertRaceError: "❌ You must have 0.50 TON Deposit funds in your balance to enter the race! Game-converted balances are not valid here.", alertDepositSent: "🧾 Your deposit request has been sent to the admin panel! Your race balance will update after confirmation.",
+                alertInpWallet: "Please enter your wallet address.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Withdrawal request submitted!", alertRaceEnd: "🏎️ Race finished! +{amt} Data added to your balance."
+            },
+            ru: {
+                guide: `<strong style="color: var(--neon-green);">💡 ИНСТРУКЦИЯ И ПРАВИЛА:</strong><br>1. Кликайте по <strong>AI CORE</strong>, чтобы быстро увеличить баланс данных.<br>2. Когда закончится энергия, <strong>посмотрите рекламу</strong>, чтобы мгновенно и бесплатно пополнить её.<br>3. Каждые <strong>20,000 Data</strong> можно конвертировать в <strong>1 TON баланса для вывода</strong> в Кошельке.<br>4. 🏎️ <strong>Регламент гонок:</strong> Вход в мультиплеерные гонки стоит 0.50 TON и возможен <strong>ТОЛЬКО через Депозитный баланс</strong>. Вход за игровые деньги запрещен.`,
+                tasks: "Задания", race: "Кибер Гонка", wallet: "Кошелек",
+                dataBal: "Баланс Данных:", coreLev: "Уровень Ядра:", quantEng: "Квантовая Энергия:",
+                fastRaceTitle: "🏎️ БЫСТРАЯ КИБЕР ГОНКА", fastRaceDesc: "Стоимость входа: 0.50 TON (Действительны только депозитные средства).", fastRaceStart: "Начать гонку (0.50 TON)",
+                adsTitle: "Видеосистема Adsgram", watchAd: "📺 СМОТРЕТЬ REKLAMU ADSGRAM", energyAd: "⚡ СМОТРЕТЬ РЕКЛАМУ И ПОПОЛНИТЬ ЭНЕРГИЮ (+100)",
+                premEnergyTitle: "Быстрая зарядка энергии", buyEnergy: "⚡ КУПИТЬ ЭНЕРГИЮ (0.1 TON)",
+                luckySpinTitle: "Квантовый Спин (🎰)", luckySpinBtn: "🎰 КОЛЕСО УДАЧИ", upgradeCore: "Улучшить ядро (100 Data)",
+                sponsorTitle: "Спонсорские Задания", sponsorDesc: "Спонсорский Telegram Канал<br><small style='color:#666;'>Дает +500 Data</small>", earn: "Получить",
+                multiRaceTitle: "Neon Grid Мультиплеер", raceFee: "Входной тариф:", raceWarning: "Внимание: Гонки запускаются не с игрового баланса, а только с депозитного.",
+                walletDeposit: "🔒 Ваш депозит (Для гонок):", walletWithdrawBal: "💰 Игровой баланс (Вывод):", walletLogs: "Системные логи рекламы:",
+                depositTitle: "💸 Пополнить TON (Депозит)", depositDesc: "Отправьте уведомление для оплаты участия в гонках.", depositSend: "Отправить запрос админу 🧾",
+                swapAction: "🔄 ОБМЕНЯТЬ DATA -> 1 TON", withdrawTitle: "Вывод Средств", placeholderWallet: "Ваш TON кошелек", withdrawAction: "Запросить вывод (Мин. 5 TON)",
+                alertAdWatched: "📺 Реклама просмотрена! +100 Data добавлено.", alertAdEnergy: "⚡ Реклама просмотрена! Энергия полностью восстановлена до 100/100.", alertAdFail: "Вы должны досмотреть видео до конца для получения награды.", alertAdBusy: "⚠️ Рекламный провайдер занят. Попробуйте еще раз позже.",
+                alertEnergyEmpty: "🔋 Ваша квантовая энергия истощена! Пополните бесплатно, посмотрев рекламу.", alertNoTon: "Недостаточно TON.", alertTaskDone: "+500 Data зачислено.", alertNoData: "Требуется минимум 20,000 Data.", alertSwapDone: "🔄 1 TON добавлен на ваш баланс для вывода!",
+                alertRaceError: "❌ Для участия в гонке на вашем балансе должно быть 0.50 TON Депозита! Игровой баланс здесь недействителен.", alertDepositSent: "🧾 Ваш запрос на депозит отправлен в админ-панель! Гонка-баланс обновится после подтверждения.",
+                alertInpWallet: "Пожалуйста, введите адрес кошелька.", alertMinWithdraw: "Минимум 5 TON.", alertWithdrawSent: "Запрос на вывод отправлен!", alertRaceEnd: "🏎️ Гонка завершена! +{amt} Data добавлено на ваш баланс."
+            }
+        };
 
-        function intValue(val) { return parseInt(val) || 0; }
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem("bearbee_lang", lang);
+            
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`lang-${lang}`).classList.add('active');
+            
+            updateLanguageUI();
+        }
 
-        function saveToLocalStorage() {
-            localStorage.setItem(`bearbee_stats_${userId}`, JSON.stringify(userStats));
+        function updateLanguageUI() {
+            let l = translations[currentLang];
+            
+            document.getElementById('guide-text').innerHTML = l.guide;
+            document.getElementById('lbl-tab-tasks').innerText = l.tasks;
+            document.getElementById('lbl-tab-race').innerText = l.race;
+            document.getElementById('lbl-tab-wallet').innerText = l.wallet;
+            
+            document.getElementById('lbl-data-balance').innerText = l.dataBal;
+            document.getElementById('lbl-core-level').innerText = l.coreLev;
+            document.getElementById('lbl-quantum-energy').innerText = l.quantEng;
+            
+            document.getElementById('lbl-fast-race-title').innerText = l.fastRaceTitle;
+            document.getElementById('lbl-fast-race-desc').innerText = l.fastRaceDesc;
+            document.getElementById('btn-fast-race-start').innerText = l.fastRaceStart;
+            
+            document.getElementById('lbl-adsgram-title').innerText = l.adsTitle;
+            document.getElementById('btn-watch-ad').innerText = l.watchAd;
+            document.getElementById('btn-energy-ad').innerText = l.energyAd;
+            
+            document.getElementById('lbl-premium-energy-title').innerText = l.premEnergyTitle;
+            document.getElementById('btn-buy-energy').innerText = l.buyEnergy;
+            
+            document.getElementById('lbl-lucky-spin-title').innerText = l.luckySpinTitle;
+            document.getElementById('btn-lucky-spin').innerText = l.luckySpinBtn;
+            document.getElementById('btn-upgrade-core').innerText = l.upgradeCore;
+            
+            document.getElementById('lbl-sponsor-tasks-title').innerText = l.sponsorTitle;
+            document.getElementById('lbl-sponsor-desc').innerHTML = l.sponsorDesc;
+            document.getElementById('btn-task-earn').innerText = l.earn;
+            
+            document.getElementById('lbl-multi-race-title').innerText = l.multiRaceTitle;
+            document.getElementById('lbl-race-fee').innerText = l.raceFee;
+            document.getElementById('lbl-race-warning').innerText = l.raceWarning;
+            document.getElementById('btn-race-tab-start').innerText = l.fastRaceStart; 
+            
+            document.getElementById('lbl-wallet-deposit').innerText = l.walletDeposit;
+            document.getElementById('lbl-wallet-withdraw-bal').innerText = l.walletWithdrawBal;
+            document.getElementById('lbl-wallet-logs').innerText = l.walletLogs;
+            
+            document.getElementById('lbl-deposit-title').innerText = l.depositTitle;
+            document.getElementById('lbl-deposit-desc').innerText = l.depositDesc;
+            document.getElementById('btn-deposit-send').innerText = l.depositSend;
+            
+            document.getElementById('btn-swap-action').innerText = l.swapAction;
+            document.getElementById('lbl-withdraw-title').innerText = l.withdrawTitle;
+            document.getElementById('inp-wallet').placeholder = l.placeholderWallet;
+            document.getElementById('btn-withdraw-action').innerText = l.withdrawAction;
+            
+            updateUI();
         }
 
         function loadFromLocalStorage() {
@@ -320,9 +486,14 @@
                     userStats.level = parseInt(parsed.level) || 1;
                     userStats.energy = parsed.energy !== undefined ? parseInt(parsed.energy) : 100;
                     userStats.ton_balance = parseFloat(parsed.ton_balance) || 0.0;
+                    userStats.deposit_balance = parseFloat(parsed.deposit_balance) || 0.0;
                     userStats.reklam_baxis = parseInt(parsed.reklam_baxis) || 0;
                 } catch(e) {}
             }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem(`bearbee_stats_${userId}`, JSON.stringify(userStats));
         }
 
         function switchTab(tabId) {
@@ -331,9 +502,7 @@
                 document.getElementById('task-tab').style.display = 'none';
                 document.getElementById('race-tab').style.display = 'none';
                 document.getElementById('wallet-tab').style.display = 'none';
-                
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                
                 document.getElementById(tabId).style.display = 'block';
                 document.getElementById('btn-' + tabId).classList.add('active');
             } catch (e) {}
@@ -342,89 +511,74 @@
         let AdController = null;
         function initAdsgramSafe() {
             if (window.Adsgram) {
-                try {
-                    AdController = window.Adsgram.init({ blockHash: "3742" });
-                } catch(e) {}
+                try { AdController = window.Adsgram.init({ blockHash: "3742" }); } catch(e) {}
             }
         }
         
         function watchAdsgramVideo() {
             if (!AdController) { initAdsgramSafe(); }
-
             if (AdController) {
                 AdController.show().then(async (result) => {
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
-                    updateUI();
-                    saveToLocalStorage();
-                    triggerLazySync(); 
-                    showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
-                }).catch((err) => {
-                    showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
-                });
-            } else {
-                showAlert("⚠️ Reklam provayderi məşğuldur və ya bloklanıb. Bir az sonra yenidən klikləyin.");
-                initAdsgramSafe();
-            }
+                    updateUI(); saveToLocalStorage(); triggerLazySync(); 
+                    showAlert(translations[currentLang].alertAdWatched);
+                }).catch(() => { showAlert(translations[currentLang].alertAdFail); });
+            } else { showAlert(translations[currentLang].alertAdBusy); initAdsgramSafe(); }
+        }
+
+        function watchAdForEnergy() {
+            if (!AdController) { initAdsgramSafe(); }
+            if (AdController) {
+                AdController.show().then(async (result) => {
+                    userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
+                    userStats.energy = 100; 
+                    updateUI(); saveToLocalStorage(); triggerLazySync(); 
+                    showAlert(translations[currentLang].alertAdEnergy);
+                }).catch(() => { showAlert(translations[currentLang].alertAdFail); });
+            } else { showAlert(translations[currentLang].alertAdBusy); initAdsgramSafe(); }
         }
 
         function triggerTap() {
             if (userStats.energy > 0) {
                 userStats.honey += userStats.level;
                 userStats.energy -= 1;
-                updateUI();
-                saveToLocalStorage(); // Kliklənən an dərhal telefona yazılır (itə bilməz)
-                triggerLazySync(); 
-            }
+                updateUI(); saveToLocalStorage(); triggerLazySync(); 
+            } else { showAlert(translations[currentLang].alertEnergyEmpty); }
         }
 
         function triggerLazySync() {
             if (syncTimeout) clearTimeout(syncTimeout);
-            syncTimeout = setTimeout(() => {
-                syncToBackend();
-            }, 1200); 
+            syncTimeout = setTimeout(() => { syncToBackend(); }, 1200); 
         }
 
         const coreBtn = document.getElementById('ai-core-btn');
         if(coreBtn) {
-            coreBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                triggerTap();
-            });
-            coreBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                triggerTap();
-            });
+            coreBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerTap(); });
+            coreBtn.addEventListener('click', (e) => { e.preventDefault(); triggerTap(); });
         }
 
         async function buyPremiumEnergy() {
             if (parseFloat(userStats.ton_balance) >= 0.1) {
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.1).toFixed(2);
                 userStats.energy = 100;
-                updateUI();
-                saveToLocalStorage();
-                triggerLazySync();
-                showAlert("⚡ Enerjiniz bərpa olundu!");
-            } else { showAlert("Kifayət qədər TON yoxdur."); }
+                updateUI(); saveToLocalStorage(); triggerLazySync();
+                showAlert(translations[currentLang].alertAdEnergy);
+            } else { showAlert(translations[currentLang].alertNoTon); }
         }
 
         async function completeSponsorTask(link, reward) {
             window.open(link, "_blank");
             userStats.honey += reward;
-            updateUI();
-            saveToLocalStorage();
-            triggerLazySync();
-            showAlert(`+${reward} Data yazıldı.`);
+            updateUI(); saveToLocalStorage(); triggerLazySync();
+            showAlert(translations[currentLang].alertTaskDone);
         }
 
         async function upgradeCore() {
             if (userStats.honey >= 100) {
-                userStats.honey -= 100;
-                userStats.level += 1;
-                updateUI();
-                saveToLocalStorage();
-                triggerLazySync();
-            } else { showAlert("100 Data lazımdır."); }
+                userStats.honey -= 100; userStats.level += 1;
+                updateUI(); saveToLocalStorage(); triggerLazySync();
+            } else { showAlert("100 Data"); }
         }
 
         async function triggerLuckySpin() {
@@ -433,44 +587,38 @@
                 let prizes = [10, 20, 50];
                 let win = prizes[Math.floor(Math.random() * prizes.length)];
                 userStats.honey += win;
-                updateUI();
-                saveToLocalStorage();
-                triggerLazySync();
-                showAlert(`🎰 +${win} Data qazandınız!`);
-            } else { showAlert("Ən azı 5 reklam izləməlisiniz."); }
+                updateUI(); saveToLocalStorage(); triggerLazySync();
+                showAlert(`🎰 +${win} Data!`);
+            } else { showAlert(currentLang === "az" ? "Ən azı 5 reklam izləməlisiniz." : currentLang === "en" ? "You must watch at least 5 ads." : "Вы должны посмотреть минимум 5 реклам."); }
         }
 
         async function swapDataToTon() {
             if (userStats.honey >= 20000) {
                 userStats.honey -= 20000;
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
-                updateUI();
-                saveToLocalStorage();
-                triggerLazySync();
-            } else { showAlert("Minimum 20,000 Data lazımdır."); }
+                updateUI(); saveToLocalStorage(); triggerLazySync();
+                showAlert(translations[currentLang].alertSwapDone);
+            } else { showAlert(translations[currentLang].alertNoData); }
         }
 
         async function startRaceGame() {
-            if (parseFloat(userStats.ton_balance) >= 0.30) {
-                userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.30).toFixed(2);
-                updateUI();
-                saveToLocalStorage();
-                
+            if (parseFloat(userStats.deposit_balance) >= 0.50) {
+                userStats.deposit_balance = (parseFloat(userStats.deposit_balance) - 0.50).toFixed(2);
+                updateUI(); saveToLocalStorage();
                 if (syncTimeout) clearTimeout(syncTimeout);
                 await syncToBackend();
-                
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
-            } else { showAlert("0.30 TON lazımdır."); }
+            } else { showAlert(translations[currentLang].alertRaceError); }
         }
 
-        function confirmDepositSignal() { showAlert("Sorğu adminə ötürüldü!"); }
+        function confirmDepositSignal() { showAlert(translations[currentLang].alertDepositSent); }
 
         function requestWithdraw() {
             let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet) { showAlert("Cüzdan ünvanını daxil edin."); return; }
-            if(parseFloat(userStats.ton_balance) < 5.0) { showAlert("Minimum 5 TON."); return; }
-            showAlert("Çıxarış sorğusu göndərildi!");
+            if(!wallet) { showAlert(translations[currentLang].alertInpWallet); return; }
+            if(parseFloat(userStats.ton_balance) < 5.0) { showAlert(translations[currentLang].alertMinWithdraw); return; }
+            showAlert(translations[currentLang].alertWithdrawSent);
         }
 
         function updateUI() {
@@ -480,6 +628,8 @@
                 document.getElementById('txt-energy').innerText = userStats.energy + "/100";
                 document.getElementById('fill-energy').style.width = userStats.energy + "%";
                 document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance).toFixed(2) + " TON";
+                document.getElementById('txt-deposit-main').innerText = parseFloat(userStats.deposit_balance).toFixed(2) + " TON";
+                document.getElementById('txt-deposit-wallet').innerText = parseFloat(userStats.deposit_balance).toFixed(2) + " TON";
                 document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
             } catch(e) {}
         }
@@ -489,22 +639,17 @@
             else alert(msg);
         }
 
-        // HİBRİD DATA YÜKLƏMƏ
         async function loadUserData() {
-            // Birinci cihazdakı son datanı ekrana veririk (Sıfırlanma hissi tamamilə itir)
-            loadFromLocalStorage();
-            updateUI();
-            
+            loadFromLocalStorage(); updateLanguageUI();
             try {
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
                     let b = await res.json();
-                    
-                    // Əgər buluddakı data telefondakından daha böyükdürsə, onu götürürük
                     if ((parseInt(b.honey) || 0) >= userStats.honey) {
                         userStats.honey = parseInt(b.honey) || 0;
                         userStats.level = parseInt(b.level) || 1;
                         userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
+                        userStats.deposit_balance = parseFloat(b.deposit_balance) || 0.0;
                         userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                     }
                     userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
@@ -514,16 +659,13 @@
                         let bonusAmount = parseInt(raceBonus) || 0;
                         userStats.honey += bonusAmount;
                         localStorage.removeItem("race_bonus_reward");
-                        updateUI();
-                        await syncToBackend();
-                        showAlert(`🏎️ Yarış başa çatdı! Balansınıza +${bonusAmount} Data əlavə edildi.`);
+                        updateUI(); await syncToBackend();
+                        showAlert(translations[currentLang].alertRaceEnd.replace("{amt}", bonusAmount));
                     }
                     saveToLocalStorage();
                 }
-            } catch(e) {
-                console.log("Bulud əlaqəsi yoxdur, yerli data aktivdir.");
-            }
-            updateUI();
+            } catch(e) {}
+            updateLanguageUI();
         }
 
         async function syncToBackend() {
@@ -535,33 +677,29 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         user_id: userId,
-                        honey: intValue(userStats.honey),
-                        level: intValue(userStats.level),
-                        energy: intValue(userStats.energy),
+                        honey: parseInt(userStats.honey),
+                        level: parseInt(userStats.level),
+                        energy: parseInt(userStats.energy),
                         ton_balance: parseFloat(userStats.ton_balance),
-                        reklam_baxis: intValue(userStats.reklam_baxis)
+                        deposit_balance: parseFloat(userStats.deposit_balance),
+                        reklam_baxis: parseInt(userStats.reklam_baxis)
                     })
                 });
-            } catch(e) {
-                console.log("Sinxronizasiya arxa planda növbəyə qaldı.");
-            } finally {
-                isSyncing = false;
-            }
+            } catch(e) {} finally { isSyncing = false; }
         }
 
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
-                updateUI();
-                saveToLocalStorage();
+                updateUI(); saveToLocalStorage();
             }
         }, 5000);
 
         window.onload = function() {
+            changeLanguage(currentLang);
             loadUserData(); 
             setTimeout(initAdsgramSafe, 2000); 
         };
     </script>
 </body>
 </html>
-
