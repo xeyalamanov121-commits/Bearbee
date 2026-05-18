@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bearbee Cyber Empire</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?v=2.0"></script>
-    <script src="https://sad.adsgram.ai/js/sad.min.js?v=29483"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=2.1"></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js?v=30462"></script>
 
     <style>
         :root {
@@ -236,15 +236,15 @@
             } catch (e) { console.error("Tab keçid xətası:", e); }
         }
 
-        // 📺 YENİ SƏNƏDLƏRƏ UYĞUN REKLAM SİSTEMİ
+        // 📺 REAL MULTİ-SINAQ ADSGRAM KODU (BLOCK ID: 30462)
         let AdController = null;
         
         function watchAdsgramVideo() {
-            // Həm window.Adsgram-ın, həm də daxili init funksiyasının tam sığortası
             if (typeof window.Adsgram !== 'undefined' && typeof window.Adsgram.init === 'function') {
                 try {
                     if (!AdController) {
-                        AdController = window.Adsgram.init({ blockId: "29483" });
+                        // Sənin rəsmi Block ID-ni bura yerləşdirdik
+                        AdController = window.Adsgram.init({ blockId: "30462" });
                     }
                     
                     AdController.show().then(async (result) => {
@@ -264,7 +264,7 @@
                     if(tg) tg.showAlert("Sistem xətası: " + x.message);
                 }
             } else {
-                if(tg) tg.showAlert("⚠️ Adsgram skripti hələ tam yüklənməyib və ya bloklanıb. Bir neçə saniyə sonra yenidən klikləyin.");
+                if(tg) tg.showAlert("⚠️ Adsgram skripti yüklənə bilmədi. İnterneti və ya AdBlocker-i yoxlayın.");
             }
         }
 
