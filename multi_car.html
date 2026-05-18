@@ -2,95 +2,339 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Bearbee Neon Race Grid</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Grid - Kiber Yarış</title>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=2.3"></script>
     <style>
-        body {
+        :root {
+            --neon-green: #00ff66;
+            --neon-blue: #00ffff;
+            --neon-red: #ff0055;
+            --neon-gold: #ffcc00;
+            --dark-bg: #050a08;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            background-color: #050a08;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--dark-bg);
             color: #ffffff;
-            font-family: sans-serif;
-            text-align: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-        .race-panel {
-            background: rgba(10, 20, 15, 0.96);
-            border: 2px solid #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 400px;
-            margin: 40px auto;
-        }
-        .countdown {
-            font-size: 48px;
-            color: #ff0055;
-            font-weight: bold;
-            margin: 20px 0;
-            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
-        }
-        .btn-back {
+
+        #game-container {
+            position: relative;
             width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: #0a0f0d;
+            border-left: 2px solid var(--neon-blue);
+            border-right: 2px solid var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Üst Panel */
+        #ui-panel {
+            display: flex;
+            justify-content: space-between;
             padding: 15px;
-            background: #000;
-            border: 1px solid #00ff66;
-            color: #00ff66;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid var(--neon-blue);
             font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        #ui-panel span {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px rgba(0, 255, 102, 0.5);
+        }
+
+        /* Oyun Sahəsi */
+        canvas {
+            flex: 1;
+            width: 100%;
+            background: linear-gradient(to bottom, #07110e, #020504);
+        }
+
+        /* İdarəetmə Düymələri */
+        #controls {
+            display: flex;
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid var(--neon-blue);
+            z-index: 10;
+        }
+
+        .control-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--neon-blue);
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.1s;
+        }
+
+        .control-btn:active {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--neon-green);
+        }
+
+        /* Oyun Bitdi Ekranı */
+        #game-over-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 10, 8, 0.95);
+            z-index: 20;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #game-over-screen h1 {
+            color: var(--neon-red);
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
+            text-transform: uppercase;
+        }
+
+        .final-stat {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #ccc;
+        }
+        .final-stat span {
+            color: var(--neon-gold);
+            font-weight: bold;
+        }
+
+        .cyber-btn {
+            margin-top: 25px;
+            padding: 15px 40px;
+            background: #000;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            font-weight: bold;
+            text-transform: uppercase;
             border-radius: 8px;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+        }
+        .cyber-btn:active {
+            transform: scale(0.98);
+            background: rgba(0, 255, 102, 0.1);
         }
     </style>
 </head>
 <body>
 
-    <div class="race-panel">
-        <h2 style="color: #00ffff; letter-spacing: 2px;">NEON GRID MULTIPLAYER</h2>
-        <p style="font-size: 13px; color: #888;">Rəqiblər axtarılır, zəhmət olmasa gözləyin...</p>
-        
-        <div class="countdown" id="race-timer">00:05</div>
-
-        <div style="border-top: 1px solid rgba(0,255,255,0.1); padding-top: 15px; font-size: 12px; color: #00ff66;">
-            Otaq ID: <span id="room-id">Yüklənir...</span>
+    <div id="game-container">
+        <div id="ui-panel">
+            <div>Otaq: <span id="room-id">0000</span></div>
+            <div>Məsafə: <span id="score-val">0m</span></div>
         </div>
 
-        <button class="btn-back" onclick="goBackToMenu()">🏠 Geri Qayıt</button>
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="controls">
+            <button class="control-btn" id="left-btn">◀</button>
+            <button class="control-btn" id="right-btn">▶</button>
+        </div>
+
+        <div id="game-over-screen">
+            <h1>Sistem Çökdü</h1>
+            <p style="color: #777; font-size: 13px;">Kiber maneəyə çırpıldınız!</p>
+            <div class="final-stat">Yarış Məsafəsi: <span id="final-score">0m</span></div>
+            <div class="final-stat">Qazanılan Data: <span id="final-reward">+150 Data</span></div>
+            <button class="cyber-btn" onclick="goBackToEmpire()">Geri Dön 🐝</button>
+        </div>
     </div>
 
     <script>
-        let tg = window.Telegram?.WebApp;
-        if(tg) tg.expand();
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        // Url daxilindən otaq nömrəsini təhlükəsiz şəkildə oxuyuruq
-        try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const room = urlParams.get('room') || Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('room-id').innerText = "#" + room;
-        } catch(e) {
-            document.getElementById('room-id').innerText = "#Əsas Giriş";
+        // URL-dən Otaq ID-ni çəkirik (?room=1234)
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room') || Math.floor(1000 + Math.random() * 9000);
+        document.getElementById("room-id").innerText = roomId;
+
+        // Ekran ölçülərinə uyğunlaşdırma
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - 145; // Panel və düymələri çıxırıq
+        }
+        resizeCanvas();
+
+        // Oyun Dəyişənləri
+        let gameActive = true;
+        let score = 0;
+        let speed = 4;
+        
+        // Oyunçu Maşını
+        const player = {
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 90,
+            width: 40,
+            height: 70,
+            speed: 5
+        };
+
+        // Rəqib Maşınlar / Maneələr
+        let enemies = [];
+        const enemyColors = [window.getComputedStyle(document.documentElement).getPropertyValue('--neon-red').trim(), 
+                             window.getComputedStyle(document.documentElement).getPropertyValue('--neon-gold').trim()];
+
+        function spawnEnemy() {
+            if (!gameActive) return;
+            let lanes = [canvas.width * 0.15, canvas.width * 0.45, canvas.width * 0.75];
+            let randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+            
+            enemies.push({
+                x: randomLane - 20,
+                y: -80,
+                width: 40,
+                height: 70,
+                color: enemyColors[Math.floor(Math.random() * enemyColors.length)]
+            });
+            
+            // Sürəti tədricən artırırıq
+            if (speed < 12) speed += 0.2;
+
+            setTimeout(spawnEnemy, Math.random() * 1000 + 800);
+        }
+        spawnEnemy();
+
+        // Düymə İdarəetməsi (Mobil üçün toxunuşlar)
+        let moveLeft = false;
+        let moveRight = false;
+
+        document.getElementById("left-btn").addEventListener("touchstart", (e) => { e.preventDefault(); moveLeft = true; });
+        document.getElementById("left-btn").addEventListener("touchend", () => moveLeft = false);
+        document.getElementById("right-btn").addEventListener("touchstart", (e) => { e.preventDefault(); moveRight = true; });
+        document.getElementById("right-btn").addEventListener("touchend", () => moveRight = false);
+
+        // Kompüter testi üçün klaviatura düymələri
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") moveLeft = true;
+            if (e.key === "ArrowRight") moveRight = true;
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft") moveLeft = false;
+            if (e.key === "ArrowRight") moveRight = false;
+        });
+
+        // Toqquşma Alqoritmi
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
         }
 
-        // Sadə yarış simulyasiya taymeri (Donmanı əngəlləyən struktura malikdir)
-        let timeLeft = 5;
-        const timerElement = document.getElementById('race-timer');
-        
-        const countdown = setInterval(() => {
-            timeLeft--;
-            timerElement.innerText = "00:0" + timeLeft;
-            if(timeLeft <= 0) {
-                clearInterval(countdown);
-                timerElement.style.color = "#00ff66";
-                timerElement.innerText = "START!";
-                if(tg) tg.showAlert("🏎️ Yarış başladı! Sürət limiti aktivdir.");
-            }
-        }, 1000);
+        // Əsas Oyun Dövrü (Game Loop)
+        function update() {
+            if (!gameActive) return;
 
-        // Ana menyuya təhlükəsiz qayıdış funksiyası (index.html keçidi)
-        function goBackToMenu() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Neon Yol Cizgilərinin animasiyası
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.33, 0); ctx.lineTo(canvas.width * 0.33, canvas.height);
+            ctx.moveTo(canvas.width * 0.66, 0); ctx.lineTo(canvas.width * 0.66, canvas.height);
+            ctx.stroke();
+
+            // Oyunçunun Hərəkəti
+            if (moveLeft && player.x > 10) player.x -= player.speed;
+            if (moveRight && player.x < canvas.width - player.width - 10) player.x += player.speed;
+
+            // Oyunçu Maşınının Çəkilməsi (Neon Göy)
+            ctx.fillStyle = "#00ffff";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00ffff";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Farlar
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(player.x + 5, player.y, 8, 5);
+            ctx.fillRect(player.x + player.width - 13, player.y, 8, 5);
+
+            // Maneələrin Yenilənməsi
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].y += speed;
+
+                // Maneə Maşının Çəkilməsi
+                ctx.fillStyle = enemies[i].color;
+                ctx.shadowColor = enemies[i].color;
+                ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
+
+                // Toqquşma yoxlaması
+                if (checkCollision(player, enemies[i])) {
+                    endGame();
+                }
+
+                // Ekrandan çıxan maneələri silirik və xal yazırıq
+                if (enemies[i].y > canvas.height) {
+                    enemies.splice(i, 1);
+                    score += 10;
+                    document.getElementById("score-val").innerText = score + "m";
+                }
+            }
+
+            // Kölgə effektini sıfırlayırıq ki, digər elementlər donmasın
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(update);
+        }
+
+        // Oyunu Bitirmək
+        function endGame() {
+            gameActive = false;
+            document.getElementById("game-over-screen").style.display = "flex";
+            document.getElementById("final-score").innerText = score + "m";
+            
+            // Məsafəyə görə bonus xal hesablanması
+            let rewardData = Math.floor(score * 1.5) + 50; 
+            document.getElementById("final-reward").innerText = `+${rewardData} Data`;
+
+            // Mükafatı müvəqqəti olaraq yaddaşda saxlayırıq ki, index.html bilsin
+            localStorage.setItem("race_bonus_reward", rewardData);
+        }
+
+        // Əsas imperiyaya geri qayıtmaq
+        function goBackToEmpire() {
             window.location.href = "index.html";
         }
+
+        // Oyunu başlat
+        requestAnimationFrame(update);
     </script>
 </body>
 </html>
+
