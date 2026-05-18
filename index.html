@@ -3,66 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Bearbee Mega-Monetized Hub</title>
+    <title>Bearbee Mega Hub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
     <style>
         :root {
             --neon-green: #00ff66;
             --neon-blue: #00ffff;
-            --neon-red: #ff0055;
-            --neon-gold: #ffcc00;
             --dark-bg: #050a08;
-            --panel-bg: rgba(10, 20, 15, 0.96);
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--dark-bg);
             color: #ffffff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: Arial, sans-serif;
+            display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
         }
 
+        /* Naviqasiya düymələri panelinin mövqeyini dəqiqləşdirdik */
         .tab-container {
-            display: flex;
-            width: 100%;
+            display: flex; width: 100%;
             background: #0b110e;
             border-bottom: 2px solid var(--neon-green);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: relative; z-index: 999; /* Düymələrin həmişə ən üstdə qalması üçün */
         }
 
         .tab-btn {
-            flex: 1;
-            padding: 15px 0;
-            background: transparent;
-            border: none;
-            color: #555;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
+            flex: 1; padding: 15px 0;
+            background: transparent; border: none;
+            color: #888; font-weight: bold; font-size: 12px;
+            cursor: pointer; text-transform: uppercase;
         }
 
         .tab-btn.active {
             color: var(--neon-green);
-            background: rgba(0, 255, 102, 0.08);
+            background: rgba(0, 255, 102, 0.1);
             border-bottom: 3px solid var(--neon-green);
         }
 
         .app-section {
-            display: none;
-            width: 100%;
-            max-width: 480px;
-            padding: 20px;
-            box-sizing: border-box;
+            display: none; width: 100%; max-width: 480px; padding: 20px; box-sizing: border-box;
         }
 
         .app-section.active {
@@ -70,82 +52,25 @@
         }
 
         .cyber-panel {
-            background: var(--panel-bg);
+            background: rgba(10, 20, 15, 0.95);
             border: 1px solid var(--neon-green);
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.15);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        h2, h3 { margin-top: 0; text-transform: uppercase; }
-        h2 { color: var(--neon-blue); text-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
-        h3 { color: var(--neon-gold); }
-
-        .stat-line {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 255, 102, 0.1);
-        }
-
-        .stat-val { color: var(--neon-green); font-weight: bold; }
-
-        .core-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 25px 0;
+            border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px;
         }
 
         .ai-core {
-            width: 160px;
-            height: 160px;
+            width: 140px; height: 140px;
             background: radial-gradient(circle, #00ff66 0%, #001a08 80%);
-            border-radius: 50%;
-            border: 4px solid var(--neon-green);
-            box-shadow: 0 0 25px rgba(0, 255, 102, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 20px;
+            border-radius: 50%; border: 4px solid var(--neon-green);
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 18px; margin: 30px auto;
             cursor: pointer;
-            user-select: none;
-            transition: transform 0.05s;
         }
-
-        .ai-core:active { transform: scale(0.95); }
 
         .cyber-btn {
-            width: 100%;
-            padding: 15px;
-            background: #000;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-            text-transform: uppercase;
+            width: 100%; padding: 12px; background: #000;
+            border: 1px solid var(--neon-blue); color: var(--neon-blue);
+            font-weight: bold; border-radius: 8px; cursor: pointer;
         }
-
-        .cyber-btn.gold { border-color: var(--neon-gold); color: var(--neon-gold); }
-        .cyber-btn.danger { border-color: var(--neon-red); color: var(--neon-red); }
-
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #111;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 10px;
-            border: 1px solid rgba(0, 255, 255, 0.1);
-        }
-
-        .progress-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--neon-green); color: white; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; text-align: center; }
     </style>
 </head>
 <body>
@@ -153,273 +78,60 @@
     <div class="tab-container">
         <button id="btn-game-tab" class="tab-btn active" onclick="switchTab('game-tab')">🐝 Tapper</button>
         <button id="btn-task-tab" class="tab-btn" onclick="switchTab('task-tab')">📊 Tapşırıqlar</button>
-        <button id="btn-race-tab" class="tab-btn" onclick="switchTab('race-tab')">🏎️ Kiber Yarış</button>
-        <button id="btn-wallet-tab" class="tab-btn" onclick="switchTab('wallet-tab')">💎 Pul Kisəsi</button>
+        <button id="btn-wallet-tab" class="tab-btn" onclick="switchTab('wallet-tab')">💎 Cüzdan</button>
     </div>
 
     <div id="game-tab" class="app-section active">
         <div class="cyber-panel">
-            <div class="stat-line"><span>Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
-            <div class="stat-line"><span>Nüvə Səviyyəsi:</span><span id="txt-level" class="stat-val">1 KG</span></div>
-            <div class="stat-line"><span>Kvant Enerji:</span><span id="txt-energy">100/100</span></div>
-            <div class="progress-bar"><div id="fill-energy" class="progress-fill"></div></div>
+            <h3>Balans: <span id="txt-honey" style="color: var(--neon-green);">0</span></h3>
         </div>
-
-        <div class="core-container">
-            <div class="ai-core" onclick="triggerTap()">AI CORE</div>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-blue);">
-            <h3>Adsgram Video Sistemi</h3>
-            <p style="font-size:11px; color:#aaa; margin-bottom:10px;">Telegram daxili video reklam izləyin, hesabınıza +100 Data əlavə edin.</p>
-            <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsgramVideo()">📺 ADSGRAM VİDEOSU İZLƏ</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-red);">
-            <h3 style="color: var(--neon-red);">Sürətli Enerji Doldurma</h3>
-            <p style="font-size: 11px; color: #aaa;">0.1 TON ödəyərək enerjini dərhal 100% et.</p>
-            <button class="cyber-btn danger" onclick="buyPremiumEnergy()">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-gold);">
-            <h3>Quantum Spin (🎰)</h3>
-            <button class="cyber-btn gold" onclick="triggerLuckySpin()">🎰 ŞANSLI ÇARX</button>
-        </div>
-
-        <button class="cyber-btn" onclick="upgradeCore()">Nüvəni Təkmilləşdir (100 Data)</button>
+        <div class="ai-core" onclick="triggerTap()">AI CORE</div>
     </div>
 
     <div id="task-tab" class="app-section">
         <div class="cyber-panel">
-            <h2>Sponsorlu Tapşırıqlar</h2>
-            <div class="stat-line" style="align-items: center;">
-                <span>Sponsor Telegram Kanalı</span>
-                <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 8px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)">+500 Data</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="race-tab" class="app-section">
-        <div class="cyber-panel">
-            <h2>Neon Grid Multiplayer</h2>
-            <div class="stat-line"><span>Giriş Tarifi:</span><span class="stat-val">0.30 TON</span></div>
-            <button class="cyber-btn" onclick="startRaceGame()">Yarışı Başlat 🏎️</button>
+            <h3>Sponsor Tapşırıqları</h3>
+            <p>Tezliklə aktivləşəcək.</p>
         </div>
     </div>
 
     <div id="wallet-tab" class="app-section">
         <div class="cyber-panel">
-            <h2>Crypto Cyber Wallet</h2>
-            <div class="stat-line"><span>Kripto TON Balans:</span><span id="txt-ton" class="stat-val">0.00 TON</span></div>
-            <div class="stat-line"><span>Sistem Reklam Logları:</span><span id="txt-ads" class="stat-val">0 / 50</span></div>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-blue);">
-            <h3>Data Swap Protocol</h3>
-            <button class="cyber-btn" onclick="swapDataToTon()">🔄 DATA -> 1 TON ÇEVİR</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-gold);">
-            <h3 style="color: var(--neon-gold); margin:0 0 5px 0;">Depozit Modulu</h3>
-            <button class="cyber-btn gold" onclick="confirmDepositSignal()">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-red);">
-            <h3 style="color: var(--neon-red); margin:0 0 10px 0;">Vəsait Çıxarılışı</h3>
-            <input type="text" id="inp-wallet" placeholder="Şəbəkə TON cüzdan ünvanınız">
-            <button class="cyber-btn danger" onclick="requestWithdraw()">Çıxarış Tələb Et (Min. 5 TON)</button>
+            <h3>Kripto Cüzdan Modulu</h3>
+            <p>TON Swap sistemi tezliklə bərpa olunacaq.</p>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        // Telegram WebApp obyektini təhlükəsiz başladırıq
+        let tg = window.Telegram?.WebApp || null;
+        if (tg) tg.expand();
 
-        // 🌟 ADSGRAM INITIALIZATION (SƏNİN REAL ID-N YERLƏŞDİRİLDİ + TEST REJİMİ GÜCLƏNDİRİLDİ)
-        const AdController = window.Adsgram?.createAdController("bot-30462");
-        if (AdController) {
-            AdController.isTestMode = true; 
-        }
+        let score = 0;
 
-        const DB_URL = "https://ykfrzkcfxkgvselmtewg.supabase.co/rest/v1/users";
-        const DB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZnJ6a2NmeGtndnNlbG10ZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDMzMjEsImV4cCI6MjA5NDYxOTMyMX0.V66_ZbIE2OT_VSv9l6s4Ktnt4QliB_Ay5gIBSJ4Rwbw";
-
-        let userId = tg.initDataUnsafe?.user?.id ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
-        
-        // 🚨 SÜTUN XƏTALARINA QARŞI ARXA PLANDA MÜHAFİZƏ REJİMİ
-        let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
-
+        // 🚨 ƏN SADƏ VƏ ELEMENTAR KLİKLƏMƏ FUNKSİYALARI
         function switchTab(tabId) {
-            try {
-                document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                
-                document.getElementById(tabId).classList.add('active');
-                document.getElementById('btn-' + tabId).classList.add('active');
-            } catch(e) { console.log(e); }
-        }
-
-        function watchAdsgramVideo() {
-            if (!AdController) {
-                tg.showAlert("Adsgram reklam provayderi yüklənmədi.");
-                return;
-            }
-
-            AdController.show().then(async (result) => {
-                userStats.reklam_baxis = (userStats.reklam_baxis || 0) + 1;
-                userStats.honey = (userStats.honey || 0) + 100;
-                updateUI();
-                await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
-                tg.showAlert("📺 Təbriklər! Adsgram sınaq videosu tam izlənildi. +100 Data balansınıza yazıldı.");
-            }).catch((err) => {
-                console.error(err);
-                tg.showAlert("Reklam tam yüklənmədi, lakin sınaq rejimində balans qeydə alına bilər.");
-            });
-        }
-
-        async function buyPremiumEnergy() {
-            if (parseFloat(userStats.ton_balance || 0) >= 0.1) {
-                userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.1).toFixed(2);
-                userStats.energy = 100;
-                updateUI();
-                await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance), energy: userStats.energy });
-                tg.showAlert("⚡ Enerjiniz dərhal 100% bərpa olundu!");
-            } else { tg.showAlert("Balansınızda minimum 0.1 TON olmalıdır."); }
-        }
-
-        async function completeSponsorTask(link, reward) {
-            window.open(link, "_blank");
-            userStats.honey = (userStats.honey || 0) + reward;
-            updateUI();
-            await syncToDatabase({ honey: userStats.honey });
-            tg.showAlert(`✅ Balansınıza +${reward} Data yazıldı.`);
-        }
-
-        // 🚨 SÜTUN UYĞUNSUZLUĞU ZAMANI DONMANI ENGƏLLƏYƏN FUNKSİYA
-        async function loadUserData() {
-            try {
-                let res = await fetch(`${DB_URL}?telegram_id=eq.${userId}`, {
-                    headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}` }
-                });
-                let data = await res.json();
-                
-                // Əgər telegam_id sütunu tapılmazsa alternativ olaraq user_id ilə yoxlayır
-                if (data.error || data.code) {
-                    let altRes = await fetch(`${DB_URL}?user_id=eq.${userId}`, {
-                        headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}` }
-                    });
-                    data = await altRes.json();
-                }
-
-                if (data && data.length > 0) { 
-                    // Verilənlər bazasındakı dəyərləri rəvan şəkildə dəyişənlərə mənimsədirik
-                    let b = data[0];
-                    userStats.honey = b.honey !== undefined ? b.honey : (b.balance !== undefined ? b.balance : 0);
-                    userStats.level = b.level !== undefined ? b.level : 1;
-                    userStats.energy = b.energy !== undefined ? b.energy : 100;
-                    userStats.ton_balance = b.ton_balance !== undefined ? b.ton_balance : 0.0;
-                    userStats.reklam_baxis = b.reklam_baxis !== undefined ? b.reklam_baxis : 0;
-                }
-            } catch (e) { 
-                console.log("Supabase sığorta rejimi aktiv edildi:", e);
-            }
-            updateUI();
-        }
-
-        function updateUI() {
-            try {
-                document.getElementById('txt-honey').innerText = userStats.honey;
-                document.getElementById('txt-level').innerText = userStats.level + " KG";
-                document.getElementById('txt-energy').innerText = userStats.energy + "/100";
-                document.getElementById('fill-energy').style.width = userStats.energy + "%";
-                document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance || 0).toFixed(2) + " TON";
-                document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
-            } catch(x) { console.log("UI xətası engəlləndi:", x); }
-        }
-
-        async function syncToDatabase(updates) {
-            try {
-                // Həm telegram_id həm user_id eyni anda yenilənir (Baza xətası olmasın deyə)
-                await fetch(`${DB_URL}?telegram_id=eq.${userId}`, {
-                    method: "PATCH",
-                    headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(updates)
-                });
-                await fetch(`${DB_URL}?user_id=eq.${userId}`, {
-                    method: "PATCH",
-                    headers: { "apikey": DB_KEY, "Authorization": `Bearer ${DB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(updates)
-                });
-            } catch (e) { console.error(e); }
+            console.log("Tab dəyişdirilir: " + tabId);
+            
+            // Bütün bölmələri gizlət
+            document.getElementById('game-tab').style.display = 'none';
+            document.getElementById('task-tab').style.display = 'none';
+            document.getElementById('wallet-tab').style.display = 'none';
+            
+            // Bütün düymələrin aktivliyini sil
+            document.getElementById('btn-game-tab').classList.remove('active');
+            document.getElementById('btn-task-tab').classList.remove('active');
+            document.getElementById('btn-wallet-tab').classList.remove('active');
+            
+            // Seçilən bölməni aç və düyməni aktiv et
+            document.getElementById(tabId).style.display = 'block';
+            document.getElementById('btn-' + tabId).classList.add('active');
         }
 
         function triggerTap() {
-            if (userStats.energy > 0) {
-                userStats.honey = (userStats.honey || 0) + (userStats.level || 1); 
-                userStats.energy -= 1; 
-                updateUI();
-                if (userStats.honey % 5 === 0) syncToDatabase({ honey: userStats.honey, energy: userStats.energy });
-            }
+            score++;
+            document.getElementById('txt-honey').innerText = score;
         }
-
-        async function upgradeCore() {
-            if (userStats.honey >= 100) { 
-                userStats.honey -= 100; 
-                userStats.level += 1; 
-                updateUI(); 
-                await syncToDatabase({ honey: userStats.honey, level: userStats.level }); 
-            } else { tg.showAlert("Nüvəni təkmilləşdirmək üçün 100 Data lazımdır."); }
-        }
-
-        async function triggerLuckySpin() {
-            if (userStats.reklam_baxis >= 5) { 
-                userStats.reklam_baxis -= 5; 
-                let prizes = [5, 15, 30]; 
-                let win = prizes[Math.floor(Math.random() * prizes.length)]; 
-                userStats.honey += win; 
-                updateUI(); 
-                await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis }); 
-            } else { tg.showAlert("Çarxı fırlatmaq üçün ən azı 5 reklam izləməlisiniz."); }
-        }
-
-        async function swapDataToTon() {
-            if (userStats.honey >= 20000) { 
-                userStats.honey -= 20000; 
-                userStats.ton_balance = (parseFloat(userStats.ton_balance || 0) + 1.0).toFixed(2); 
-                updateUI(); 
-                await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) }); 
-            } else { tg.showAlert("Çevirmək üçün minimum 20,000 Data lazımdır."); }
-        }
-
-        async function startRaceGame() {
-            if (parseFloat(userStats.ton_balance || 0) >= 0.30) { 
-                userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.30).toFixed(2); 
-                updateUI(); 
-                await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance) }); 
-                let room = Math.floor(1000 + Math.random() * 9000); 
-                window.location.href = `multi_car.html?room=${room}`; 
-            } else { tg.showAlert("Balansınızda kifayət qədər TON yoxdur (Min. 0.30 TON)."); }
-        }
-
-        function confirmDepositSignal() { tg.showAlert("Ödəniş sorğusu idarəçiyə göndərildi!"); }
-        
-        function requestWithdraw() {
-            let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet) { tg.showAlert("Zəhmət olmasa TON cüzdan ünvanınızı yazın."); return; }
-            if(parseFloat(userStats.ton_balance || 0) < 5.0) { tg.showAlert("Minimum çıxarış 5 TON-dur."); return; }
-            if(parseInt(userStats.reklam_baxis || 0) < 50) { tg.showAlert("Çıxarış üçün ən azı 50 reklam izləməlisiniz."); return; }
-            tg.showAlert("Çıxarış sorğunuz idarəçiyə göndərildi!");
-        }
-
-        setInterval(() => {
-            if (userStats.energy < 100) { 
-                userStats.energy += 1; 
-                updateUI(); 
-                if(userStats.energy % 10 === 0) syncToDatabase({ energy: userStats.energy }); 
-            }
-        }, 5000);
-
-        window.onload = loadUserData;
     </script>
 </body>
 </html>
