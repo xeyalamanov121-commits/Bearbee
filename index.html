@@ -284,9 +284,8 @@
             } catch(e) {}
         }
 
-        // Supabase REST URL konfiqurasiyası
-        const DB_URL = "https://ykfrzkcfxkgvselmtewg.supabase.co/rest/v1/users";
-        const DB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZnJ6a2NmeGtndnNlbG10ZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDMzMjEsImV4cCI6MjA5NDYxOTMyMX0.V66_ZbIE2OT_VSv9l6s4Ktnt4QliB_Ay5gIBSJ4Rwbw";
+        // 🛠️ INTEGRASIYA: Birbaşa verilənlər bazası yerinə Python FastAPI Backend API linkimiz
+        const API_BASE_URL = "http://localhost:8000/api/user";
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
@@ -308,29 +307,35 @@
             }
         }
 
-        // Adsgram Rəsmi Blok Hash Sistemi (bg-5063)
+        // Adsgram Sığortalı Başladılma Mexanizmi
         let AdController = null;
-        if (window.Adsgram) {
-            try {
-                AdController = window.Adsgram.init({ blockHash: "bg-5063" });
-            } catch(e) {
-                console.error("Adsgram xətası:", e);
+        function initAdsgramSafe() {
+            if (window.Adsgram) {
+                try {
+                    AdController = window.Adsgram.init({ blockHash: "bg-5063" });
+                    console.log("Adsgram uğurla konfiqurasiya olundu.");
+                } catch(e) {
+                    console.error("Adsgram init xətası:", e);
+                }
             }
         }
         
         function watchAdsgramVideo() {
+            if (!AdController) { initAdsgramSafe(); }
+
             if (AdController) {
                 AdController.show().then(async (result) => {
                     userStats.reklam_baxis = (parseInt(userStats.reklam_baxis) || 0) + 1;
                     userStats.honey = (parseInt(userStats.honey) || 0) + 100;
                     updateUI();
-                    await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
+                    await syncToBackend(); // Python üzərindən sinxronizasiya
                     showAlert("📺 Reklam izlənildi! +100 Data əlavə olundu.");
                 }).catch((err) => {
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
                 });
             } else {
-                showAlert("⚠️ Reklam şəbəkəsi yüklənmədi. Yenidən cəhd edin.");
+                showAlert("⚠️ Reklam şəbəkəsi hələ tam yüklənməyib. AdBlocker və ya VPN aktivdirsə, söndürüb bir neçə saniyə gözləyin.");
+                initAdsgramSafe();
             }
         }
 
@@ -341,12 +346,12 @@
                 userStats.energy -= 1;
                 updateUI();
                 if (userStats.honey % 5 === 0) {
-                    syncToDatabase({ honey: userStats.honey, energy: userStats.energy });
+                    syncToBackend();
                 }
             }
         }
 
-        // Düymə Klik Dinləyiciləri (Kritik Donma Həlli)
+        // Mobil sensor donmalarına qarşı dinamik qoruyucu dinləyicilər
         const coreBtn = document.getElementById('ai-core-btn');
         if(coreBtn) {
             coreBtn.addEventListener('touchstart', (e) => {
@@ -364,7 +369,7 @@
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.1).toFixed(2);
                 userStats.energy = 100;
                 updateUI();
-                await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance), energy: userStats.energy });
+                await syncToBackend();
                 showAlert("⚡ Enerjiniz bərpa olundu!");
             } else { showAlert("Kifayət qədər TON yoxdur."); }
         }
@@ -373,7 +378,7 @@
             window.open(link, "_blank");
             userStats.honey += reward;
             updateUI();
-            await syncToDatabase({ honey: userStats.honey });
+            await syncToBackend();
             showAlert(`+${reward} Data yazıldı.`);
         }
 
@@ -382,7 +387,7 @@
                 userStats.honey -= 100;
                 userStats.level += 1;
                 updateUI();
-                await syncToDatabase({ honey: userStats.honey, level: userStats.level });
+                await syncToBackend();
             } else { showAlert("100 Data lazımdır."); }
         }
 
@@ -393,7 +398,7 @@
                 let win = prizes[Math.floor(Math.random() * prizes.length)];
                 userStats.honey += win;
                 updateUI();
-                await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis });
+                await syncToBackend();
                 showAlert(`🎰 +${win} Data qazandınız!`);
             } else { showAlert("Ən azı 5 reklam izləməlisiniz."); }
         }
@@ -403,7 +408,7 @@
                 userStats.honey -= 20000;
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
                 updateUI();
-                await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) });
+                await syncToBackend();
             } else { showAlert("Minimum 20,000 Data lazımdır."); }
         }
 
@@ -411,7 +416,7 @@
             if (parseFloat(userStats.ton_balance) >= 0.30) {
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) - 0.30).toFixed(2);
                 updateUI();
-                await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance) });
+                await syncToBackend();
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
             } else { showAlert("0.30 TON lazımdır."); }
@@ -442,56 +447,48 @@
             else alert(msg);
         }
 
-        // 🛠️ YENİLƏNMİŞ VƏ SIĞORTALANMIŞ BAZA OXUMA METODU
+        // 🛠️ YENİLƏNMİŞ VƏ PYTHON BACKEND-Ə BAĞLANMIŞ OXUMA METODU
         async function loadUserData() {
-            updateUI(); // Baza cavab verənə qədər interfeys açıq qalsın və işləsin
+            updateUI();
             try {
-                // Səhv əlaqə axtarışının qarşısını almaq üçün URL formatı təmizləndi
-                let res = await fetch(`${DB_URL}?select=*&user_id=eq.${userId}`, {
-                    method: "GET",
-                    headers: { 
-                        "apikey": DB_KEY, 
-                        "Authorization": `Bearer ${DB_KEY}`,
-                        "Content-Type": "application/json"
-                    }
-                });
-                
+                let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res.ok) {
-                    let data = await res.json();
-                    if (data && data.length > 0) {
-                        let b = data[0];
-                        userStats.honey = parseInt(b.honey) || 0;
-                        userStats.level = parseInt(b.level) || 1;
-                        userStats.energy = b.energy !== undefined ? parseInt(b.energy) : 100;
-                        userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
-                        userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
-                    }
+                    let b = await res.json();
+                    userStats.honey = parseInt(b.honey) || 0;
+                    userStats.level = parseInt(b.level) || 1;
+                    userStats.energy = b.energy !== undefined ? parseInt(b.energy) : 100;
+                    userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
+                    userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                 }
             } catch(e) {
-                console.log("Məlumat oxunarkən xəta yarandı, lokal rejim aktivdir.");
+                console.log("Python Backend ilə əlaqə qurulmadı, lokal rejim aktivdir.");
             }
             updateUI();
         }
 
-        // 🛠️ YENİLƏNMİŞ VƏ SIĞORTALANMIŞ BAZA YAZMA METODU
-        async function syncToDatabase(updates) {
+        // 🛠️ YENİLƏNMİŞ VƏ PYTHON BACKEND-Ə BAĞLANMIŞ YAZMA METODU
+        async function syncToBackend() {
             try {
-                await fetch(`${DB_URL}?user_id=eq.${userId}`, {
-                    method: "PATCH",
+                await fetch(`${API_BASE_URL}/sync`, {
+                    method: "POST",
                     headers: { 
-                        "apikey": DB_KEY, 
-                        "Authorization": `Bearer ${DB_KEY}`, 
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
+                        "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(updates)
+                    body: JSON.stringify({
+                        user_id: userId,
+                        honey: userStats.honey,
+                        level: userStats.level,
+                        energy: userStats.energy,
+                        ton_balance: parseFloat(userStats.ton_balance),
+                        reklam_baxis: userStats.reklam_baxis
+                    })
                 });
             } catch(e) {
                 console.log("Sinxronizasiya xətası.");
             }
         }
 
-        // Enerji doldurma
+        // Enerji doldurma dövrü
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
@@ -501,7 +498,9 @@
 
         window.onload = function() {
             loadUserData();
+            setTimeout(initAdsgramSafe, 1200); // Skriptlərin tam oturması üçün kiçik bir asinxron gözləmə qatıldı
         };
     </script>
 </body>
 </html>
+
