@@ -502,7 +502,7 @@
                 alertEnergyEmpty: "🔋 Kvant enerjiniz bitib! Reklam izləyərək pulsuz doldurun.", alertNoTon: "Kifayət qədər TON yoxdur.", alertTaskDone: "+500 Data yazıldı.", alertNoData: "Minimum 20,000 Data lazımdır.", alertSwapDone: "🔄 1 TON Çıxarış balansınıza əlavə edildi!",
                 alertRaceError: "❌ Yarışa daxil olmaq üçün balansınızda 0.50 TON Depozit pulu olmalıdır! Reklamlardan qazanılan balans burada keçərli deyil.", alertDepositSent: "🧾 Depozit sorğunuz admin panelə ötürüldü! Təsdiqdən sonra yarış balansınız yenilənəcək.",
                 alertInpWallet: "Cüzdan ünvanını daxil edin.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Çıxarış sorğusu göndərildi!", alertRaceEnd: "🏎️ Yarış başa çatdı! Balansınıza +{amt} Data əlavə edildi.",
-                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Mesajı bura daxil edin..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Mesajı bura daxil edin...", alertNotEnoughData: "Kifayət qədər Data yoxdur."
             },
             en: {
                 guide: `<strong style="color: var(--neon-green);">💡 SYSTEM GUIDE & RULES:</strong><br>1. Click on the <strong>AI CORE</strong> to quickly increase your Data Balance.<br>2. When out of energy, <strong>watch an ad</strong> to refill instantly and for free.<br>3. Convert every <strong>20,000 Data</strong> into <strong>1 TON Withdrawal Balance</strong> from the Wallet.<br>4. 🏎️ <strong>Race Regulation:</strong> Entry fee for multiplayer races is 0.50 TON and is <strong>valid ONLY via Deposit Balance</strong>. Entering with converted game money is forbidden.`,
@@ -521,7 +521,7 @@
                 alertEnergyEmpty: "🔋 Your quantum energy is depleted! Refill for free by watching an ad.", alertNoTon: "Not enough TON.", alertTaskDone: "+500 Data credited.", alertNoData: "Minimum 20,000 Data required.", alertSwapDone: "🔄 1 TON added to your withdrawal balance!",
                 alertRaceError: "❌ You must have 0.50 TON Deposit funds in your balance to enter the race! Game-converted balances are not valid here.", alertDepositSent: "🧾 Your deposit request has been sent to the admin panel! Your race balance will update after confirmation.",
                 alertInpWallet: "Please enter your wallet address.", alertMinWithdraw: "Minimum 5 TON.", alertWithdrawSent: "Withdrawal request submitted!", alertRaceEnd: "🏎️ Race finished! +{amt} Data added to your balance.",
-                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Type message here..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Type message here...", alertNotEnoughData: "Not enough Data."
             },
             ru: {
                 guide: `<strong style="color: var(--neon-green);">💡 ИНСТРУКЦИЯ И ПРАВИЛА:</strong><br>1. Кликайте по <strong>AI CORE</strong>, чтобы быстро увеличить баланс данных.<br>2. Когда закончится энергия, <strong>посмотрите рекламу</strong>, чтобы мгновенно и бесплатно пополнить её.<br>3. Каждые <strong>20,000 Data</strong> можно конвертировать в <strong>1 TON баланса для вывода</strong> в Кошельке.<br>4. 🏎️ <strong>Регламент гонок:</strong> Вход в мультиплеерные гонки стоит 0.50 TON и возможен <strong>ТОЛЬКО через Депозитный баланс</strong>. Вход за игровые деньги запрещен.`,
@@ -540,7 +540,7 @@
                 alertEnergyEmpty: "🔋 Ваша квантовая энергия истощена! Пополните бесплатно, посмотрев рекламу.", alertNoTon: "Недостаточно TON.", alertTaskDone: "+500 Data зачислено.", alertNoData: "Требуется минимум 20,000 Data.", alertSwapDone: "🔄 1 TON добавлен на ваш баланс для вывода!",
                 alertRaceError: "❌ Для участия в гонке на вашем балансе должно быть 0.50 TON Депозита! Игровой баланс здесь недействителен.", alertDepositSent: "🧾 Ваш запрос на депозит отправлен в админ-панель! Гонка-баланс обновится после подтверждения.",
                 alertInpWallet: "Пожалуйста, введите адрес кошелька.", alertMinWithdraw: "Минимум 5 TON.", alertWithdrawSent: "Запрос на вывод отправлен!", alertRaceEnd: "🏎️ Гонка завершена! +{amt} Data добавлено на ваш баланс.",
-                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Введите сообщение..."
+                chatTitle: "💬 LIVE CHAT", chatPlaceholder: "Введите сообщение...", alertNotEnoughData: "Недостаточно Data."
             }
         };
 
@@ -548,7 +548,8 @@
             currentLang = lang;
             localStorage.setItem("bearbee_lang", lang);
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`lang-${lang}`).classList.add('active');
+            const btn = document.getElementById(`lang-${lang}`);
+            if (btn) btn.classList.add('active');
             updateLanguageUI();
         }
 
@@ -696,7 +697,7 @@
             if (userStats.honey >= 100) {
                 userStats.honey -= 100; userStats.level += 1;
                 updateUI(); saveToLocalStorage(); triggerLazySync();
-            } else { showAlert("100 Data"); }
+            } else { showAlert(translations[currentLang].alertNotEnoughData || "100 Data"); }
         }
 
         async function triggerLuckySpin() {
@@ -759,7 +760,8 @@
         // 👑 ADMİN REYESTR
         function checkAdminIdentity() {
             if (userId === MASTER_ADMIN_ID) {
-                document.getElementById('admin-root-panel').style.display = "block";
+                const adminPanel = document.getElementById('admin-root-panel');
+                if (adminPanel) adminPanel.style.display = "block";
                 refreshAdminUserList();
             }
         }
@@ -774,6 +776,7 @@
 
         function refreshAdminUserList() {
             let select = document.getElementById('adm-user-list');
+            if(!select) return;
             select.innerHTML = '<option value="">-- Bir İstifadəçi Seçin --</option>';
             let list = JSON.parse(localStorage.getItem("bearbee_global_user_ids") || "[]");
             
@@ -900,12 +903,19 @@
             const wrapper = document.createElement('div');
             wrapper.className = `msg-wrapper ${isSelf ? 'self' : 'other'}`;
             
-            wrapper.innerHTML = `
-                <div class="msg-bubble">
-                    <div class="msg-user">@${sender}</div>
-                    <div>${msg}</div>
-                </div>
-            `;
+            const msgBubble = document.createElement('div');
+            msgBubble.className = 'msg-bubble';
+
+            const msgUser = document.createElement('div');
+            msgUser.className = 'msg-user';
+            msgUser.textContent = `@${sender}`;
+
+            const msgText = document.createElement('div');
+            msgText.textContent = msg; // XSS qarşısı textContent ilə tam alındı.
+
+            msgBubble.appendChild(msgUser);
+            msgBubble.appendChild(msgText);
+            wrapper.appendChild(msgBubble);
             
             chatBox.appendChild(wrapper);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -915,7 +925,6 @@
             const text = chatInput.value.trim();
             if (text === "") return;
 
-            // 🔥 SERVER TİMESTAMP ƏVƏZİNƏ BİRBAŞA MİLİSANİYƏ (Vaxt İndeksi xətası olmasın deyə)
             try {
                 await db.collection("messages").add({
                     user: username,
@@ -934,7 +943,6 @@
             if (e.key === 'Enter') sendMessageAction();
         });
 
-        // KƏSİNTİSİZ REAL-TIME METOD (timestamp-ə görə sıralayırıq)
         db.collection("messages")
           .orderBy("timestamp", "asc")
           .limitToLast(40)
@@ -946,7 +954,8 @@
                       const data = change.doc.data();
                       const docId = change.doc.id;
                       
-                      if (data.msg && data.user) {
+                      // Timestamp yoxlanışı (Saniyə fərqində null gəlməsin deyə)
+                      if (data.msg && data.user && data.timestamp) {
                           const isSelf = (data.id === userId);
                           appendMessage(docId, data.user, data.msg, isSelf);
                       }
