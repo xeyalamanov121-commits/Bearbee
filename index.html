@@ -283,7 +283,7 @@
             } catch(e) {}
         }
 
-        // 🔗 SƏNİN RƏSMİ CANLI BACKEND API LİNKİN (24/7 YUXUSUZ VERCEL):
+        // 🔗 SƏNİN RƏSMİ CANLI BACKEND API LİNKİN:
         const API_BASE_URL = "https://bearbee.vercel.app/api/user";
 
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
@@ -294,7 +294,6 @@
             return parseInt(val) || 0;
         }
 
-        // Tab Keçid Sistemi
         function switchTab(tabId) {
             try {
                 document.getElementById('game-tab').style.display = 'none';
@@ -309,14 +308,16 @@
             } catch (e) {}
         }
 
-        // Adsgram Sistemi
+        // Adsgram Təhlükəsiz İzolasiya Sistemi
         let AdController = null;
         function initAdsgramSafe() {
             if (window.Adsgram) {
                 try {
                     AdController = window.Adsgram.init({ blockHash: "3742" });
-                    console.log("Adsgram hazırdır.");
-                } catch(e) {}
+                    console.log("Adsgram uğurla inteqrasiya olundu.");
+                } catch(e) {
+                    console.error("Adsgram blok xətası:", e);
+                }
             }
         }
         
@@ -334,18 +335,17 @@
                     showAlert("Mükafat üçün videonu sonadək izləməlisiniz.");
                 });
             } else {
-                showAlert("⚠️ Reklam bloku yüklənmədi. Yenidən cəhd edin.");
+                showAlert("⚠️ Reklam provayderi məşğuldur və ya bloklanıb. Bir az sonra yenidən klikləyin.");
                 initAdsgramSafe();
             }
         }
 
-        // Tapper Mexanikası (HƏR KLİKDƏ ANINDA SİNXRONİZASİYA EDƏN VERSİYA)
         function triggerTap() {
             if (userStats.energy > 0) {
                 userStats.honey += userStats.level;
                 userStats.energy -= 1;
                 updateUI();
-                syncToBackend(); // Gecikmədən birbaşa Vercel bazasına ötürürük
+                syncToBackend(); 
             }
         }
 
@@ -444,7 +444,7 @@
             else alert(msg);
         }
 
-        // Onlayn bazadan oxuma
+        // TƏHLÜKƏSİZ DATA YÜKLƏMƏ (Adsgram xətası bu funksiyanı qıra bilməz)
         async function loadUserData() {
             updateUI();
             try {
@@ -457,24 +457,22 @@
                     userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
                     userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
                     
-                    // 🏎️ KİBER YARIŞDAN GERİ DÖNƏNDƏ BONUS XALIN YOXLANILMASI:
                     let raceBonus = localStorage.getItem("race_bonus_reward");
                     if (raceBonus) {
                         let bonusAmount = parseInt(raceBonus) || 0;
                         userStats.honey += bonusAmount;
-                        localStorage.removeItem("race_bonus_reward"); // Məlumatı təmizləyirik
+                        localStorage.removeItem("race_bonus_reward");
                         updateUI();
-                        await syncToBackend(); // Bonusu anında bazaya yazırıq
+                        await syncToBackend();
                         showAlert(`🏎️ Yarış başa çatdı! Balansınıza +${bonusAmount} Data əlavə edildi.`);
                     }
                 }
             } catch(e) {
-                console.log("Qoşulma xətası.");
+                console.log("Datalar Vercel-dən çəkilərkən xəta yarandı, yerli saxlanılır.");
             }
             updateUI();
         }
 
-        // Onlayn bazaya yazma
         async function syncToBackend() {
             if (isSyncing) return;
             isSyncing = true;
@@ -506,8 +504,8 @@
         }, 5000);
 
         window.onload = function() {
-            loadUserData();
-            setTimeout(initAdsgramSafe, 3000); 
+            loadUserData(); // Səhifə yüklənəndə birinci verilənlər bazası oxunur
+            setTimeout(initAdsgramSafe, 1500); // Reklam skripti tam arxa planda müstəqil işə salınır
         };
     </script>
 </body>
