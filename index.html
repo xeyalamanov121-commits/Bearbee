@@ -41,7 +41,6 @@
             overflow-x: hidden;
         }
 
-        /* LANG PANEL */
         .lang-container {
             display: flex;
             justify-content: flex-end;
@@ -71,7 +70,6 @@
             box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
         }
 
-        /* TAB PANELİ */
         .tab-container {
             display: flex; 
             width: 100%;
@@ -106,7 +104,6 @@
             border-bottom: 3px solid var(--neon-green);
         }
 
-        /* Əsas Kontent Sahəsi */
         .main-content {
             width: 100%;
             max-width: 480px;
@@ -234,7 +231,6 @@
             color: #a0b0a8;
         }
 
-        /* 💬 CANLI SÖHBƏT TERMİNAL STİLİ */
         .chat-panel {
             border-color: var(--neon-blue) !important;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.1) !important;
@@ -289,7 +285,6 @@
         .chat-input-area input { margin-bottom: 0; text-align: left; padding: 10px; border-color: var(--neon-blue); }
         .chat-input-area button { width: auto; margin-top: 0; padding: 0 20px; border-color: var(--neon-green); color: var(--neon-green); }
 
-        /* 👑 ROOT ADMİN PANEL STİLİ */
         #admin-root-panel {
             display: none;
             border: 2px solid var(--neon-red);
@@ -472,9 +467,6 @@
     </div>
 
     <script>
-        // =================================================================
-        // 🔥 FIREBASE KONFİQURASİYASI
-        // =================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB79GGNtakyfCwkGrIsuRsR03jFI8bB1rs",
             authDomain: "bearbee-196c8.firebaseapp.com",
@@ -495,6 +487,7 @@
             try { tg.expand(); tg.ready(); } catch(e) {}
         }
 
+        // ⚠️ CANLIYA ÇIXARDIQDAN SONRA BU URL-İ ÖZ RENDER/RAILWAY KEÇİDİNİZLƏ DƏYİŞİN!
         const BACKEND_URL = "https://bearbee.vercel.app";
         const API_BASE_URL = `${BACKEND_URL}/api/user`;
         const socket = io(BACKEND_URL);
@@ -751,28 +744,48 @@
             } else { showAlert(translations[currentLang].alertNoData); }
         }
 
+        // 🔥 MATCHMAKING 4 NEFERLIK OYUN AXTARISI FUNKSIYASI
         async function startRaceGame() {
             if (parseFloat(userStats.deposit_balance) >= 0.50) {
                 userStats.deposit_balance = (parseFloat(userStats.deposit_balance) - 0.50).toFixed(2);
-                updateUI(); saveToLocalStorage();
+                updateUI(); 
+                saveToLocalStorage();
+                
                 if (syncTimeout) clearTimeout(syncTimeout);
                 await syncToBackend();
-                let room = Math.floor(1000 + Math.random() * 9000);
-                window.location.href = `multi_car.html?room=${room}`;
+
+                // Duymeleri kilidleyirik ve status yaziriq
+                const btn1 = document.getElementById('btn-fast-race-start');
+                const btn2 = document.getElementById('btn-race-tab-start');
+                [btn1, btn2].forEach(b => { if(b) { b.disabled = true; b.innerText = currentLang === "az" ? "Oyunçu axtarılır (0/4)..." : "Searching players..."; } });
+
+                socket.emit('find_match', {
+                    user_id: userId,
+                    username: username
+                });
             } else { showAlert(translations[currentLang].alertRaceError); }
         }
 
-        // 💸 İSTİFADƏÇİ DEPOZİT SORĞUSU GÖNDƏRƏNDƏ
+        // Canlı yenilənmə siqnalları
+        socket.on('match_room_update', (data) => {
+            const btn1 = document.getElementById('btn-fast-race-start');
+            const btn2 = document.getElementById('btn-race-tab-start');
+            [btn1, btn2].forEach(b => { if(b) b.innerText = currentLang === "az" ? `Oyunçu gözlənilir (${data.currentPlayers}/4)...` : `Waiting (${data.currentPlayers}/4)...`; });
+        });
+
+        socket.on('match_start', (data) => {
+            showAlert(currentLang === "az" ? "Yarış tapıldı! Daxil olunur..." : "Match found! Loading...");
+            setTimeout(() => {
+                window.location.href = `multi_car.html?room=${data.roomId}&userId=${userId}`;
+            }, 1000);
+        });
+
         async function confirmDepositSignal() { 
-            let amount = prompt(currentLang === "az" ? "Neçə TON depozit etdiniz?" : currentLang === "en" ? "How many TON did you deposit?" : "Сколько TON вы внесли?", "1.0");
-            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-                showAlert(currentLang === "az" ? "Düzgün məbləğ daxil edin!" : "Enter a valid amount!");
-                return;
-            }
-            let txHash = prompt(currentLang === "az" ? "Tranzaksiya kodu (Tx Hash) və ya Şərh daxil edin (İstəyə bağlı):" : "Enter Transaction Hash or Comment (Optional):", "");
+            let amount = prompt(currentLang === "az" ? "Neçə TON depozit etdiniz?" : "How many TON?", "1.0");
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return;
+            let txHash = prompt(currentLang === "az" ? "Tranzaksiya kodu (Tx Hash):" : "Tx Hash:", "");
 
             try {
-                // Firebase-də ayrıca "deposit_requests" qovluğuna yazırıq
                 await db.collection("deposit_requests").add({
                     user_id: userId,
                     amount: parseFloat(amount).toFixed(2),
@@ -781,9 +794,7 @@
                     timestamp: Date.now()
                 });
                 showAlert(translations[currentLang].alertDepositSent);
-            } catch(e) {
-                showAlert("Firebase error.");
-            }
+            } catch(e) { showAlert("Firebase error."); }
         }
 
         function requestWithdraw() {
@@ -810,9 +821,6 @@
             else alert(msg);
         }
 
-        // =================================================================
-        // 👑 ADMİN STRUKTURU VƏ ILETIŞIM FUNKSIYALARI
-        // =================================================================
         function checkAdminIdentity() {
             if (userId === MASTER_ADMIN_ID) {
                 const adminPanel = document.getElementById('admin-root-panel');
@@ -824,19 +832,14 @@
 
         async function registerUserIdInFirestore(id) {
             try {
-                await db.collection("users").doc(id).set({
-                    user_id: id,
-                    last_seen: Date.now()
-                }, { merge: true });
-            } catch(e) { console.error("Qeydiyyat xətası:", e); }
+                await db.collection("users").doc(id).set({ user_id: id, last_seen: Date.now() }, { merge: true });
+            } catch(e) {}
         }
 
-        // Bütün sistemdəki real oyunçuların siyahısını çəkir
         async function refreshAdminUserList() {
             let select = document.getElementById('adm-user-list');
             if(!select) return;
             select.innerHTML = '<option value="">-- Bir İstifadəçi Seçin --</option>';
-            
             try {
                 let snapshot = await db.collection("users").get();
                 snapshot.forEach(doc => {
@@ -845,115 +848,58 @@
                     opt.value = id; opt.innerText = `İstifadəçi ID: ${id}`;
                     select.appendChild(opt);
                 });
-
-                // Siyahıdan biri seçilən kimi onun balanslarını dərhal xanalara doldururuq
-                select.onchange = function() {
-                    loadTargetUserStatsToFields(this.value);
-                };
-            } catch(e) { console.error("Siyahı çəkilə bilmədi:", e); }
+                select.onchange = function() { loadTargetUserStatsToFields(this.value); };
+            } catch(e) {}
         }
 
-        // 🎯 Seçilən ID-nin yaddaşdakı balansını daxiletmə xanalarına yazır
         function loadTargetUserStatsToFields(targetId) {
             if(!targetId) return;
             let targetKey = `bearbee_stats_${targetId}`;
             let targetStats = JSON.parse(localStorage.getItem(targetKey) || '{"honey":0,"level":1,"energy":100,"ton_balance":0.0,"deposit_balance":0.0,"reklam_baxis":0}');
-            
             document.getElementById('adm-data-val').value = targetStats.honey;
             document.getElementById('adm-dep-val').value = targetStats.deposit_balance;
             document.getElementById('adm-with-val').value = targetStats.ton_balance;
         }
 
-        // 📥 GƏLƏN DEPOZİT SORĞULARINI CƏDVƏLƏ YÜKLƏYİR
         async function loadDepositRequests() {
             let tbody = document.getElementById('deposit-requests-table');
             if(!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666;">Yüklənir...</td></tr>';
-
+            tbody.innerHTML = '';
             try {
                 let snapshot = await db.collection("deposit_requests").where("status", "==", "pending").get();
-                tbody.innerHTML = '';
-
-                if(snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--neon-green);">Aktiv depozit sorğusu yoxdur.</td></tr>';
-                    return;
-                }
-
+                if(snapshot.empty) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--neon-green);">Aktiv depozit sorğusu yoxdur.</td></tr>'; return; }
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     let reqId = doc.id;
                     let tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${data.user_id}</td>
-                        <td style="color: var(--neon-gold); font-weight:bold;">${data.amount} TON</td>
-                        <td style="font-size:11px; max-width:120px; overflow:hidden; text-overflow:ellipsis;">${data.tx_hash}</td>
-                        <td>
-                            <button onclick="approveDeposit('${reqId}', '${data.user_id}', ${data.amount})" style="background:#28a745; border:none; color:#fff; padding:3px 6px; border-radius:4px; cursor:pointer;">✅ Təsdiqlə</button>
-                            <button onclick="rejectDeposit('${reqId}')" style="background:#ff0055; border:none; color:#fff; padding:3px 6px; border-radius:4px; cursor:pointer;">❌ Rədd</button>
-                        </td>
-                    `;
+                    tr.innerHTML = `<td>${data.user_id}</td><td style="color:var(--neon-gold); font-weight:bold;">${data.amount} TON</td><td>${data.tx_hash}</td><td><button onclick="approveDeposit('${reqId}', '${data.user_id}', ${data.amount})" style="background:#28a745; border:none; color:#fff; padding:3px 6px; border-radius:4px; cursor:pointer;">✅</button></td>`;
                     tbody.appendChild(tr);
                 });
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Xəta yarandı.</td></tr>';
-            }
+            } catch(e) {}
         }
 
-        // ✅ DEPOZİTİ TƏSDİQLƏMƏK
         async function approveDeposit(requestId, targetUserId, amount) {
-            if(!confirm(`ID: ${targetUserId} üçün ${amount} TON depoziti təsdiqləyirsiniz?`)) return;
-
             try {
                 let targetKey = `bearbee_stats_${targetUserId}`;
                 let targetStats = JSON.parse(localStorage.getItem(targetKey) || '{"honey":0,"level":1,"energy":100,"ton_balance":0.0,"deposit_balance":0.0,"reklam_baxis":0}');
-                
                 targetStats.deposit_balance = (parseFloat(targetStats.deposit_balance || 0) + parseFloat(amount)).toFixed(2);
                 localStorage.setItem(targetKey, JSON.stringify(targetStats));
 
-                // Backend-ə sinxronizasiya
                 await fetch(`${API_BASE_URL}/sync`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: targetUserId,
-                        honey: parseInt(targetStats.honey),
-                        level: parseInt(targetStats.level),
-                        energy: parseInt(targetStats.energy),
-                        ton_balance: parseFloat(targetStats.ton_balance),
-                        deposit_balance: parseFloat(targetStats.deposit_balance),
-                        reklam_baxis: parseInt(targetStats.reklam_baxis)
-                    })
+                    body: JSON.stringify({ user_id: targetUserId, honey: parseInt(targetStats.honey), level: parseInt(targetStats.level), energy: parseInt(targetStats.energy), ton_balance: parseFloat(targetStats.ton_balance), deposit_balance: parseFloat(targetStats.deposit_balance), reklam_baxis: parseInt(targetStats.reklam_baxis) })
                 });
 
-                // Sorğunu bazada tamamlandı olaraq işarələyirik
-                await db.collection("deposit_requests").doc(requestId).update({
-                    status: "completed",
-                    resolved_at: Date.now()
-                });
-
-                showAlert("Depozit başarıyla təsdiqləndi!");
-                loadDepositRequests();
+                await db.collection("deposit_requests").doc(requestId).update({ status: "completed", resolved_at: Date.now() });
+                showAlert("Depozit təsdiqləndi!"); loadDepositRequests();
                 if(targetUserId === userId) { userStats = targetStats; updateUI(); }
-            } catch(e) { showAlert("Xəta baş verdi."); }
-        }
-
-        // ❌ SORĞUNU RƏDD ETMƏK
-        async function rejectDeposit(requestId) {
-            if(!confirm("Bu sorğudan imtina etmək istədiyinizə əminsiniz?")) return;
-            try {
-                await db.collection("deposit_requests").doc(requestId).update({
-                    status: "rejected",
-                    resolved_at: Date.now()
-                });
-                showAlert("Sorğu ləğv edildi.");
-                loadDepositRequests();
-            } catch(e) { showAlert("Xəta baş verdi."); }
+            } catch(e) {}
         }
 
         async function executeAdminEdit() {
             let targetId = document.getElementById('adm-user-list').value;
-            if(!targetId) { showAlert("Zəhmət olmasa siyahıdan bir ID seçin!"); return; }
-
+            if(!targetId) return;
             let newData = document.getElementById('adm-data-val').value;
             let newDep = document.getElementById('adm-dep-val').value;
             let newWith = document.getElementById('adm-with-val').value;
@@ -971,38 +917,24 @@
                 await fetch(`${API_BASE_URL}/sync`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: targetId,
-                        honey: parseInt(targetStats.honey),
-                        level: parseInt(targetStats.level) || 1,
-                        energy: parseInt(targetStats.energy) || 100,
-                        ton_balance: parseFloat(targetStats.ton_balance),
-                        deposit_balance: parseFloat(targetStats.deposit_balance),
-                        reklam_baxis: parseInt(targetStats.reklam_baxis) || 0
-                    })
+                    body: JSON.stringify({ user_id: targetId, honey: parseInt(targetStats.honey), level: parseInt(targetStats.level), energy: parseInt(targetStats.energy), ton_balance: parseFloat(targetStats.ton_balance), deposit_balance: parseFloat(targetStats.deposit_balance), reklam_baxis: parseInt(targetStats.reklam_baxis) })
                 });
-                showAlert(`ID: ${targetId} uğurla yeniləndi!`);
-            } catch(e) { showAlert("Backend sinxronizasiya xətası."); }
-
+                showAlert("Uğurla yeniləndi!");
+            } catch(e) {}
             if(targetId === userId) { userStats = targetStats; updateUI(); }
         }
 
         async function loadUserData() {
             loadFromLocalStorage(); updateLanguageUI();
             await registerUserIdInFirestore(userId);
-            
             try {
                 let res = await fetch(`${API_BASE_URL}/${userId}`);
                 if (res && res.ok) {
                     let b = await res.json();
-                    
                     if ((parseInt(b.honey) || 0) >= userStats.honey) {
-                        userStats.honey = parseInt(b.honey) || 0;
-                        userStats.level = parseInt(b.level) || 1;
-                        userStats.ton_balance = parseFloat(b.ton_balance) || 0.0;
-                        userStats.deposit_balance = parseFloat(b.deposit_balance) || 0.0;
-                        userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0;
-                        userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
+                        userStats.honey = parseInt(b.honey) || 0; userStats.level = parseInt(b.level) || 1;
+                        userStats.ton_balance = parseFloat(b.ton_balance) || 0.0; userStats.deposit_balance = parseFloat(b.deposit_balance) || 0.0;
+                        userStats.reklam_baxis = parseInt(b.reklam_baxis) || 0; userStats.energy = b.energy !== undefined ? parseInt(b.energy) : userStats.energy;
                     }
                     
                     let raceBonus = localStorage.getItem("race_bonus_reward");
@@ -1016,8 +948,7 @@
                     saveToLocalStorage();
                 }
             } catch(e) {}
-            checkAdminIdentity();
-            updateLanguageUI();
+            checkAdminIdentity(); updateLanguageUI();
         }
 
         async function syncToBackend() {
@@ -1027,108 +958,55 @@
                 await fetch(`${API_BASE_URL}/sync`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        honey: parseInt(userStats.honey),
-                        level: parseInt(userStats.level),
-                        energy: parseInt(userStats.energy),
-                        ton_balance: parseFloat(userStats.ton_balance),
-                        deposit_balance: parseFloat(userStats.deposit_balance),
-                        reklam_baxis: parseInt(userStats.reklam_baxis)
-                    })
+                    body: JSON.stringify({ user_id: userId, honey: parseInt(userStats.honey), level: parseInt(userStats.level), energy: parseInt(userStats.energy), ton_balance: parseFloat(userStats.ton_balance), deposit_balance: parseFloat(userStats.deposit_balance), reklam_baxis: parseInt(userStats.reklam_baxis) })
                 });
             } catch(e) {} finally { isSyncing = false; }
         }
 
         setInterval(() => {
-            if (typeof userStats.energy !== 'undefined' && userStats.energy < 100) {
-                userStats.energy += 1;
-                updateUI(); 
-                saveToLocalStorage();
-            }
+            if (userStats.energy < 100) { userStats.energy += 1; updateUI(); saveToLocalStorage(); }
         }, 5000);
 
-        // =================================================================
-        // 💬 REALTIME CANLI SÖHBƏT (FIREBASE)
-        // =================================================================
+        // LIVE CHAT
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
         const sendMsgBtn = document.getElementById('send-msg-btn');
-
         let renderedMessageIds = new Set();
 
         function appendMessage(docId, sender, msg, isSelf = false) {
             if (renderedMessageIds.has(docId)) return;
             renderedMessageIds.add(docId);
-
             const wrapper = document.createElement('div');
             wrapper.className = `msg-wrapper ${isSelf ? 'self' : 'other'}`;
-            
             const msgBubble = document.createElement('div');
             msgBubble.className = 'msg-bubble';
-
-            const msgUser = document.createElement('div');
-            msgUser.className = 'msg-user';
-            msgUser.textContent = `@${sender}`;
-
-            const msgText = document.createElement('div');
-            msgText.textContent = msg;
-
-            msgBubble.appendChild(msgUser);
-            msgBubble.appendChild(msgText);
-            wrapper.appendChild(msgBubble);
-            
-            chatBox.appendChild(wrapper);
+            msgBubble.innerHTML = `<div class="msg-user">@${sender}</div><div>${msg}</div>`;
+            wrapper.appendChild(msgBubble); chatBox.appendChild(wrapper);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessageAction() {
-            const text = chatInput.value.trim();
-            if (text === "") return;
-
+            const text = chatInput.value.trim(); if (text === "") return;
             try {
-                await db.collection("messages").add({
-                    user: username,
-                    msg: text,
-                    id: userId,
-                    timestamp: Date.now() 
-                });
+                await db.collection("messages").add({ user: username, msg: text, id: userId, timestamp: Date.now() });
                 chatInput.value = "";
-            } catch (error) {
-                console.error("Mesaj göndərilə bilmədi:", error);
-            }
+            } catch (e) {}
         }
 
         sendMsgBtn.addEventListener('click', sendMessageAction);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessageAction();
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessageAction(); });
+
+        db.collection("messages").orderBy("timestamp", "asc").limitToLast(40).onSnapshot((snapshot) => {
+            if (!snapshot) return;
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const data = change.doc.data();
+                    appendMessage(change.doc.id, data.user, data.msg, data.id === userId);
+                }
+            });
         });
 
-        db.collection("messages")
-          .orderBy("timestamp", "asc")
-          .limitToLast(40)
-          .onSnapshot((snapshot) => {
-              if (!snapshot || snapshot.empty) return;
-              snapshot.docChanges().forEach((change) => {
-                  if (change.type === "added") {
-                      const data = change.doc.data();
-                      const docId = change.doc.id;
-                      if (data.msg && data.user && data.timestamp) {
-                          const isSelf = (data.id === userId);
-                          appendMessage(docId, data.user, data.msg, isSelf);
-                      }
-                  }
-              });
-          }, (error) => {
-              console.error("Chat Oxuma Xətası:", error);
-          });
-
-        window.onload = function() {
-            changeLanguage(currentLang);
-            loadUserData(); 
-            setTimeout(initAdsgramSafe, 2000); 
-        };
+        window.onload = function() { changeLanguage(currentLang); loadUserData(); setTimeout(initAdsgramSafe, 2000); };
     </script>
 </body>
 </html>
-
