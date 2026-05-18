@@ -28,35 +28,47 @@
             -webkit-user-select: none;
         }
 
-        /* Naviqasiya Paneli */
+        /* 🚨 TAB PANELİ - ARTIQ ƏN ÜSTDƏDİR VƏ KLİKLƏRİ BLOKLAMAZ */
         .tab-container {
             display: flex; width: 100%;
             background: #0b110e;
             border-bottom: 2px solid var(--neon-green);
-            position: sticky; top: 0; z-index: 999;
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 99999 !important; /* Hər şeyin ən üstündə qalması üçün */
+            pointer-events: auto !important; /* Kliklərin mütləq keçməsi üçün */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
         }
 
         .tab-btn {
-            flex: 1; padding: 15px 0;
+            flex: 1; padding: 18px 0;
             background: transparent; border: none;
             color: #555; font-weight: bold; font-size: 11px;
             cursor: pointer; text-transform: uppercase;
             transition: all 0.2s;
+            pointer-events: auto !important;
         }
 
         .tab-btn.active {
             color: var(--neon-green);
-            background: rgba(0, 255, 102, 0.08);
+            background: rgba(0, 255, 102, 0.12);
             border-bottom: 3px solid var(--neon-green);
         }
 
+        /* Səhifə məzmunu naviqasiya barının altında qalsın deyə padding verdik */
+        .main-content {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 70px; /* Tab panelinin hündürlüyü qədər boşluq */
+            box-sizing: border-box;
+        }
+
         .app-section {
-            display: none; width: 100%; max-width: 480px;
+            display: none; width: 100%;
             padding: 20px; box-sizing: border-box;
         }
 
         .app-section.active {
-            display: block;
+            display: block !important;
         }
 
         .cyber-panel {
@@ -123,80 +135,84 @@
         <button id="btn-wallet-tab" class="tab-btn" onclick="switchTab('wallet-tab')">💎 Cüzdan</button>
     </div>
 
-    <div id="game-tab" class="app-section active">
-        <div class="cyber-panel">
-            <div class="stat-line"><span>Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
-            <div class="stat-line"><span>Nüvə Səviyyəsi:</span><span id="txt-level" class="stat-val">1 KG</span></div>
-            <div class="stat-line"><span>Kvant Enerji:</span><span id="txt-energy">100/100</span></div>
-            <div class="progress-bar"><div id="fill-energy" class="progress-fill"></div></div>
+    <div class="main-content">
+
+        <div id="game-tab" class="app-section active">
+            <div class="cyber-panel">
+                <div class="stat-line"><span>Data Balans:</span><span id="txt-honey" class="stat-val">0</span></div>
+                <div class="stat-line"><span>Nüvə Səviyyəsi:</span><span id="txt-level" class="stat-val">1 KG</span></div>
+                <div class="stat-line"><span>Kvant Enerji:</span><span id="txt-energy">100/100</span></div>
+                <div class="progress-bar"><div id="fill-energy" class="progress-fill"></div></div>
+            </div>
+
+            <div class="core-container">
+                <div class="ai-core" onclick="triggerTap()">AI CORE</div>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-blue);">
+                <h3>Adsgram Video Sistemi</h3>
+                <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsgramVideo()">📺 ADSGRAM VİDEOSU İZLƏ</button>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-red);">
+                <h3 style="color: var(--neon-red);">Sürətli Enerji Doldurma</h3>
+                <button class="cyber-btn danger" onclick="buyPremiumEnergy()">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-gold);">
+                <h3>Quantum Spin (🎰)</h3>
+                <button class="cyber-btn gold" onclick="triggerLuckySpin()">🎰 ŞANSLI ÇARX</button>
+            </div>
+
+            <button class="cyber-btn" onclick="upgradeCore()">Nüvəni Təkmilləşdir (100 Data)</button>
         </div>
 
-        <div class="core-container">
-            <div class="ai-core" onclick="triggerTap()">AI CORE</div>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-blue);">
-            <h3>Adsgram Video Sistemi</h3>
-            <button class="cyber-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="watchAdsgramVideo()">📺 ADSGRAM VİDEOSU İZLƏ</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-red);">
-            <h3 style="color: var(--neon-red);">Sürətli Enerji Doldurma</h3>
-            <button class="cyber-btn danger" onclick="buyPremiumEnergy()">⚡ ENERJİNİ SATIN AL (0.1 TON)</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-gold);">
-            <h3>Quantum Spin (🎰)</h3>
-            <button class="cyber-btn gold" onclick="triggerLuckySpin()">🎰 ŞANSLI ÇARX</button>
-        </div>
-
-        <button class="cyber-btn" onclick="upgradeCore()">Nüvəni Təkmilləşdir (100 Data)</button>
-    </div>
-
-    <div id="task-tab" class="app-section">
-        <div class="cyber-panel">
-            <h2>Sponsorlu Tapşırıqlar</h2>
-            <div class="stat-line" style="align-items: center;">
-                <span style="text-align: left; font-size:14px;">Sponsor Telegram Kanalı<br><small style="color:#666;">+500 Data qazandırır</small></span>
-                <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 10px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)">Qazan</button>
+        <div id="task-tab" class="app-section">
+            <div class="cyber-panel">
+                <h2>Sponsorlu Tapşırıqlar</h2>
+                <div class="stat-line" style="align-items: center;">
+                    <span style="text-align: left; font-size:14px;">Sponsor Telegram Kanalı<br><small style="color:#666;">+500 Data qazandırır</small></span>
+                    <button class="cyber-btn gold" style="width: auto; margin: 0; padding: 10px 15px;" onclick="completeSponsorTask('https://t.me/your_sponsor_channel', 500)">Qazan</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="race-tab" class="app-section">
-        <div class="cyber-panel">
-            <h2>Neon Grid Multiplayer</h2>
-            <div class="stat-line"><span>Giriş Tarifi:</span><span class="stat-val">0.30 TON</span></div>
-            <p style="font-size:12px; color:#777; margin: 15px 0;">Digər real kiber idmançılarla sürət sınağı.</p>
-            <button class="cyber-btn" onclick="startRaceGame()">Yarışı Başlat 🏎️</button>
-        </div>
-    </div>
-
-    <div id="wallet-tab" class="app-section">
-        <div class="cyber-panel">
-            <h2>Crypto Cyber Wallet</h2>
-            <div class="stat-line"><span>Kripto TON Balans:</span><span id="txt-ton" class="stat-val">0.00 TON</span></div>
-            <div class="stat-line"><span>Sistem Reklam Logları:</span><span id="txt-ads" class="stat-val">0 / 50</span></div>
+        <div id="race-tab" class="app-section">
+            <div class="cyber-panel">
+                <h2>Neon Grid Multiplayer</h2>
+                <div class="stat-line"><span>Giriş Tarifi:</span><span class="stat-val">0.30 TON</span></div>
+                <p style="font-size:12px; color:#777; margin: 15px 0;">Digər real kiber idmançılarla sürət sınağı.</p>
+                <button class="cyber-btn" onclick="startRaceGame()">Yarışı Başlat 🏎️</button>
+            </div>
         </div>
 
-        <div class="cyber-panel" style="border-color: var(--neon-blue);">
-            <h3>Data Swap Protocol</h3>
-            <button class="cyber-btn" onclick="swapDataToTon()">🔄 DATA -> 1 TON ÇEVİR</button>
+        <div id="wallet-tab" class="app-section">
+            <div class="cyber-panel">
+                <h2>Crypto Cyber Wallet</h2>
+                <div class="stat-line"><span>Kripto TON Balans:</span><span id="txt-ton" class="stat-val">0.00 TON</span></div>
+                <div class="stat-line"><span>Sistem Reklam Logları:</span><span id="txt-ads" class="stat-val">0 / 50</span></div>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-blue);">
+                <h3>Data Swap Protocol</h3>
+                <button class="cyber-btn" onclick="swapDataToTon()">🔄 DATA -> 1 TON ÇEVİR</button>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-gold);">
+                <button class="cyber-btn gold" onclick="confirmDepositSignal()">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
+            </div>
+
+            <div class="cyber-panel" style="border-color: var(--neon-red);">
+                <h3 style="color: var(--neon-red);">Vəsait Çıxarılışı</h3>
+                <input type="text" id="inp-wallet" placeholder="TON cüzdan ünvanınız">
+                <button class="cyber-btn danger" onclick="requestWithdraw()">Çıxarış Tələb Et (Min. 5 TON)</button>
+            </div>
         </div>
 
-        <div class="cyber-panel" style="border-color: var(--neon-gold);">
-            <button class="cyber-btn gold" onclick="confirmDepositSignal()">Ödəniş Sorğusunu Adminə Göndər 🧾</button>
-        </div>
-
-        <div class="cyber-panel" style="border-color: var(--neon-red);">
-            <h3 style="color: var(--neon-red);">Vəsait Çıxarılışı</h3>
-            <input type="text" id="inp-wallet" placeholder="TON cüzdan ünvanınız">
-            <button class="cyber-btn danger" onclick="requestWithdraw()">Çıxarış Tələb Et (Min. 5 TON)</button>
-        </div>
     </div>
 
     <script>
-        // 🛠️ TELEGRAM INITIALIZATION (Mühafizəli)
+        // 🛠️ TELEGRAM WEBAPP BAŞLADILMASI
         let tg = window.Telegram?.WebApp || null;
         if (tg) tg.expand();
 
@@ -206,25 +222,25 @@
         let userId = (tg && tg.initDataUnsafe?.user?.id) ? tg.initDataUnsafe.user.id.toString() : "8591374417"; 
         let userStats = { honey: 0, level: 1, energy: 100, ton_balance: 0.0, reklam_baxis: 0 };
 
-        // 🛡️ 100% DONMAZ TAB MEXANİZMİ
+        // 🛡️ XƏTASIZ TAB MEXANİZMİ
         function switchTab(tabId) {
             try {
-                // Bölmələri gizlət
+                // Bütün bölmələri tamamilə gizlət
                 document.getElementById('game-tab').style.display = 'none';
                 document.getElementById('task-tab').style.display = 'none';
                 document.getElementById('race-tab').style.display = 'none';
                 document.getElementById('wallet-tab').style.display = 'none';
                 
-                // Aktivlik klasslarını sil
+                // Aktiv düymə klasslarını təmizlə
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 
-                // Seçiləni göstər
+                // Seçilən bölməni və düyməni aktivləşdir
                 document.getElementById(tabId).style.display = 'block';
                 document.getElementById('btn-' + tabId).classList.add('active');
-            } catch (e) { console.log("Tab keçid qorunması:", e); }
+            } catch (e) { console.error("Tab keçid xətası:", e); }
         }
 
-        // 📺 REKLAM SİSTEMİ (Digər kodları dondurmur)
+        // 📺 REKLAM SİSTEMİ
         function watchAdsgramVideo() {
             if (window.Adsgram) {
                 try {
@@ -235,13 +251,13 @@
                         userStats.honey += 100;
                         updateUI();
                         await syncToDatabase({ reklam_baxis: userStats.reklam_baxis, honey: userStats.honey });
-                        if(tg) tg.showAlert("📺 Reklam tam izlənildi! +100 Data.");
+                        if(tg) tg.showAlert("📺 Reklam izlənildi! +100 Data.");
                     }).catch(() => {
-                        if(tg) tg.showAlert("Reklam yüklənmədi.");
+                        if(tg) tg.showAlert("Reklam hazırda mövcud deyil.");
                     });
-                } catch(x) { if(tg) tg.showAlert("Adsgram xətası."); }
+                } catch(x) { if(tg) tg.showAlert("Adsgram tənzimləmə xətası."); }
             } else {
-                if(tg) tg.showAlert("Adsgram serveri hələ hazır deyil, bir az sonra yoxlayın.");
+                if(tg) tg.showAlert("Adsgram skripti yüklənir, bir az sonra yenidən klikləyin.");
             }
         }
 
@@ -260,8 +276,8 @@
                 userStats.energy = 100;
                 updateUI();
                 await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance), energy: userStats.energy });
-                if(tg) tg.showAlert("⚡ Enerjiniz dolduruldu!");
-            } else { if(tg) tg.showAlert("Balans kifayət deyil (0.1 TON lazımdır)."); }
+                if(tg) tg.showAlert("⚡ Enerjiniz bərpa olundu!");
+            } else { if(tg) tg.showAlert("Balansınızda kifayət qədər TON yoxdur (0.1 TON)."); }
         }
 
         async function completeSponsorTask(link, reward) {
@@ -269,7 +285,7 @@
             userStats.honey += reward;
             updateUI();
             await syncToDatabase({ honey: userStats.honey });
-            if(tg) tg.showAlert(`+${reward} Data yazıldı.`);
+            if(tg) tg.showAlert(`+${reward} Data balansınıza yazıldı.`);
         }
 
         async function upgradeCore() {
@@ -278,7 +294,7 @@
                 userStats.level += 1;
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, level: userStats.level });
-            } else { if(tg) tg.showAlert("100 Data lazımdır."); }
+            } else { if(tg) tg.showAlert("Nüvə təkmilləşdirilməsi üçün 100 Data lazımdır."); }
         }
 
         async function triggerLuckySpin() {
@@ -290,7 +306,7 @@
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, reklam_baxis: userStats.reklam_baxis });
                 if(tg) tg.showAlert(`🎰 Çarxdan qazandınız: +${win} Data!`);
-            } else { if(tg) tg.showAlert("Ən azı 5 reklam izləməlisiniz."); }
+            } else { if(tg) tg.showAlert("Çarxı fırlatmaq üçün ən azı 5 reklam izləməlisiniz."); }
         }
 
         async function swapDataToTon() {
@@ -299,7 +315,7 @@
                 userStats.ton_balance = (parseFloat(userStats.ton_balance) + 1.0).toFixed(2);
                 updateUI();
                 await syncToDatabase({ honey: userStats.honey, ton_balance: parseFloat(userStats.ton_balance) });
-            } else { if(tg) tg.showAlert("Minimum 20,000 Data lazımdır."); }
+            } else { if(tg) tg.showAlert("Çevirmək üçün minimum 20,000 Data lazımdır."); }
         }
 
         async function startRaceGame() {
@@ -309,19 +325,18 @@
                 await syncToDatabase({ ton_balance: parseFloat(userStats.ton_balance) });
                 let room = Math.floor(1000 + Math.random() * 9000);
                 window.location.href = `multi_car.html?room=${room}`;
-            } else { if(tg) tg.showAlert("0.30 TON lazımdır."); }
+            } else { if(tg) tg.showAlert("Yarışa daxil olmaq üçün 0.30 TON lazımdır."); }
         }
 
-        function confirmDepositSignal() { if(tg) tg.showAlert("Sorğu göndərildi!"); }
+        function confirmDepositSignal() { if(tg) tg.showAlert("Depozit sorğusu adminə ötürüldü!"); }
 
         function requestWithdraw() {
             let wallet = document.getElementById('inp-wallet').value;
-            if(!wallet) { if(tg) tg.showAlert("Cüzdan ünvanını daxil edin."); return; }
-            if(parseFloat(userStats.ton_balance) < 5.0) { if(tg) tg.showAlert("Minimum 5 TON."); return; }
-            if(tg) tg.showAlert("Çıxarış tələbi göndərildi!");
+            if(!wallet) { if(tg) tg.showAlert("Zəhmət olmasa TON cüzdan ünvanını daxil edin."); return; }
+            if(parseFloat(userStats.ton_balance) < 5.0) { if(tg) tg.showAlert("Minimum çıxarış 5 TON-dur."); return; }
+            if(tg) tg.showAlert("Çıxarış sorğunuz uğurla göndərildi!");
         }
 
-        // UI Yeniləmə Sığortası
         function updateUI() {
             try {
                 document.getElementById('txt-honey').innerText = userStats.honey;
@@ -330,10 +345,9 @@
                 document.getElementById('fill-energy').style.width = userStats.energy + "%";
                 document.getElementById('txt-ton').innerText = parseFloat(userStats.ton_balance).toFixed(2) + " TON";
                 document.getElementById('txt-ads').innerText = userStats.reklam_baxis + " / 50";
-            } catch(e) { console.log("UI sığortalandı."); }
+            } catch(e) { console.log("UI sığorta yeniləməsi."); }
         }
 
-        // Baza yüklənməsi
         async function loadUserData() {
             try {
                 let res = await fetch(`${DB_URL}?user_id=eq.${userId}`, {
@@ -348,7 +362,7 @@
                     userStats.ton_balance = b.ton_balance || 0.0;
                     userStats.reklam_baxis = b.reklam_baxis || 0;
                 }
-            } catch(e) { console.log("Lokal data rejimi aktivdir."); }
+            } catch(e) { console.log("Lokal rejim aktiv edildi."); }
             updateUI();
         }
 
@@ -362,7 +376,7 @@
             } catch(e) {}
         }
 
-        // Enerji regenerasiyası
+        // Enerji bərpası
         setInterval(() => {
             if (userStats.energy < 100) {
                 userStats.energy += 1;
@@ -374,3 +388,4 @@
     </script>
 </body>
 </html>
+
