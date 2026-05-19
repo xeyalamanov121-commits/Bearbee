@@ -4,7 +4,6 @@ const admin = require('firebase-admin');
 // Firebase-i tək bir FIREBASE_CONFIG dəyişəni ilə başlatmaq
 if (!admin.apps.length) {
   try {
-    // Vercel-dəki JSON formatındakı FIREBASE_CONFIG-i oxuyuruq
     const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
@@ -115,3 +114,4 @@ module.exports = async (req, res) => {
     res.status(200).send('Xəta baş verdi.');
   }
 };
+
