@@ -1,22 +1,23 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-i Vercel-dəki ayrı dəyişənlərlə başlat
+// Firebase-i FIREBASE_CONFIG ilə başlatmaq
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // Vercel-dən gələn private key-dəki \n simvollarını düzəldirik
-      privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
-    }),
-  });
+  try {
+    // Vercel-dəki FIREBASE_CONFIG mühit dəyişənini oxuyuruq
+    const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("Firebase uğurla başladı!");
+  } catch (error) {
+    console.error("Firebase başlama xətası:", error.message);
+  }
 }
-const db = admin.firestore();
 
+const db = admin.firestore();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const BOT_USERNAME = "Bearbeee_bot"; 
-// ADMIN_ID-ni də Vercel-dən oxuyaq
 const ADMIN_ID = process.env.ADMIN_CHAT_ID; 
 
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
@@ -31,15 +32,10 @@ bot.command('start', async (ctx) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      await userRef.set({ 
-        balance: 0, 
-        referrals: 0, 
-        username: ctx.from.username || 'Guest' 
-      });
+      await userRef.set({ balance: 0, referrals: 0, username: ctx.from.username || 'Guest' });
 
       if (referrerId && referrerId !== userId) {
         const referrerRef = db.collection('users').doc(referrerId);
-        // İstifadəçinin bazada olub olmadığını yoxlayırıq ki xəta verməsin
         const referrerDoc = await referrerRef.get();
         if (referrerDoc.exists) {
           await referrerRef.update({
@@ -71,7 +67,7 @@ bot.command('start', async (ctx) => {
   }
 });
 
-// Callback və Mesaj sistemi (Dəyişilməz qaldı)
+// Callback və Mesaj sistemi
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
   await ctx.answerCbQuery();
