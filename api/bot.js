@@ -1,21 +1,44 @@
 const { Telegraf } = require('telegraf');
+const admin = require('firebase-admin');
 
-// BOT_TOKEN-in Vercel-də "Environment Variables" bölməsində olduğundan əmin ol
+// Firebase-in başladılması
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG))
+  });
+}
+const db = admin.firestore();
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
-
 const BOT_USERNAME = "Bearbeee_bot"; 
-const ADMIN_ID = 8591374417; // Sənin ID-n
+const ADMIN_ID = 8591374417; 
 
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
 
-// Start komandası
+// Start komandası (Referal sistemi ilə)
 bot.command('start', async (ctx) => {
   try {
+    const userId = ctx.from.id.toString();
+    const referrerId = ctx.payload; // Linkdən gələn ID
+
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+
+    // 1. Yeni istifadəçi qeydiyyatı və referal yoxlanışı
+    if (!userDoc.exists) {
+      await userRef.set({ balance: 0, referrals: 0, username: ctx.from.username || 'Guest' });
+
+      if (referrerId && referrerId !== userId) {
+        const referrerRef = db.collection('users').doc(referrerId);
+        await referrerRef.update({
+          balance: admin.firestore.FieldValue.increment(100)
+        });
+        await ctx.telegram.sendMessage(referrerId, "🎉 <b>Təbriklər!</b> Yeni bir dost dəvət etdin və 100 bal qazandın!", { parse_mode: 'HTML' });
+      }
+    }
+
     const miniAppUrl = `https://xeyalamanov121-commits.github.io/Bearbee/?tgWebAppStartParam=${ctx.payload || 'none'}`;
-    
-    const welcomeText = 
-      "🏎️ <b>BEARBEE RACING-ə xoş gəlmisiniz!</b> 🏎️\n\n" +
-      "Yarışa başlamaq və ya bizimlə əlaqə saxlamaq üçün aşağıdakı menyudan istifadə edin.";
+    const welcomeText = "🏎️ <b>BEARBEE RACING-ə xoş gəlmisiniz!</b> 🏎️\n\nYarışa başlamaq üçün aşağıdakı menyudan istifadə edin.";
 
     await ctx.replyWithPhoto(photoUrl, {
       caption: welcomeText,
@@ -35,27 +58,23 @@ bot.command('start', async (ctx) => {
   }
 });
 
-// Düymə hərəkətləri (Daha stabil versiya)
+// Callback və Mesaj sistemi
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
-  await ctx.answerCbQuery(); // Dairəni dayandırır
-
+  await ctx.answerCbQuery();
   if (data === 'get_referral') {
     const referralLink = `https://t.me/${BOT_USERNAME}?start=${ctx.from.id}`;
     await ctx.reply(`🔗 <b>Sizin şəxsi dəvət linkiniz:</b>\n<code>${referralLink}</code>`, { parse_mode: 'HTML' });
   } else if (data === 'support_mode') {
-    await ctx.reply("💬 <b>Dəstək rejimi aktivdir.</b>\n\nİstədiyiniz sualı bura yazın, adminə göndəriləcək.", { parse_mode: 'HTML' });
+    await ctx.reply("💬 <b>Dəstək rejimi aktivdir.</b>\nİstədiyiniz sualı bura yazın.", { parse_mode: 'HTML' });
   }
 });
 
-// Mesajlaşma sistemi
 bot.on('message', async (ctx) => {
   if (!ctx.message.text) return;
-  
   const userId = ctx.from.id;
   const text = ctx.message.text;
 
-  // Admin cavab verirsə
   if (userId == ADMIN_ID && ctx.message.reply_to_message) {
     const replyText = ctx.message.reply_to_message.text || "";
     const match = replyText.match(/ID: (\d+)/);
@@ -65,8 +84,6 @@ bot.on('message', async (ctx) => {
     }
     return;
   }
-
-  // İstifadəçi adminə yazırsa
   if (userId != ADMIN_ID) {
     await ctx.telegram.sendMessage(ADMIN_ID, `📩 <b>Yeni Mesaj!</b>\n👤 <b>İstifadəçi:</b> @${ctx.from.username || 'Gizli'}\n🆔 <b>ID:</b> ${userId}\n\n📝 <b>Mesaj:</b> ${text}`, { parse_mode: 'HTML' });
     await ctx.reply("📨 Mesajınız adminə göndərildi.");
@@ -82,6 +99,6 @@ module.exports = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.status(200).send('Xəta baş verdi, lakin server işləyir.');
+    res.status(200).send('Xəta baş verdi.');
   }
 };
