@@ -1,10 +1,9 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-i FIREBASE_CONFIG ilə başlatmaq
+// Firebase-i FIREBASE_CONFIG ilə başlatmaq (Ən stabil üsul)
 if (!admin.apps.length) {
   try {
-    // Vercel-dəki FIREBASE_CONFIG mühit dəyişənini oxuyuruq
     const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
@@ -22,7 +21,7 @@ const ADMIN_ID = process.env.ADMIN_CHAT_ID;
 
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
 
-// Start komandası (Referal sistemi ilə)
+// Start komandası
 bot.command('start', async (ctx) => {
   try {
     const userId = ctx.from.id.toString();
