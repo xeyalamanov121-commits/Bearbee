@@ -1,33 +1,35 @@
-const { Telegraf } = require('telegraf');
-const admin = require('firebase-admin');
+// Start komandasında referal yoxlanışı
+bot.command('start', async (ctx) => {
+    const userId = ctx.from.id.toString();
+    const payload = ctx.payload; // Referal ID-ni götürür
 
-// Firebase konfiqurasiyasını yoxlayırıq
-if (!admin.apps.length) {
-    try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-    } catch (e) {
-        console.error("Firebase konfiqurasiya xətası!");
-    }
-}
+    // 1. İstifadəçini bazaya əlavə et (əgər yoxdursa)
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-bot.command('start', (ctx) => ctx.reply('Bot işlək vəziyyətdədir!'));
-
-// Vercel serverless function
-module.exports = async (req, res) => {
-    try {
-        if (req.method === 'POST') {
-            await bot.handleUpdate(req.body);
-            res.status(200).send('OK');
-        } else {
-            res.status(200).send('Bot aktivdir.');
+    if (!userDoc.exists) {
+        await userRef.set({ balance: 0, username: ctx.from.username || 'Guest' });
+        
+        // 2. Əgər referal linki ilə gəlibsə, 100 xal əlavə et
+        if (payload && payload !== userId) {
+            const referrerRef = db.collection('users').doc(payload);
+            await referrerRef.update({
+                balance: admin.firestore.FieldValue.increment(100)
+            });
+            // Dəvət edənə xəbər ver (opsional)
+            try {
+                await bot.telegram.sendMessage(payload, "🎉 Yeni referal gəldi! Balansınıza 100 xal əlavə olundu.");
+            } catch (e) {}
         }
-    } catch (err) {
-        console.error("Webhook xətası:", err);
-        res.status(200).send('Error');
     }
-};
+
+    // 3. Menyunu göstər
+    await ctx.reply("🏎️ BEARBEE RACING-ə xoş gəlmisiniz!", {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "🏎️ Oyuna Başla", web_app: { url: "https://xeyalamanov121-commits.github.io/Bearbee/" } }],
+                [{ text: "🔗 Dəvət Linkim", callback_data: 'get_referral' }]
+            ]
+        }
+    });
+});
