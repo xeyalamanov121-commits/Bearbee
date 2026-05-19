@@ -1,42 +1,31 @@
-const { Telegraf } = require('telegraf');
-const admin = require('firebase-admin');
-
-// 1. Firebase-i etibarlı şəkildə başlat
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        }),
-    });
-}
-const db = admin.firestore();
-
-// 2. Botu başlat
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
 bot.command('start', async (ctx) => {
-    // Referal sistemi üçün sadə məntiq
-    const userId = ctx.from.id.toString();
-    const userRef = db.collection('users').doc(userId);
-    
-    // İstifadəçini bazaya qeyd et
-    await userRef.set({ username: ctx.from.username || 'Guest' }, { merge: true });
-    
-    await ctx.reply("🏎️ BEARBEE RACING-ə xoş gəlmisiniz!");
-});
+    const gameUrl = 'https://xeyalamanov121-commits.github.io/Bearbee/';
 
-// 3. Vercel üçün eksport
-module.exports = async (req, res) => {
-    try {
-        if (req.method === 'POST') {
-            await bot.handleUpdate(req.body);
-            return res.status(200).send('OK');
+    const keyboard = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "🏎️ OYUNA GİRİŞ", url: gameUrl }],
+                [
+                    { text: "🍯 Arını Yedizdir", callback_data: 'feed_bee' },
+                    { text: "📊 Xallarım", callback_data: 'check_points' }
+                ]
+            ]
         }
-        res.status(200).send('Bot aktivdir.');
-    } catch (err) {
-        console.error("Webhook xətası:", err);
-        res.status(200).send('Xəta baş verdi');
-    }
-};
+    };
+
+    const summary = `
+🐻 **BEARBEE RACING - Oyun Xülasəsi:**
+
+🏎️ **Yarış:** Dünyanın ən sürətli ayısı olmaq üçün maneələri aş və lider ol!
+🐝 **Arını Yedizdir:** Arını doyuraraq xüsusi bonuslar və xallar qazan.
+🎁 **Referal:** Dostlarını dəvət et, 100 bal qazan!
+
+*Aşağıdakı düymələrdən istifadə edərək oyuna başla və ya arını idarə et:*
+    `;
+
+    await ctx.replyWithPhoto('https://i.imgur.com/SENIN_SEKLIN.jpg', {
+        caption: summary,
+        parse_mode: 'Markdown',
+        ...keyboard
+    });
+});
