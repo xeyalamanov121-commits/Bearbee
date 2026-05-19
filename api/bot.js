@@ -1,35 +1,32 @@
-// Start komandasında referal yoxlanışı
-bot.command('start', async (ctx) => {
-    const userId = ctx.from.id.toString();
-    const payload = ctx.payload; // Referal ID-ni götürür
+const { Telegraf } = require('telegraf');
+const admin = require('firebase-admin');
 
-    // 1. İstifadəçini bazaya əlavə et (əgər yoxdursa)
-    const userRef = db.collection('users').doc(userId);
-    const userDoc = await userRef.get();
-
-    if (!userDoc.exists) {
-        await userRef.set({ balance: 0, username: ctx.from.username || 'Guest' });
-        
-        // 2. Əgər referal linki ilə gəlibsə, 100 xal əlavə et
-        if (payload && payload !== userId) {
-            const referrerRef = db.collection('users').doc(payload);
-            await referrerRef.update({
-                balance: admin.firestore.FieldValue.increment(100)
-            });
-            // Dəvət edənə xəbər ver (opsional)
-            try {
-                await bot.telegram.sendMessage(payload, "🎉 Yeni referal gəldi! Balansınıza 100 xal əlavə olundu.");
-            } catch (e) {}
-        }
-    }
-
-    // 3. Menyunu göstər
-    await ctx.reply("🏎️ BEARBEE RACING-ə xoş gəlmisiniz!", {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: "🏎️ Oyuna Başla", web_app: { url: "https://xeyalamanov121-commits.github.io/Bearbee/" } }],
-                [{ text: "🔗 Dəvət Linkim", callback_data: 'get_referral' }]
-            ]
-        }
+// 1. Firebase-i başlat (əgər hələ başlamayıbsa)
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG))
     });
+}
+const db = admin.firestore();
+
+// 2. Botu burada, funksiyadan kənarda təyin et
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+bot.command('start', async (ctx) => {
+    await ctx.reply("🏎️ BEARBEE RACING-ə xoş gəlmisiniz!");
 });
+
+// 3. Vercel üçün əsas eksport funksiyası
+module.exports = async (req, res) => {
+    try {
+        if (req.method === 'POST') {
+            await bot.handleUpdate(req.body);
+            return res.status(200).send('OK');
+        } else {
+            return res.status(200).send('Bot aktivdir.');
+        }
+    } catch (err) {
+        console.error("Webhook xətası:", err);
+        return res.status(200).send('Xəta baş verdi');
+    }
+};
