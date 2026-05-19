@@ -1,17 +1,23 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-in başladılması
+// Firebase-i Vercel-dəki ayrı dəyişənlərlə başlat
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG))
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // Vercel-dən gələn private key-dəki \n simvollarını düzəldirik
+      privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+    }),
   });
 }
 const db = admin.firestore();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const BOT_USERNAME = "Bearbeee_bot"; 
-const ADMIN_ID = 8591374417; 
+// ADMIN_ID-ni də Vercel-dən oxuyaq
+const ADMIN_ID = process.env.ADMIN_CHAT_ID; 
 
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
 
@@ -19,21 +25,28 @@ const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Googl
 bot.command('start', async (ctx) => {
   try {
     const userId = ctx.from.id.toString();
-    const referrerId = ctx.payload; // Linkdən gələn ID
+    const referrerId = ctx.payload; 
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
 
-    // 1. Yeni istifadəçi qeydiyyatı və referal yoxlanışı
     if (!userDoc.exists) {
-      await userRef.set({ balance: 0, referrals: 0, username: ctx.from.username || 'Guest' });
+      await userRef.set({ 
+        balance: 0, 
+        referrals: 0, 
+        username: ctx.from.username || 'Guest' 
+      });
 
       if (referrerId && referrerId !== userId) {
         const referrerRef = db.collection('users').doc(referrerId);
-        await referrerRef.update({
-          balance: admin.firestore.FieldValue.increment(100)
-        });
-        await ctx.telegram.sendMessage(referrerId, "🎉 <b>Təbriklər!</b> Yeni bir dost dəvət etdin və 100 bal qazandın!", { parse_mode: 'HTML' });
+        // İstifadəçinin bazada olub olmadığını yoxlayırıq ki xəta verməsin
+        const referrerDoc = await referrerRef.get();
+        if (referrerDoc.exists) {
+          await referrerRef.update({
+            balance: admin.firestore.FieldValue.increment(100)
+          });
+          await ctx.telegram.sendMessage(referrerId, "🎉 <b>Təbriklər!</b> Yeni bir dost dəvət etdin və 100 bal qazandın!", { parse_mode: 'HTML' });
+        }
       }
     }
 
@@ -58,7 +71,7 @@ bot.command('start', async (ctx) => {
   }
 });
 
-// Callback və Mesaj sistemi
+// Callback və Mesaj sistemi (Dəyişilməz qaldı)
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
   await ctx.answerCbQuery();
