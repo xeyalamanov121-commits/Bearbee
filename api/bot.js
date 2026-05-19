@@ -3,6 +3,10 @@ const { Telegraf } = require('telegraf');
 // Bot tokeni Vercel-dəki Environment Variables-dən avtomatik oxunur
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+// ⚠️ ÇOX VACİB: Öz botunun istifadəçi adını bura yaz (Qarşısında @ işarəsi OLMADAN!)
+// Məsələn: "Bearbee_bot" və ya "Bearbeee_bot"
+const BOT_USERNAME = "Bearbeee_bot"; 
+
 // Şəkil linki
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
 
@@ -10,34 +14,31 @@ const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Googl
 bot.command('start', async (ctx) => {
   try {
     const userId = ctx.from.id;
-    const botUsername = ctx.botInfo.username;
     
-    // 1. İstifadəçinin öz şəxsi referal linki
-    const referralLink = `https://t.me/${botUsername}?start=${userId}`;
+    // 1. Şəxsi referal linki (Artıq çökme ehtimalı sıfırdır)
+    const referralLink = `https://t.me/${BOT_USERNAME}?start=${userId}`;
     
     // 2. Kiminsə linki ilə gəlib-gəlmədiyini tuturuq (Payload)
     const invitedBy = ctx.payload;
 
     if (invitedBy && invitedBy !== String(userId)) {
       console.log(`İstifadəçi ${userId}, ${invitedBy} tərəfindən dəvət edildi.`);
-      // Əgər verilənlər bazan (Supabase/Firebase) bu fayla qoşuludursa,
-      // burada invitedBy ID-li şəxsə bonus xal yaza bilərsən.
     }
 
     // 3. Mini App URL-i (Referal parametrin tətbiqə ötürülməsi)
     const miniAppUrl = `https://xeyalamanov121-commits.github.io/Bearbee/?tgWebAppStartParam=${invitedBy || 'none'}`;
 
-    // Dinamik Elan mətni (Referal linki daxil edilmiş versiya)
+    // 4. HTML Formatına keçdik (Ulduzlar və alt xətlər artıq heç bir xəta yaratmayacaq)
     const captionText = 
-      "🏎️ **BEARBEE RACING IS READY!** 🏎️\n\n" +
+      "🏎️ <b>BEARBEE RACING IS READY!</b> 🏎️\n\n" +
       "4 players, 1 goal! Join the lobby and start racing now.\n\n" +
-      `🔗 **Sizin Dəvət Linkiniz:**\n${referralLink}\n\n` +
-      "🔥 **Click the button below to play the game:**";
+      `🔗 <b>Sizin Dəvət Linkiniz:</b>\n${referralLink}\n\n` +
+      "🔥 <b>Click the button below to play the game:</b>";
 
     // Şəkilli mesajı və düyməni göndəririk
     await ctx.replyWithPhoto(photoUrl, {
       caption: captionText,
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML', // HTML parse_mode hər zaman daha stabil işləyir
       reply_markup: {
         inline_keyboard: [
           [
