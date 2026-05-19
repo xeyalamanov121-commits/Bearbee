@@ -16,7 +16,7 @@ const db = admin.firestore();
 // 2. Botu başlat
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// 3. Start əmri və ana menyu
+// 3. Start əmri və ana menyu (Web App inteqrasiyası ilə)
 bot.command('start', async (ctx) => {
     const userId = ctx.from.id.toString();
     const gameUrl = 'https://xeyalamanov121-commits.github.io/Bearbee/';
@@ -31,7 +31,7 @@ bot.command('start', async (ctx) => {
     const keyboard = {
         reply_markup: {
             inline_keyboard: [
-                [{ text: "🏎️ PLAY NOW", url: gameUrl }],
+                [{ text: "🏎️ PLAY NOW (Mini App)", web_app: { url: gameUrl } }],
                 [
                     { text: "🍯 Feed Bee", callback_data: 'feed_bee' },
                     { text: "📊 My Points", callback_data: 'check_points' }
@@ -66,10 +66,11 @@ bot.action('check_points', async (ctx) => {
     const doc = await db.collection('users').doc(ctx.from.id.toString()).get();
     const data = doc.data();
     await ctx.answerCbQuery();
-    await ctx.reply(`📊 Sənin xalın: ${data.points}\n🍯 Arının bal səviyyəsi: ${data.honeyLevel}`);
+    await ctx.reply(`📊 Sənin xalın: ${data.points}\n🍯 Arının bal səviyyəsi: ${data.honeyLevel || 0}`);
 });
 
 bot.action('get_referral', async (ctx) => {
+    // Burada botunun istifadəçi adını dəyişməyi unutma
     const link = `https://t.me/SeninBotununIstifadeciAdi?start=${ctx.from.id}`;
     await ctx.answerCbQuery();
     await ctx.reply(`🎁 Dostlarını dəvət et!\n\nLinkin:\n${link}`);
@@ -85,6 +86,6 @@ module.exports = async (req, res) => {
         res.status(200).send('Bot aktivdir.');
     } catch (err) {
         console.error("Webhook xətası:", err);
-        res.status(200).send('Xəta baş verdi');
+        return res.status(200).send('Xəta baş verdi');
     }
 };
