@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { margin: 0; background: #050505; color: white; font-family: sans-serif; overflow: hidden; }
+        #canvas { width: 100vw; height: 80vh; background: #111; display: block; border-bottom: 5px solid #00ff66; }
+        .controls { height: 20vh; display: flex; align-items: center; justify-content: center; }
+        #gasBtn { width: 90%; padding: 20px; background: #00ff66; border: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="300"></canvas>
+    <div class="controls"><button id="gasBtn">QAZA BAS! 🏎️</button></div>
+
+    <script>
+        const socket = io("https://senin-server-linkin.com"); // Bura öz URL-ni yaz!
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Oyunçunun özü ilə serveri sinxronizasiya et
+        socket.emit('join_race_track', { room: "ROOM_ID_BURA_GELECEK", userId: "USER_ID" });
+
+        document.getElementById("gasBtn").onclick = () => {
+            socket.emit('gas_press', { room: "ROOM_ID", userId: "USER_ID" });
+        };
+
+        socket.on('race_state_update', (data) => {
+            ctx.clearRect(0,0,400,300);
+            for(let id in data.players) {
+                let p = data.players[id];
+                ctx.fillStyle = "white";
+                ctx.fillRect(p.x, 50, 40, 20); // Maşınları çək
+            }
+        });
+    </script>
+</body>
+</html>
+
