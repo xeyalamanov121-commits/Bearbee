@@ -1,30 +1,33 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-i başlat
+// Firebase konfiqurasiyasını yoxlayırıq
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG))
-  });
+    try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+    } catch (e) {
+        console.error("Firebase konfiqurasiya xətası!");
+    }
 }
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Start komandası
-bot.command('start', async (ctx) => {
-  await ctx.reply("✅ Bot artıq düzgün işləyir!");
-});
+bot.command('start', (ctx) => ctx.reply('Bot işlək vəziyyətdədir!'));
 
-// Vercel üçün əsas funksiya
+// Vercel serverless function
 module.exports = async (req, res) => {
-  try {
-    if (req.method === 'POST') {
-      await bot.handleUpdate(req.body, res);
-    } else {
-      res.status(200).send('Bot aktivdir, lakin GET sorğusu qəbul edilmir.');
+    try {
+        if (req.method === 'POST') {
+            await bot.handleUpdate(req.body);
+            res.status(200).send('OK');
+        } else {
+            res.status(200).send('Bot aktivdir.');
+        }
+    } catch (err) {
+        console.error("Webhook xətası:", err);
+        res.status(200).send('Error');
     }
-  } catch (err) {
-    console.error("Webhook xətası:", err);
-    res.status(200).send('OK');
-  }
 };
