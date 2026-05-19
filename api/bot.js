@@ -1,45 +1,30 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-i birbaşa sertifikat obyektinə çevirərək başlatırıq
+// Firebase-i başlat
 if (!admin.apps.length) {
-  try {
-    // Əgər FIREBASE_CONFIG JSON-dursa, onu birbaşa çeviririk
-    const config = typeof process.env.FIREBASE_CONFIG === 'string' 
-      ? JSON.parse(process.env.FIREBASE_CONFIG) 
-      : process.env.FIREBASE_CONFIG;
-
-    admin.initializeApp({
-      credential: admin.credential.cert(config)
-    });
-    console.log("Firebase uğurla başladı!");
-  } catch (error) {
-    console.error("Firebase başlama xətası:", error.message);
-  }
+  admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG))
+  });
 }
 
-const db = admin.firestore();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+// Start komandası
 bot.command('start', async (ctx) => {
-  try {
-    const userId = ctx.from.id.toString();
-    await db.collection('users').doc(userId).set({ 
-      balance: 0, 
-      username: ctx.from.username || 'Guest' 
-    }, { merge: true });
-    
-    await ctx.reply("🏎️ BEARBEE RACING-ə xoş gəlmisiniz!");
-  } catch (err) {
-    console.error(err);
-  }
+  await ctx.reply("✅ Bot artıq düzgün işləyir!");
 });
 
+// Vercel üçün əsas funksiya
 module.exports = async (req, res) => {
   try {
-    await bot.handleUpdate(req.body, res);
+    if (req.method === 'POST') {
+      await bot.handleUpdate(req.body, res);
+    } else {
+      res.status(200).send('Bot aktivdir, lakin GET sorğusu qəbul edilmir.');
+    }
   } catch (err) {
+    console.error("Webhook xətası:", err);
     res.status(200).send('OK');
   }
 };
-
