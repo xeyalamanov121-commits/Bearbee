@@ -1,9 +1,10 @@
 const { Telegraf } = require('telegraf');
 const admin = require('firebase-admin');
 
-// Firebase-i FIREBASE_CONFIG ilə başlatmaq (Ən stabil üsul)
+// Firebase-i tək bir FIREBASE_CONFIG dəyişəni ilə başlatmaq
 if (!admin.apps.length) {
   try {
+    // Vercel-dəki JSON formatındakı FIREBASE_CONFIG-i oxuyuruq
     const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
@@ -21,7 +22,7 @@ const ADMIN_ID = process.env.ADMIN_CHAT_ID;
 
 const photoUrl = "https://i.postimg.cc/wTRTSB4s/Screenshot-20260519-031203-Google.jpg";
 
-// Start komandası
+// Start komandası (Referal sistemi ilə)
 bot.command('start', async (ctx) => {
   try {
     const userId = ctx.from.id.toString();
@@ -31,7 +32,11 @@ bot.command('start', async (ctx) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      await userRef.set({ balance: 0, referrals: 0, username: ctx.from.username || 'Guest' });
+      await userRef.set({ 
+        balance: 0, 
+        referrals: 0, 
+        username: ctx.from.username || 'Guest' 
+      });
 
       if (referrerId && referrerId !== userId) {
         const referrerRef = db.collection('users').doc(referrerId);
