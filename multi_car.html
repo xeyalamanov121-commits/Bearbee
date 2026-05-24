@@ -2,84 +2,104 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Bearbee Yarış</title>
+    <title>Bearbee Cyber Empire</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; background: #020b05; color: #fff; text-align: center; font-family: sans-serif; }
-        .screen { position: absolute; top:0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .track { width: 300px; height: 400px; background: #111; margin: 20px auto; border: 2px solid #00ff66; position: relative; overflow: hidden; }
-        .car { font-size: 30px; position: absolute; bottom: 20px; transition: left 0.1s; transform: translateX(-50%); z-index: 5; }
-        .obstacle { font-size: 30px; position: absolute; transform: translateX(-50%); z-index: 2; }
-        .btn { padding: 15px 30px; background: #004d1a; color: #00ff66; border: 2px solid #00ff66; border-radius: 20px; cursor: pointer; margin: 10px; }
+        body { background: #050505; color: #ffd700; font-family: sans-serif; text-align: center; margin: 0; }
+        .tab { display: none; padding: 20px; }
+        .active { display: block; }
+        .nav { background: #1a1a1a; padding: 10px; display: flex; justify-content: space-around; }
+        .btn { padding: 10px 20px; background: #222; border: 1px solid #ffd700; color: #ffd700; cursor: pointer; border-radius: 10px; }
+        #track { width: 300px; height: 400px; background: #111; margin: 20px auto; border: 2px solid #00ff66; position: relative; overflow: hidden; }
+        .car { font-size: 30px; position: absolute; bottom: 20px; transform: translateX(-50%); transition: left 0.1s; }
     </style>
 </head>
 <body>
-    <div id="wait-screen" class="screen">
-        <h2 id="status-text">Yüklənir...</h2>
-    </div>
 
-    <div id="admin-panel" style="display: none; padding: 15px; background: #222; border: 1px solid gold; margin: 10px;">
-        <input type="text" id="admin_id" placeholder="Telegram ID">
-        <input type="number" id="admin_balance" value="0.40">
-        <button onclick="saveBalance()">Balansı Yenilə</button>
-    </div>
+<div class="nav">
+    <button class="btn" onclick="showTab('tapper')">Tapper</button>
+    <button class="btn" onclick="showTab('race')">Yarış</button>
+    <button class="btn" onclick="showTab('chat')">Chat</button>
+</div>
 
-    <h3>Xal: <span id="score">0</span> | <span id="msg">Gözləyir...</span></h3>
-    <div class="track" id="track">
+<div id="admin-panel" style="display: none; background: #330; padding: 10px;">
+    <input id="admin_id" placeholder="ID"> <input id="admin_bal" placeholder="Balans">
+    <button onclick="saveBalance()">Balansı Yenilə</button>
+</div>
+
+<div id="tapper" class="tab active">
+    <h3>Xal: <span id="user-points">0</span></h3>
+    <div onclick="tap()" style="font-size: 100px; cursor: pointer;">🐝</div>
+    <button class="btn" onclick="showAd()">Reklama bax (+100)</button>
+</div>
+
+<div id="race" class="tab">
+    <div id="rooms">
+        <button class="btn" onclick="enterRace(0.40)">Otaq 0.40 TON</button>
+        <button class="btn" onclick="enterRace(1.0)">Otaq 1.0 TON</button>
+    </div>
+    <div id="track" style="display:none;">
         <div id="player" class="car" style="left: 50%;">🏎️</div>
     </div>
-    <button class="btn" onclick="move(-30)">⬅️ SOL</button>
-    <button class="btn" onclick="move(30)">SAĞ ➡️</button>
+</div>
 
-    <script>
-        // Supabase Konfiqurasiyası
-        const supabase = supabase.createClient(
-            'https://ywpqvvriakbbhvrtpvso.supabase.co', 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk'
-        );
-        
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        const user = tg.initDataUnsafe.user || { id: "8591374417", username: "Gokhan" };
-        
-        const socket = io("https://bearbee-production.up.railway.app");
-        let score = 0, playerPos = 50, isGameOver = true;
-        const player = document.getElementById('player');
+<div id="chat" class="tab">
+    <div id="chat-box" style="height: 150px; overflow-y: scroll; border: 1px solid #444; margin-bottom: 10px;"></div>
+    <input id="msg-input" style="padding: 10px;"> <button class="btn" onclick="sendMsg()">Göndər</button>
+</div>
 
-        async function initGame() {
-            const { data } = await supabase.from('users').select('balance').eq('telegram_id', user.id.toString()).single();
-            
-            if (!data || data.balance < 0.40) {
-                document.getElementById('status-text').innerHTML = "Balansınız kifayət deyil!<br>Cüzdan: <code>EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</code><br>0.40 TON göndərin.";
-                return;
-            }
+<script>
+    // Anon Key-i buraya əlavə edin
+    const supabase = supabase.createClient(
+        'https://ywpqvvriakbbhvrtpvso.supabase.co', 
+        'BURAYA_ANON_KEY_YAZIN' 
+    );
+    
+    const socket = io("https://bearbee-production.up.railway.app");
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const user = tg.initDataUnsafe.user || { id: "8591374417", username: "Gokhan" };
 
-            document.getElementById('status-text').innerText = "Yarışçılar gözlənilir...";
-            socket.emit('joinGame', { username: user.username, telegramId: user.id });
+    if (user.id.toString() === "8591374417") document.getElementById('admin-panel').style.display = 'block';
+
+    function showTab(t) {
+        document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+    }
+
+    async function enterRace(min) {
+        const { data } = await supabase.from('users').select('balance').eq('telegram_id', user.id.toString()).single();
+        if (!data || data.balance < min) {
+            alert("Depozit tələb olunur: " + min + " TON. Cüzdan: EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp");
+        } else {
+            document.getElementById('track').style.display = 'block';
+            document.getElementById('rooms').style.display = 'none';
         }
+    }
 
-        // Admin Funksiyası
-        async function saveBalance() {
-            const id = document.getElementById('admin_id').value;
-            const balance = parseFloat(document.getElementById('admin_balance').value);
-            const { error } = await supabase.from('users').update({ balance: balance }).eq('telegram_id', id);
-            alert(error ? "Xəta: " + error.message : "Balans yeniləndi!");
-        }
+    function tap() {
+        let p = parseInt(document.getElementById('user-points').innerText) + 1;
+        document.getElementById('user-points').innerText = p;
+    }
 
-        if (window.location.search.includes('admin=1')) document.getElementById('admin-panel').style.display = 'block';
+    async function saveBalance() {
+        const id = document.getElementById('admin_id').value;
+        const bal = document.getElementById('admin_bal').value;
+        await supabase.from('users').upsert({ telegram_id: id, balance: parseFloat(bal) });
+        alert("Balans uğurla yeniləndi!");
+    }
 
-        socket.on('gameStarted', () => { document.getElementById('wait-screen').style.display = 'none'; isGameOver = false; });
-        
-        function move(dir) {
-            if(!isGameOver && (playerPos + dir >= 20 && playerPos + dir <= 80)) {
-                playerPos += dir;
-                player.style.left = playerPos + '%';
-            }
-        }
+    function sendMsg() {
+        const txt = document.getElementById('msg-input').value;
+        socket.emit('chatMessage', { username: user.username, text: txt });
+        document.getElementById('msg-input').value = '';
+    }
 
-        initGame();
-    </script>
+    socket.on('newMessage', (m) => {
+        document.getElementById('chat-box').innerHTML += `<div><b>${m.username}:</b> ${m.text}</div>`;
+    });
+</script>
 </body>
 </html>
