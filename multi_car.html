@@ -20,6 +20,12 @@
         <h2 id="status-text">Yüklənir...</h2>
     </div>
 
+    <div id="admin-panel" style="display: none; padding: 15px; background: #222; border: 1px solid gold; margin: 10px;">
+        <input type="text" id="admin_id" placeholder="Telegram ID">
+        <input type="number" id="admin_balance" value="0.40">
+        <button onclick="saveBalance()">Balansı Yenilə</button>
+    </div>
+
     <h3>Xal: <span id="score">0</span> | <span id="msg">Gözləyir...</span></h3>
     <div class="track" id="track">
         <div id="player" class="car" style="left: 50%;">🏎️</div>
@@ -29,21 +35,24 @@
 
     <script>
         // Supabase Konfiqurasiyası
-        const supabase = supabase.createClient('https://ywpqvvriakbbhvrtpvso.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk');
+        const supabase = supabase.createClient(
+            'https://ywpqvvriakbbhvrtpvso.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk'
+        );
         
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const user = tg.initDataUnsafe.user || { id: "test_user", username: "Guest" };
+        const user = tg.initDataUnsafe.user || { id: "8591374417", username: "Gokhan" };
         
         const socket = io("https://bearbee-production.up.railway.app");
         let score = 0, playerPos = 50, isGameOver = true;
         const player = document.getElementById('player');
 
         async function initGame() {
-            // Balans yoxlanışı
             const { data } = await supabase.from('users').select('balance').eq('telegram_id', user.id.toString()).single();
+            
             if (!data || data.balance < 0.40) {
-                document.getElementById('status-text').innerText = "Balansınız kifayət deyil (Min: 0.40 TON)";
+                document.getElementById('status-text').innerHTML = "Balansınız kifayət deyil!<br>Cüzdan: <code>EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</code><br>0.40 TON göndərin.";
                 return;
             }
 
@@ -51,12 +60,18 @@
             socket.emit('joinGame', { username: user.username, telegramId: user.id });
         }
 
-        socket.on('roomUpdate', (c) => document.getElementById('status-text').innerText = "Otaqda: " + c + "/2");
-        socket.on('gameStarted', () => { document.getElementById('wait-screen').style.display = 'none'; isGameOver = false; });
-        socket.on('playerExploded', (id) => { 
-            if(id === socket.id) { isGameOver = true; alert("Oyun bitdi! Xalınız: " + score); } 
-        });
+        // Admin Funksiyası
+        async function saveBalance() {
+            const id = document.getElementById('admin_id').value;
+            const balance = parseFloat(document.getElementById('admin_balance').value);
+            const { error } = await supabase.from('users').update({ balance: balance }).eq('telegram_id', id);
+            alert(error ? "Xəta: " + error.message : "Balans yeniləndi!");
+        }
 
+        if (window.location.search.includes('admin=1')) document.getElementById('admin-panel').style.display = 'block';
+
+        socket.on('gameStarted', () => { document.getElementById('wait-screen').style.display = 'none'; isGameOver = false; });
+        
         function move(dir) {
             if(!isGameOver && (playerPos + dir >= 20 && playerPos + dir <= 80)) {
                 playerPos += dir;
@@ -64,11 +79,6 @@
             }
         }
 
-        setInterval(() => {
-            if(!isGameOver) { score++; document.getElementById('score').innerText = score; }
-        }, 200);
-
-        // Obrazların düşməsi və oyun məntiqi...
         initGame();
     </script>
 </body>
