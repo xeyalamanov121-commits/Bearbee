@@ -37,12 +37,20 @@
     </div>
 
     <script>
-        const supabase = supabase.createClient('URL_BURAYA', 'ANON_KEY_BURAYA');
+        // Supabase bağlantısının stabil olması üçün window.supabase istifadə edildi
+        const supabase = window.supabase.createClient(
+            'https://ywpqvvriakbbhvrtpvso.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk'
+        );
+        
         const tg = window.Telegram.WebApp;
         const user = tg.initDataUnsafe.user || { id: "8591374417" };
         let points = 0;
 
-        if (user.id.toString() === "8591374417") document.getElementById('admin-panel').style.display = 'block';
+        // Admin paneli yoxlanışı
+        if (user.id.toString() === "8591374417") {
+            document.getElementById('admin-panel').style.display = 'block';
+        }
 
         function tap() { points++; document.getElementById('balance').innerText = points; }
         function showAd() { points += 100; document.getElementById('balance').innerText = points; }
@@ -51,8 +59,13 @@
         async function saveBalance() {
             const id = document.getElementById('admin_id').value;
             const bal = document.getElementById('admin_bal').value;
-            await supabase.from('users').upsert({ telegram_id: id, balance: parseFloat(bal) });
-            alert("Balans yeniləndi!");
+            
+            const { data, error } = await supabase
+                .from('users')
+                .upsert({ telegram_id: id, balance: parseFloat(bal) });
+                
+            if (error) alert("Xəta: " + error.message);
+            else alert("Balans uğurla yeniləndi!");
         }
     </script>
 </body>
