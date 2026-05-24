@@ -3,70 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <title>Bearbee Gaming Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
-        .hero { height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, #1a1a1a, #000); }
-        .balance-box { font-size: 24px; color: #ffd700; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
-        .card:active { transform: scale(0.95); background: #222; }
-        #admin-panel { display: none; background: #220; padding: 20px; margin: 20px; border: 2px solid #ff4500; border-radius: 10px; }
+        :root { --gold: #ffd700; --bg: #0a0a0a; --card: rgba(255, 255, 255, 0.05); }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        .hero { text-align: center; padding: 40px 0; }
+        .balance-box { font-size: 32px; color: var(--gold); font-weight: bold; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .card { 
+            background: var(--card); padding: 25px 15px; border-radius: 20px; 
+            text-align: center; border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px); cursor: pointer; transition: 0.3s;
+        }
+        .card:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); }
+        
+        .btn-tap { 
+            font-size: 70px; background: none; border: none; cursor: pointer; 
+            filter: drop-shadow(0 0 15px rgba(255,215,0,0.4));
+        }
+        .btn-tap:active { transform: scale(0.92); }
     </style>
 </head>
 <body>
 
     <div class="hero">
         <div class="balance-box">🍯 <span id="balance">0</span> TON</div>
-        <div style="font-size: 80px; cursor: pointer;" onclick="tap()">🐻</div>
+        <button class="btn-tap" onclick="tap()">🐻</button>
     </div>
 
     <div class="grid">
-        <div class="card" onclick="tap()"><h3>Bal Topla</h3></div>
-        <div class="card" onclick="showAd()"><h3>Reklam (+100)</h3></div>
-        <div class="card" onclick="upgrade()"><h3>Səviyyə</h3></div>
-        <div class="card" onclick="window.location.href='race.html'"><h3>Yarış</h3></div>
-    </div>
-
-    <div id="admin-panel">
-        <h3 style="color: #ff4500;">Admin Paneli</h3>
-        <input id="admin_id" placeholder="User ID" style="width: 80%; padding: 5px;">
-        <input id="admin_bal" placeholder="Balans" style="width: 80%; padding: 5px; margin-top: 5px;">
-        <button style="margin-top: 10px; background: #ff4500;" onclick="saveBalance()">Yenilə</button>
+        <div class="card" onclick="tap()"><h3>Mining</h3><p>Tap to earn</p></div>
+        <div class="card" onclick="showAd()"><h3>Ads (x100)</h3><p>Get bonus</p></div>
+        <div class="card" onclick="alert('Coming soon')"><h3>Race</h3><p>Bet & Win</p></div>
+        <div class="card" onclick="alert('Coming soon')"><h3>Leaderboard</h3><p>Top players</p></div>
     </div>
 
     <script>
-        // Supabase bağlantısının stabil olması üçün window.supabase istifadə edildi
         const supabase = window.supabase.createClient(
             'https://ywpqvvriakbbhvrtpvso.supabase.co', 
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk'
         );
         
-        const tg = window.Telegram.WebApp;
-        const user = tg.initDataUnsafe.user || { id: "8591374417" };
         let points = 0;
+        const balanceEl = document.getElementById('balance');
 
-        // Admin paneli yoxlanışı
-        if (user.id.toString() === "8591374417") {
-            document.getElementById('admin-panel').style.display = 'block';
-        }
-
-        function tap() { points++; document.getElementById('balance').innerText = points; }
-        function showAd() { points += 100; document.getElementById('balance').innerText = points; }
-        function upgrade() { alert("Səviyyə artırıldı!"); }
-
-        async function saveBalance() {
-            const id = document.getElementById('admin_id').value;
-            const bal = document.getElementById('admin_bal').value;
-            
-            const { data, error } = await supabase
-                .from('users')
-                .upsert({ telegram_id: id, balance: parseFloat(bal) });
-                
-            if (error) alert("Xəta: " + error.message);
-            else alert("Balans uğurla yeniləndi!");
-        }
+        function tap() { points++; balanceEl.innerText = points; }
+        function showAd() { points += 100; balanceEl.innerText = points; }
     </script>
 </body>
 </html>
