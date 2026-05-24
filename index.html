@@ -7,472 +7,80 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://sad.adsgram.ai/js/adsgram-telegram-web-app.js"></script>
     <style>
-        :root {
-            --neon-green: #00ff66;
-            --gold-glow: #ffd700;
-            --premium-dark: #020b05;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background: radial-gradient(circle at center, #0a3a1f 0%, var(--premium-dark) 100%);
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
-            color: #fff;
-            text-align: center;
-            user-select: none;
-            overflow: hidden;
-        }
-
-        .container {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        /* 🌐 Dil Seçimi Paneli */
-        .lang-panel {
-            display: flex;
-            gap: 12px;
-            margin-top: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 15px;
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 102, 0.2);
-        }
-
-        .lang-btn {
-            font-size: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .lang-btn:active {
-            transform: scale(1.3);
-        }
-
-        /* 🌟 İşıldayan Neon Başlıq Paneli */
-        .header-panel {
-            background: linear-gradient(135deg, #0d381e 0%, #051a0d 100%);
-            border: 2px solid var(--gold-glow);
-            box-shadow: 0 0 25px rgba(0, 255, 102, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.3);
-            border-radius: 20px;
-            padding: 10px 30px;
-            animation: borderPulse 2s infinite alternate;
-        }
-
-        .header-title {
-            font-size: 22px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #fff, var(--gold-glow), #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shineText 3s linear infinite;
-            margin: 0;
-        }
-
-        /* 🔮 Cyber-Glass Göstərici Paneli */
-        .status-card {
-            background: rgba(4, 23, 12, 0.75);
-            border: 1px solid rgba(0, 255, 102, 0.25);
-            border-radius: 22px;
-            width: 90%;
-            padding: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0, 255, 102, 0.1);
-            backdrop-filter: blur(15px);
-        }
-
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            font-weight: 700;
-            margin: 6px 0;
-            letter-spacing: 0.5px;
-        }
-
-        .glow-text-green {
-            color: var(--neon-green);
-            text-shadow: 0 0 10px rgba(0, 255, 102, 0.8);
-        }
-
-        .glow-text-gold {
-            color: var(--gold-glow);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-
-        /* ⚡ Enerji Barı */
-        .energy-wrapper {
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        .energy-container {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid var(--neon-green);
-            border-radius: 30px;
-            height: 24px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
-            display: flex;
-            align-items: center;
-        }
-
-        .energy-bar-fill {
-            background: linear-gradient(90deg, #006622, var(--neon-green), #00ffcc);
-            background-size: 200% 100%;
-            height: 100%;
-            width: 100%;
-            border-radius: 30px;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 20px var(--neon-green);
-            animation: moveGradient 2s linear infinite;
-        }
-
-        .bolt {
-            position: absolute;
-            left: 14px;
-            font-size: 13px;
-            color: #fff;
-            z-index: 3;
-            text-shadow: 0 0 8px #fff, 0 0 15px var(--neon-green);
-            animation: superFlash 0.5s infinite alternate;
-        }
-
-        /* 🐻 Oyun Sahəsi */
-        .game-area {
-            position: relative;
-            width: 100%;
-            height: 35vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .bear-avatar {
-            font-size: 120px;
-            cursor: pointer;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 0 30px rgba(0, 255, 102, 0.2)) drop-shadow(0 15px 35px rgba(0,0,0,0.7));
-        }
-
-        .bear-avatar:active {
-            transform: scale(1.2) rotate(3deg);
-        }
-
-        .bee-avatar {
-            position: absolute;
-            font-size: 42px;
-            left: 20%;
-            top: 20%;
-            transition: all 0.5s cubic-bezier(0.42, 0, 0.58, 1);
-            filter: drop-shadow(0 0 15px var(--gold-glow));
-        }
-
-        /* 🚀 3D Düymələr */
-        .control-panel {
-            width: 100%;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .ultimate-btn {
-            position: relative;
-            background: linear-gradient(135deg, #004d1a 0%, #001a06 100%);
-            border: 2px solid var(--neon-green);
-            color: var(--neon-green);
-            font-size: 16px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 16px 0;
-            width: 88%;
-            border-radius: 40px;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.2);
-            overflow: hidden;
-            transition: all 0.2s ease;
-            text-shadow: 0 0 5px rgba(0,255,102,0.5);
-        }
-
-        .ultimate-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 30%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.25);
-            transform: rotate(30deg);
-            animation: shimmerEffect 2.5s infinite linear;
-        }
-
-        .ultimate-btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-feed {
-            background: linear-gradient(135deg, #4d2600 0%, #1a0d00 100%);
-            border-color: var(--gold-glow);
-            color: var(--gold-glow);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-        }
-
-        .btn-feed::after { background: rgba(255, 215, 0, 0.3); }
-
-        .btn-video {
-            background: rgba(0, 255, 102, 0.05);
-            border: 2px dashed #00ffff;
-            color: #00ffff;
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
-            animation: pulseBlue 1.5s infinite alternate;
-        }
-        
-        .btn-video::after { background: rgba(0, 255, 255, 0.3); }
-
+        :root { --neon-green: #00ff66; --gold-glow: #ffd700; --premium-dark: #020b05; }
+        body { margin: 0; padding: 0; background: radial-gradient(circle at center, #0a3a1f 0%, var(--premium-dark) 100%); font-family: 'Poppins', sans-serif; color: #fff; text-align: center; user-select: none; overflow: hidden; }
+        .container { padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; box-sizing: border-box; }
+        .header-panel { background: linear-gradient(135deg, #0d381e 0%, #051a0d 100%); border: 2px solid var(--gold-glow); border-radius: 20px; padding: 10px 30px; }
+        .header-title { font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
+        .status-card { background: rgba(4, 23, 12, 0.75); border: 1px solid rgba(0, 255, 102, 0.25); border-radius: 22px; width: 90%; padding: 15px; }
+        .status-row { display: flex; justify-content: space-between; font-weight: 700; margin: 6px 0; }
+        .game-area { width: 100%; height: 35vh; display: flex; justify-content: center; align-items: center; }
+        .bear-avatar { font-size: 120px; cursor: pointer; transition: transform 0.1s; }
+        .bear-avatar:active { transform: scale(1.2); }
+        .control-panel { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .ultimate-btn { background: linear-gradient(135deg, #004d1a 0%, #001a06 100%); border: 2px solid var(--neon-green); color: var(--neon-green); font-size: 16px; font-weight: 900; padding: 16px 0; width: 88%; border-radius: 40px; cursor: pointer; }
         .hidden { display: none !important; }
-
-        /* ANIMASİYALAR */
-        @keyframes borderPulse {
-            from { box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); border-color: var(--gold-glow); }
-            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); border-color: var(--neon-green); }
-        }
-        @keyframes shineText { to { background-position: 200% center; } }
-        @keyframes shimmerEffect { 0% { left: -60%; } 100% { left: 130%; } }
-        @keyframes moveGradient { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        @keyframes superFlash { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1.2); } }
-        @keyframes pulseBlue { from { box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); } to { box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="lang-panel">
-        <button class="lang-btn" onclick="setLanguage('az')">🇦🇿</button>
-        <button class="lang-btn" onclick="setLanguage('en')">🇬🇧</button>
-        <button class="lang-btn" onclick="setLanguage('ru')">🇷🇺</button>
-    </div>
-
-    <div class="header-panel">
-        <h1 id="txt-title" class="header-title">Bearbee Ultimate</h1>
-    </div>
+    <div class="header-panel"><h1 id="txt-title" class="header-title">Bearbee Ultimate</h1></div>
 
     <div class="status-card">
-        <div class="status-row">
-            <span id="txt-balance">🍯 BALANS:</span>
-            <span id="honey-display" class="glow-text-gold">0</span>
-        </div>
-        <div class="status-row">
-            <span id="txt-weight">🐻 AYI SƏVİYYƏSİ:</span>
-            <span id="weight-display" class="glow-text-green">LVL 1</span>
-        </div>
-        <div class="status-row" style="margin-bottom: 0;">
-            <span id="txt-energy">⚡ ARI ENERJİSİ:</span>
-            <span id="energy-display" style="color: #00ffcc;">100/100</span>
-        </div>
-        
-        <div class="energy-wrapper">
-            <div class="energy-container">
-                <span class="bolt">⚡</span>
-                <div id="energy-bar" class="energy-bar-fill"></div>
-            </div>
-        </div>
+        <div class="status-row"><span>🍯 BALANS:</span> <span id="honey-display">0</span></div>
+        <div class="status-row"><span>🐻 AYI SƏVİYYƏSİ:</span> <span id="weight-display">LVL 1</span></div>
     </div>
 
     <div class="game-area">
-        <div id="bee-node" class="bee-avatar">🐝</div>
         <div id="bear-node" class="bear-avatar" onclick="balTopla()">🐻</div>
     </div>
 
     <div class="control-panel">
         <button id="btn-collect" class="ultimate-btn" onclick="balTopla()">🐝 Sürətli Bal Topla</button>
-        <button id="btn-feed" class="ultimate-btn btn-feed" onclick="ayiniYedizdir()">🍯 Ayını Böyüt (300 Bal)</button>
-        <button id="btn-video" class="ultimate-btn btn-video hidden" onclick="reklamIzle()">🎬 REKLAM İZLƏ - 2X ENERJİ</button>
+        <button id="btn-feed" class="ultimate-btn" onclick="ayiniYedizdir()">🍯 Ayını Böyüt (300 Bal)</button>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    if (tg) {
-        tg.ready();
-        tg.expand();
-    }
-
-    // 🌍 TƏRCÜMƏ LÜĞƏTİ
-    const translations = {
-        az: {
-            title: "Bearbee Ultimate",
-            balance: "🍯 BALANS:",
-            weight: "🐻 AYI SƏVİYYƏSİ:",
-            energy: "⚡ ARI ENERJİSİ:",
-            btnCollect: "🐝 Sürətli Bal Topla (-5 ⚡)",
-            btnFeed: "🍯 Ayını Böyüt (300 Bal)",
-            btnVideo: "🎬 REKLAM İZLƏ - 2X ENERJİ",
-            alertNoHoney: "🐻 Ayını böyütmək üçün ən azı 300 Bal (Point) toplamalısınız!",
-            alertAdSuccess: "✅ Video izlənildi! Enerji 100% dolduruldu."
-        },
-        en: {
-            title: "Bearbee Ultimate",
-            balance: "🍯 BALANCE:",
-            weight: "🐻 BEAR LEVEL:",
-            energy: "⚡ BEE ENERGY:",
-            btnCollect: "🐝 Fast Collect Honey (-5 ⚡)",
-            btnFeed: "🍯 Upgrade Bear (300 Honey)",
-            btnVideo: "🎬 WATCH AD - 2X ENERGY",
-            alertNoHoney: "🐻 Not enough honey! You need at least 300 Honey.",
-            alertAdSuccess: "✅ Ad watched! Energy 100% restored."
-        },
-        ru: {
-            title: "Bearbee Ultimate",
-            balance: "🍯 БАЛАНС:",
-            weight: "🐻 УРОВЕНЬ МЕДВЕДЯ:",
-            energy: "⚡ ЭНЕРГИЯ ПЧЕЛЫ:",
-            btnCollect: "🐝 Быстрый сбор меда (-5 ⚡)",
-            btnFeed: "🍯 Прокачать Мишку (300 меда)",
-            btnVideo: "🎬 СМОТРЕТЬ РЕКЛАМУ - 2X ЭНЕРГИЯ",
-            alertNoHoney: "🐻 Недостаточно меда! Вам нужно минимум 300 меда.",
-            alertAdSuccess: "✅ Реклама просмотрена! Энергия восстановлена на 100%."
-        }
-    };
-
-    let currentLang = 'az';
-
-    // ⚙️ MAKSİMUM GƏLİR İQTİSADİYYATI
+    const API_URL = "https://bearbee-production.up.railway.app";
+    
     let honey = 0;
     let bearLvl = 1;
-    let energy = 100;
-    let sessionAds = 0; 
-    let feedCount = 0;
 
-    // ⚠️ Adsgram Blok ID yerləşdirmə hissəsi
-    const ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID";
-    let AdController = window.Adsgram ? window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID }) : null;
-
-    // 🐍 Bota Data Göndərmə
-    function sendDataToBot() {
-        if (tg && (honey > 0 || sessionAds > 0)) {
-            tg.sendData(`${honey},${bearLvl},${sessionAds}`);
-            sessionAds = 0; 
-        }
+    async function syncData() {
+        const userId = tg.initDataUnsafe?.user?.id || "test-user";
+        try {
+            await fetch(`${API_URL}/api/user/sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, honey: honey, level: bearLvl })
+            });
+        } catch (e) { console.log("Sinxronizasiya edildi"); }
     }
 
-    // 🌐 Dil Ayarlama Funksiyası
-    function setLanguage(lang) {
-        currentLang = lang;
-        
-        document.getElementById('txt-title').innerText = translations[lang].title;
-        document.getElementById('txt-balance').innerText = translations[lang].balance;
-        document.getElementById('txt-weight').innerText = translations[lang].weight;
-        document.getElementById('txt-energy').innerText = translations[lang].energy;
-        
-        document.getElementById('btn-collect').innerText = translations[lang].btnCollect;
-        document.getElementById('btn-feed').innerText = translations[lang].btnFeed;
-        document.getElementById('btn-video').innerText = translations[lang].btnVideo;
-        
-        refreshUI();
-    }
-
-    function refreshUI() {
+    async function balTopla() {
+        honey += 1;
         document.getElementById('honey-display').innerText = honey;
-        document.getElementById('weight-display').innerText = "LVL " + bearLvl;
-        document.getElementById('energy-display').innerText = energy + "/100";
-        document.getElementById('energy-bar').style.width = energy + "%";
-
-        // Enerji 5-dən aşağı düşərsə, klik düyməsini tam bloklayıb videonu məcburi edirik
-        if (energy < 5) {
-            document.getElementById('btn-collect').classList.add('hidden');
-            document.getElementById('btn-video').classList.remove('hidden');
-        } else {
-            document.getElementById('btn-collect').classList.remove('hidden');
-            document.getElementById('btn-video').classList.add('hidden');
-        }
+        await syncData();
     }
 
-    function balTopla() {
-        if (energy >= 5) {
-            energy -= 5; 
-            honey += Math.floor(Math.random() * 2) + 1; // SƏRFƏLİ REJİM: Cəmi +1 və ya +2 bal
-
-            let bee = document.getElementById('bee-node');
-            bee.style.left = (Math.random() * 50 + 20) + "%";
-            bee.style.top = (Math.random() * 30 + 20) + "%";
-
-            let bear = document.getElementById('bear-node');
-            bear.style.transform = "scale(1.15)";
-            setTimeout(() => bear.style.transform = "scale(1)", 80);
-
-            refreshUI();
-        }
-    }
-
-    function ayiniYedizdir() {
-        if (honey >= 300) { 
+    async function ayiniYedizdir() {
+        if (honey >= 300) {
             honey -= 300;
             bearLvl += 1;
-            feedCount++;
-
-            let bear = document.getElementById('bear-node');
-            bear.style.transform = "scale(1.25) rotate(-5deg)";
-            setTimeout(() => bear.style.transform = "scale(1) rotate(0deg)", 120);
-
-            sendDataToBot();
-            refreshUI();
-
-            // Arxa planda hər 3 yedizdirmədən bir keçid reklamı yoxlanılır
-            if (feedCount % 3 === 0) {
-                if (AdController) {
-                    AdController.show().then(() => { sessionAds++; sendDataToBot(); }).catch(e => console.log(e));
-                }
-            }
+            document.getElementById('honey-display').innerText = honey;
+            document.getElementById('weight-display').innerText = "LVL " + bearLvl;
+            await syncData();
         } else {
-            alert(translations[currentLang].alertNoHoney);
+            alert("🐻 Bal azdır!");
         }
     }
 
-    function reklamIzle() {
-        if (AdController) {
-            AdController.show().then(() => {
-                energy = 100;
-                sessionAds++;
-                alert(translations[currentLang].alertAdSuccess);
-                sendDataToBot();
-                refreshUI();
-            }).catch(() => {
-                energy = 100; 
-                sessionAds++;
-                sendDataToBot();
-                refreshUI();
-            });
-        } else {
-            energy = 100;
-            sessionAds++;
-            sendDataToBot();
-            refreshUI();
-        }
-    }
-
-    // Çıxış anında verilənləri bota ötür
-    window.addEventListener('beforeunload', sendDataToBot);
-
-    // İlk yüklənmə
-    setLanguage('az');
+    tg.ready();
+    tg.expand();
 </script>
-
 </body>
 </html>
 
