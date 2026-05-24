@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="az">
-<body>
-    <h1 id="score">XAL: 0</h1>
-    <div id="bear" style="font-size:100px; cursor:pointer;" onclick="tap()">🐻</div>
+<body style="background:#000; color:#ffd700; text-align:center; padding-top:50px;">
+    <h1>MINING ARENA</h1>
+    <h2 id="scoreDisplay">XAL: 0</h2>
+    <div onclick="tap()" style="font-size:100px; cursor:pointer;">🐻</div>
+    <script src="config.js"></script>
     <script>
         let score = 0;
-        let milestone = 400;
         function tap() {
             score += 2;
-            document.getElementById('score').innerText = "XAL: " + score;
-            if(score >= milestone) {
-                alert("Reklam vaxtı!"); // Burada reklam kodunu çağır
-                milestone += 400;
-            }
+            document.getElementById('scoreDisplay').innerText = "XAL: " + score;
+            if(score % 400 === 0) alert("REKLAM VAXTI! 400 xala çatdın.");
         }
     </script>
 </body>
