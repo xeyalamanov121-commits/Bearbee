@@ -1,64 +1,86 @@
-<script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<title>Cyber Ayı Clicker Mining</title>
+<script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
+<style>
+  body { text-align:center; background:#0a0a0f; color:#fff; margin:0; padding:0; min-height:200vh; }
+  #bear { width:350px; cursor:pointer; border:4px solid #00ffff; border-radius:15px; box-shadow:0 0 20px #00ffff; margin-top:100px; }
+  .stone { position:absolute; width:50px; height:50px; animation:drop 1s ease-out forwards; }
+  @keyframes drop { from{transform:translateY(0);} to{transform:translateY(300px);} }
+  .pulse { position:absolute; border-radius:50%; background:rgba(0,255,255,0.4); animation:spread 1s ease-out forwards; pointer-events:none; }
+  @keyframes spread { from{transform:scale(0);opacity:1;} to{transform:scale(3);opacity:0;} }
+  #bottomLine { position:fixed; bottom:0; left:0; width:100%; height:100px; background:rgba(0,255,255,0.1); border-top:2px solid #00ffff; display:flex; justify-content:center; align-items:center; overflow-x:auto; z-index:10; }
+  #bottomLine img { width:60px; height:60px; margin:0 5px; border-radius:8px; box-shadow:0 0 10px #00ff99; }
+  #energyPanel { margin:20px; font-size:20px; }
+  #energyBar { width:300px; height:25px; background:#333; margin:10px auto; border-radius:12px; overflow:hidden; border:2px solid #555; }
+  #bar { height:100%; width:100%; background:limegreen; transition:width 1s ease-in-out; }
+  #adPanel { margin:20px; padding:15px; background:#111; border:2px dashed #ffcc00; border-radius:10px; color:#ffcc00; cursor:pointer; }
+</style>
+</head>
+<body>
+  <h1>💎 Cyber Ayı Clicker Mining 💎</h1>
+  <div id="energyPanel">Enerji: <span id="energy">100</span>/100</div>
+  <div id="energyBar"><div id="bar"></div></div>
+  <div id="adPanel">📺 Reklamı izlə və enerji qazan</div>
+  
+  <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.f66eeac8-be8a-412e-a0a3-88d16d917054.png" alt="Cyber Ayı">
+  <div id="bottomLine"></div>
+
+<script>
+let energy=100;
+const bear=document.getElementById("bear"),bottom=document.getElementById("bottomLine");
+const energySpan=document.getElementById("energy"),adPanel=document.getElementById("adPanel"),bar=document.getElementById("bar");
+
+// Adsgram reklam sistemi (Sənin Block ID-ni bura yazmalısan)
+const adController = window.Adsgram.init({ blockId: "REKLAM_BLOCK_ID_BURA" });
+
+function updateBar(){
+  bar.style.width=energy+"%";
+  if(energy>60) bar.style.background="limegreen";
+  else if(energy>30) bar.style.background="orange";
+  else bar.style.background="red";
+}
+
+bear.addEventListener("click",e=>{
+  if(energy>0){
+    energy-=1; energySpan.textContent=energy; updateBar();
+    for(let i=0;i<3;i++){
+      const stone=document.createElement("img");
+      stone.className="stone";
+      stone.src="https://copilot.microsoft.com/th/id/BCO.d2e80846-1e5c-4e2d-b3b5-78fc47b6436a.png";
+      stone.style.left=(e.pageX-25+i*20)+"px"; 
+      stone.style.top=(e.pageY-25)+"px";
+      document.body.appendChild(stone);
+      setTimeout(()=>{stone.remove(); const s=document.createElement("img"); s.src=stone.src; bottom.appendChild(s);},1000);
     }
-  }
-</script>
+    const pulse=document.createElement("div");
+    pulse.className="pulse"; pulse.style.width="100px"; pulse.style.height="100px";
+    pulse.style.left=(e.pageX-50)+"px"; pulse.style.top=(e.pageY-50)+"px";
+    document.body.appendChild(pulse); setTimeout(()=>pulse.remove(),1000);
+  } else { alert("Enerji bitdi! Reklamı sona qədər izləyərək enerji qazan."); }
+});
 
-<div id="canvas-container" style="width: 240px; height: 240px; cursor: pointer;"></div>
-
-<script type="module">
-  import * as THREE from 'three';
-  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-  const container = document.getElementById('canvas-container');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({ alpha: true });
-  renderer.setSize(240, 240);
-  container.appendChild(renderer.domElement);
-
-  // İşıqlandırma
-  const light = new THREE.DirectionalLight(0xffffff, 2);
-  light.position.set(1, 1, 1);
-  scene.add(light);
-  scene.add(new THREE.AmbientLight(0xffffff, 1));
-
-  // Modelin Yüklənməsi
-  const loader = new GLTFLoader();
-  let model;
-  loader.load('model.glb', (gltf) => {
-    model = gltf.scene;
-    scene.add(model);
-    camera.position.z = 3;
-  });
-
-  // Klikləmənin aşkarlanması (Raycaster)
-  const raycaster = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
-
-  container.addEventListener('click', (event) => {
-    const rect = container.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children, true);
-
-    if (intersects.length > 0) {
-      // Bura sənin tapper funksiyanı çağır
-      triggerTap();
-      // Animasiya: klikləyəndə modeli bir az fırlat
-      model.rotation.y += 0.5;
+// Reklam paneli - yalnız reklam bitəndə enerji artır
+adPanel.addEventListener("click",()=>{
+  adController.show().then((result) => {
+    if (result.done) {
+        // Reklam uğurla bitdi
+        energy = 100;
+        energySpan.textContent = energy;
+        updateBar();
+        alert("Təbriklər! Enerjin tam doldu.");
+    } else {
+        // İstifadəçi reklamı yarımçıq bağladı
+        alert("Reklamı sona qədər izləmədiyin üçün enerji verilmədi!");
     }
+  }).catch((err) => {
+      alert("Reklam yüklənərkən xəta baş verdi.");
   });
+});
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if(model) model.rotation.y += 0.01;
-    renderer.render(scene, camera);
-  }
-  animate();
+updateBar();
 </script>
+</body>
+</html>
