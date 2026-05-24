@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Racing</title>
+    <title>Bearbee Survival Racing</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { 
@@ -19,9 +19,10 @@
             padding: 15px; 
             font-size: 22px; 
             font-weight: bold; 
-            color: #ffd700; 
-            border-bottom: 2px solid #00ff66;
+            color: #ff3333; 
+            border-bottom: 2px solid #ff3333;
             background: rgba(4, 23, 12, 0.9);
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
         }
         .track { 
             width: 100%; 
@@ -30,21 +31,23 @@
             background: #111; 
             margin: 15px auto; 
             position: relative; 
-            border-left: 3px dashed #00ff66; 
-            border-right: 3px dashed #00ff66; 
+            border-left: 3px dashed #ff3333; 
+            border-right: 3px dashed #ff3333; 
             overflow: hidden; 
         }
         .car { 
             font-size: 45px; 
             position: absolute; 
             bottom: 20px; 
-            transition: left 0.15s ease-out; 
+            transition: left 0.1s ease-out; 
             transform: translateX(-50%);
+            z-index: 2;
         }
-        .coin { 
-            font-size: 30px; 
+        .obstacle { 
+            font-size: 35px; 
             position: absolute; 
             transform: translateX(-50%);
+            z-index: 1;
         }
         .controls { 
             display: flex; 
@@ -53,37 +56,51 @@
             margin-top: 10px; 
         }
         .btn { 
-            background: #004d1a; 
-            border: 2px solid #00ff66; 
-            color: #00ff66; 
+            background: #4d0000; 
+            border: 2px solid #ff3333; 
+            color: #ff3333; 
             padding: 20px 40px; 
             font-size: 24px; 
             border-radius: 20px; 
             cursor: pointer; 
-            box-shadow: 0 5px 15px rgba(0, 255, 102, 0.2);
+            box-shadow: 0 5px 15px rgba(255, 51, 51, 0.2);
         }
         .btn:active { 
-            transform: scale(0.90); 
-            background: #00ff66; 
+            transform: scale(0.95); 
+            background: #ff3333; 
             color: #000;
         }
-        .back-btn { 
-            background: transparent; 
-            color: #fff; 
-            border: 1px solid #777; 
-            padding: 10px 20px; 
-            margin-top: 20px; 
-            border-radius: 10px; 
-            cursor: pointer; 
+        .game-over-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .hidden { display: none !important; }
+        .restart-btn {
+            background: #004d1a; border: 2px solid #00ff66; color: #00ff66;
+            padding: 15px 30px; font-size: 20px; border-radius: 15px; cursor: pointer; margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">🪙 Toplanan Coin: <span id="score">0</span></div>
+    <div class="header">⏱️ Sağ Qalma Məsafəsi: <span id="score">0</span> m</div>
 
     <div class="track" id="track">
         <div id="player" class="car" style="left: 50%;">🏎️</div>
+
+        <div id="game-over" class="game-over-screen hidden">
+            <h1 style="color: #ff3333; font-size: 40px; margin: 0;">💥 YANDINIZ!</h1>
+            <p style="font-size: 20px; margin: 10px 0;">Rekordunuz: <span id="final-score">0</span> metr</p>
+            <p style="color: #00ff66; font-size: 14px;">Xalınız bazaya göndərildi 💾</p>
+            <button class="restart-btn" onclick="startGame()">Yenidən Başla 🔄</button>
+            <button class="restart-btn" style="background:#222; border-color:#777; color:#fff;" onclick="window.location.href='index.html'">🔙 Menyuya Qayıt</button>
+        </div>
     </div>
 
     <div class="controls">
@@ -91,76 +108,132 @@
         <button class="btn" onclick="moveRight()">SAĞ ➡️</button>
     </div>
 
-    <button class="back-btn" onclick="window.location.href='index.html'">🔙 Ana Səhifəyə Qayıt</button>
-
     <script>
         const tg = window.Telegram.WebApp;
+        const API_URL = "https://bearbee-production.up.railway.app";
         
         let score = 0;
         let player = document.getElementById('player');
         let track = document.getElementById('track');
-        let playerPos = 50; // Başlanğıc mövqe (faizlə)
+        let gameOverScreen = document.getElementById('game-over');
+        
+        let playerPos = 50; 
+        let isGameOver = false;
+        let scoreInterval;
+        let obstacleInterval;
 
-        // Maşını sola hərəkət etdir
+        function startGame() {
+            // Oyun dəyişənlərini sıfırla
+            isGameOver = false;
+            score = 0;
+            playerPos = 50;
+            player.style.left = '50%';
+            player.innerText = '🏎️';
+            document.getElementById('score').innerText = '0';
+            gameOverScreen.classList.add('hidden');
+            
+            // Köhnə maneələri təmizlə
+            document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
+            
+            // İntervalları başlat
+            clearInterval(scoreInterval);
+            clearInterval(obstacleInterval);
+            
+            // Hər 200 millisaniyədən bir məsafə (xal) artır
+            scoreInterval = setInterval(() => {
+                if(!isGameOver) {
+                    score += 1;
+                    document.getElementById('score').innerText = score;
+                }
+            }, 200);
+
+            // Hər 900 millisaniyədən bir yeni maneə düşür
+            obstacleInterval = setInterval(spawnObstacle, 900);
+        }
+
         function moveLeft() {
-            if (playerPos > 20) { 
+            if (!isGameOver && playerPos > 20) { 
                 playerPos -= 30; 
                 player.style.left = playerPos + '%'; 
             }
         }
 
-        // Maşını sağa hərəkət etdir
         function moveRight() {
-            if (playerPos < 80) { 
+            if (!isGameOver && playerPos < 80) { 
                 playerPos += 30; 
                 player.style.left = playerPos + '%'; 
             }
         }
 
-        // Yuxarıdan Coin düşməsi
-        function spawnCoin() {
-            let coin = document.createElement('div');
-            coin.className = 'coin';
-            coin.innerText = '🪙';
+        function spawnObstacle() {
+            if(isGameOver) return;
+
+            let obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
             
-            // Coin 3 yoldan birində düşəcək (20%, 50%, 80%)
+            // Təsadüfi maneə növləri: Daş, bomba və ya yağ ləkəsi
+            const types = ['🪨', '💥', '🛢️'];
+            obstacle.innerText = types[Math.floor(Math.random() * types.length)];
+            
             const positions = [20, 50, 80];
             let randomPos = positions[Math.floor(Math.random() * positions.length)];
-            coin.style.left = randomPos + '%';
-            coin.style.top = '-40px';
-            track.appendChild(coin);
+            obstacle.style.left = randomPos + '%';
+            obstacle.style.top = '-40px';
+            track.appendChild(obstacle);
             
-            let fallSpeed = 5;
+            let fallSpeed = 6; // Maneənin düşmə sürəti
             let fall = setInterval(() => {
-                let top = parseInt(coin.style.top || -40);
-                coin.style.top = (top + fallSpeed) + 'px';
+                if(isGameOver) {
+                    clearInterval(fall);
+                    return;
+                }
+
+                let top = parseInt(obstacle.style.top || -40);
+                obstacle.style.top = (top + fallSpeed) + 'px';
                 
-                let coinRect = coin.getBoundingClientRect();
+                let obsRect = obstacle.getBoundingClientRect();
                 let playerRect = player.getBoundingClientRect();
 
-                // Toqquşma (Coin-i tutmaq)
+                // TOQQUŞMA REAKSİYASI (YANMAQ)
                 if (
-                    coinRect.bottom >= playerRect.top + 10 &&
-                    coinRect.top <= playerRect.bottom &&
-                    coinRect.right >= playerRect.left &&
-                    coinRect.left <= playerRect.right
+                    obsRect.bottom >= playerRect.top + 15 &&
+                    obsRect.top <= playerRect.bottom - 15 &&
+                    obsRect.right >= playerRect.left + 10 &&
+                    obsRect.left <= playerRect.right - 10
                 ) {
-                    score += 5; // Hər coin 5 xal verir
-                    document.getElementById('score').innerText = score;
-                    coin.remove();
+                    endGame();
                     clearInterval(fall);
                 }
 
-                // Ekranda aşağı düşüb yoxa çıxanda silinir
                 if (top > track.offsetHeight) { 
-                    coin.remove(); 
+                    obstacle.remove(); 
                     clearInterval(fall); 
                 }
-            }, 20); // Düşmə sürəti
+            }, 20);
         }
 
-        // Hər 1.2 saniyədən bir yeni coin yaradılır
-        setInterval(spawnCoin, 1200);
+        async function endGame() {
+            isGameOver = true;
+            clearInterval(scoreInterval);
+            clearInterval(obstacleInterval);
+            
+            player.innerText = '💥'; // Maşın partlayır
+            document.getElementById('final-score').innerText = score;
+            gameOverScreen.classList.remove('hidden');
+
+            // Xalı Railway vasitəsilə verilənlər bazasına (Supabase) göndər
+            const userId = tg.initDataUnsafe?.user?.id || "test-user";
+            try {
+                await fetch(`${API_URL}/api/user/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, honey: score }) // Burada 'honey' parametrini qazandığı xal kimi istifadə edirik
+                });
+            } catch (e) { console.log("Xal sinxronizasiya edilə bilmədi."); }
+        }
+
+        // Oyunu avtomatik başlat
+        startGame();
 
         tg.ready();
         tg.expand();
