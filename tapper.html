@@ -1,17 +1,64 @@
-<!DOCTYPE html>
-<html lang="az">
-<body style="background:#000; color:#ffd700; text-align:center; padding-top:50px;">
-    <h1>MINING ARENA</h1>
-    <h2 id="scoreDisplay">XAL: 0</h2>
-    <div onclick="tap()" style="font-size:100px; cursor:pointer;">🐻</div>
-    <script src="config.js"></script>
-    <script>
-        let score = 0;
-        function tap() {
-            score += 2;
-            document.getElementById('scoreDisplay').innerText = "XAL: " + score;
-            if(score % 400 === 0) alert("REKLAM VAXTI! 400 xala çatdın.");
-        }
-    </script>
-</body>
-</html>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+</script>
+
+<div id="canvas-container" style="width: 240px; height: 240px; cursor: pointer;"></div>
+
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ alpha: true });
+  renderer.setSize(240, 240);
+  container.appendChild(renderer.domElement);
+
+  // İşıqlandırma
+  const light = new THREE.DirectionalLight(0xffffff, 2);
+  light.position.set(1, 1, 1);
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+  // Modelin Yüklənməsi
+  const loader = new GLTFLoader();
+  let model;
+  loader.load('model.glb', (gltf) => {
+    model = gltf.scene;
+    scene.add(model);
+    camera.position.z = 3;
+  });
+
+  // Klikləmənin aşkarlanması (Raycaster)
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  container.addEventListener('click', (event) => {
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+      // Bura sənin tapper funksiyanı çağır
+      triggerTap();
+      // Animasiya: klikləyəndə modeli bir az fırlat
+      model.rotation.y += 0.5;
+    }
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if(model) model.rotation.y += 0.01;
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
