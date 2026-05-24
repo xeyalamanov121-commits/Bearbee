@@ -1,87 +1,17 @@
 <!DOCTYPE html>
 <html lang="az">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Cyber Tapper</title>
-    <style>
-        body { 
-            margin: 0; background: #050505; color: #ffd700; overflow: hidden; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
-            font-family: 'Arial', sans-serif;
-        }
-        #ui { position: absolute; top: 30px; text-align: center; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #ffd700; }
-        #bear-container { 
-            position: relative; width: 280px; height: 280px; cursor: pointer;
-            transition: transform 0.1s; user-select: none;
-        }
-        #bear { 
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 4px solid #ffd700; box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);
-            background: radial-gradient(circle, #ffd700 0%, #000 100%);
-            display: flex; align-items: center; justify-content: center; font-size: 100px;
-        }
-        .particle { position: absolute; background: #ffd700; pointer-events: none; border-radius: 50%; }
-    </style>
-</head>
 <body>
-
-    <div id="ui">XAL: 0 / 100,000</div>
-    <div id="bear-container" onclick="tap(event)">
-        <div id="bear">🐻</div>
-    </div>
-
+    <h1 id="score">XAL: 0</h1>
+    <div id="bear" style="font-size:100px; cursor:pointer;" onclick="tap()">🐻</div>
     <script>
-        const ui = document.getElementById('ui');
-        const bearContainer = document.getElementById('bear-container');
         let score = 0;
-        let nextAdMilestone = 400; // İlk reklam hədəfi
-
-        function tap(e) {
-            if (score >= 100000) return;
-
-            // 1. Premium Haptic Feedback
-            if ('vibrate' in navigator) { navigator.vibrate(20); }
-
-            // 2. Klik effekti
-            bearContainer.style.transform = 'scale(0.95)';
-            setTimeout(() => bearContainer.style.transform = 'scale(1)', 100);
-
-            // 3. Zərrəcə effekti
-            createParticles(e.clientX, e.clientY);
-
-            // 4. Xal və Reklam məntiqi
+        let milestone = 400;
+        function tap() {
             score += 2;
-            ui.innerText = `XAL: ${score} / 100,000`;
-
-            // Hər 400 xalda reklamı işə sal
-            if (score >= nextAdMilestone) {
-                showRewardedAd();
-                nextAdMilestone += 400; // Növbəti hədəfi 800 et
-            }
-        }
-
-        function showRewardedAd() {
-            // Buraya Google AdMob və ya digər reklam SDK kodunu əlavə et
-            alert("Sistem: 400 xal limitinə çatdın! Zəhmət olmasa reklamı izlə.");
-            console.log("Reklam göstərilir...");
-        }
-
-        function createParticles(x, y) {
-            for(let i=0; i<5; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.width = '8px'; p.style.height = '8px';
-                p.style.left = x + 'px'; p.style.top = y + 'px';
-                document.body.appendChild(p);
-                
-                const dx = (Math.random() - 0.5) * 100;
-                const dy = (Math.random() - 0.5) * 100;
-                
-                p.animate([
-                    { transform: 'translate(0, 0)', opacity: 1 },
-                    { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
-                ], { duration: 600 }).onfinish = () => p.remove();
+            document.getElementById('score').innerText = "XAL: " + score;
+            if(score >= milestone) {
+                alert("Reklam vaxtı!"); // Burada reklam kodunu çağır
+                milestone += 400;
             }
         }
     </script>
