@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Bearbee Gaming Hub</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
+        .hero { height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, #111, #000); }
+        .balance-box { font-size: 24px; color: #ffd700; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
+        .card:active { transform: scale(0.95); background: #222; }
+        .card h3 { margin: 0 0 10px 0; }
+        .main-tapper { font-size: 80px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="balance-box">🍯 <span id="balance">0</span> TON</div>
+        <div class="main-tapper" onclick="tap()">🐻</div>
+    </div>
+
+    <div class="grid">
+        <div class="card" onclick="tap()">
+            <h3>Sürətli Bal</h3>
+            <p>Tap et, qazan</p>
+        </div>
+        <div class="card" onclick="showAd()">
+            <h3>Reklam</h3>
+            <p>+100 Bonus</p>
+        </div>
+        <div class="card" onclick="upgrade()">
+            <h3>Səviyyə</h3>
+            <p>Ayını böyüt</p>
+        </div>
+        <div class="card" onclick="window.location.href='race.html'">
+            <h3>Yarış</h3>
+            <p>Maşın Arenası</p>
+        </div>
+    </div>
+
+    <script>
+        let points = 0;
+        function tap() { points++; document.getElementById('balance').innerText = points; }
+        function showAd() { points += 100; document.getElementById('balance').innerText = points; }
+        function upgrade() { alert("Səviyyə artırıldı!"); }
+    </script>
+</body>
+</html>
+
