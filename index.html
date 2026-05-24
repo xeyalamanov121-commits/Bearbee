@@ -2,57 +2,26 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Bearbee Gaming Hub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Bearbee Arena</title>
     <style>
-        :root { --gold: #ffd700; --bg: #0a0a0a; --card: rgba(255, 255, 255, 0.05); }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        
-        .hero { text-align: center; padding: 40px 0; }
-        .balance-box { font-size: 32px; color: var(--gold); font-weight: bold; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .card { 
-            background: var(--card); padding: 25px 15px; border-radius: 20px; 
-            text-align: center; border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); cursor: pointer; transition: 0.3s;
-        }
-        .card:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); }
-        
-        .btn-tap { 
-            font-size: 70px; background: none; border: none; cursor: pointer; 
-            filter: drop-shadow(0 0 15px rgba(255,215,0,0.4));
-        }
-        .btn-tap:active { transform: scale(0.92); }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+        .hero { height: 40vh; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .card { background: #111; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #333; }
+        .btn { display: block; margin-top: 10px; padding: 10px; background: #ffd700; color: #000; font-weight: bold; border-radius: 8px; text-decoration: none; }
     </style>
 </head>
 <body>
-
     <div class="hero">
-        <div class="balance-box">🍯 <span id="balance">0</span> TON</div>
-        <button class="btn-tap" onclick="tap()">🐻</button>
+        <h1>Bearbee Arena</h1>
+        <p>Oyna, Kliklə və Qazan!</p>
     </div>
-
     <div class="grid">
-        <div class="card" onclick="tap()"><h3>Mining</h3><p>Tap to earn</p></div>
-        <div class="card" onclick="showAd()"><h3>Ads (x100)</h3><p>Get bonus</p></div>
-        <div class="card" onclick="alert('Coming soon')"><h3>Race</h3><p>Bet & Win</p></div>
-        <div class="card" onclick="alert('Coming soon')"><h3>Leaderboard</h3><p>Top players</p></div>
+        <div class="card"><h3>Mining</h3><a href="tapper.html" class="btn">OYNAMAQ</a></div>
+        <div class="card"><h3>Cyber Race</h3><a href="game.html" class="btn">OYNAMAQ</a></div>
+        <div class="card"><h3>Ads (x100)</h3><a href="ads.html" class="btn">İZLƏ</a></div>
+        <div class="card"><h3>Bonus Link</h3><a href="#" class="btn">KEÇİD</a></div>
     </div>
-
-    <script>
-        const supabase = window.supabase.createClient(
-            'https://ywpqvvriakbbhvrtpvso.supabase.co', 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk'
-        );
-        
-        let points = 0;
-        const balanceEl = document.getElementById('balance');
-
-        function tap() { points++; balanceEl.innerText = points; }
-        function showAd() { points += 100; balanceEl.innerText = points; }
-    </script>
 </body>
 </html>
