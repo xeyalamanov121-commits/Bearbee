@@ -2,113 +2,66 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Premium Canlı Yarış</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bearbee Global Yarış</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --neon-green: #00ff66; --neon-red: #ff3333; --gold-glow: #ffd700; --premium-dark: #020b05; }
-        body { margin: 0; background: radial-gradient(circle at center, #0a3a1f 0%, var(--premium-dark) 100%); color: #fff; text-align: center; font-family: 'Poppins', sans-serif; overflow: hidden; user-select: none; }
-        .header { padding: 15px; font-size: 18px; font-weight: 900; color: var(--gold-glow); background: linear-gradient(135deg, #0d381e 0%, #051a0d 100%); border-bottom: 2px solid var(--gold-glow); display: flex; justify-content: space-around; align-items: center; }
-        .track { width: 92%; max-width: 400px; height: 52vh; background: rgba(4, 23, 12, 0.85); margin: 20px auto; position: relative; border: 2px solid var(--neon-green); border-radius: 24px; overflow: hidden; }
-        .car { font-size: 45px; position: absolute; bottom: 25px; transition: left 0.2s; transform: translateX(-50%); z-index: 5; }
-        .car-label { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; background: #004d1a; border: 1px solid var(--neon-green); padding: 3px 8px; border-radius: 8px; white-space: nowrap; color: #fff; }
-        .obstacle { font-size: 38px; position: absolute; transform: translateX(-50%); z-index: 2; }
-        .btn { background: #004d1a; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 18px 0; width: 40%; font-size: 20px; font-weight: 900; border-radius: 40px; cursor: pointer; }
-        .game-over-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 11, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .hidden { display: none !important; }
-        .restart-btn { background: #004d1a; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 15px 35px; font-size: 18px; font-weight: 900; border-radius: 30px; cursor: pointer; }
+        body { margin: 0; background: #020b05; color: #fff; text-align: center; font-family: sans-serif; overflow: hidden; }
+        .track { width: 350px; height: 400px; background: #111; margin: 20px auto; border: 2px solid #00ff66; position: relative; }
+        .car { font-size: 30px; position: absolute; bottom: 20px; transition: left 0.1s; transform: translateX(-50%); }
+        .obstacle { font-size: 30px; position: absolute; transform: translateX(-50%); }
+        .btn { padding: 15px 30px; background: #004d1a; color: #00ff66; border: 2px solid #00ff66; border-radius: 20px; cursor: pointer; margin: 5px; }
+        .screen { position: absolute; top:0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <div>⏱️ <span id="score">0</span> m</div>
-        <div id="winner-msg" style="color:var(--gold-glow); font-size: 14px;">Yarış gedir...</div>
-    </div>
-
+    <div id="wait-screen" class="screen"><h2>Otaq axtarılır...</h2></div>
+    <h3>Xal: <span id="score">0</span> | <span id="winner-msg">Yarış gedir...</span></h3>
     <div class="track" id="track">
-        <div id="player" class="car" style="left: 50%;"><div class="car-label">SƏN</div>🏎️</div>
-        <div id="game-over" class="game-over-screen hidden">
-            <h1 style="color: var(--neon-red);">💥 QƏZA!</h1>
-            <p style="font-size: 20px;">Xalınız: <span id="final-score" style="color:gold;">0</span></p>
-            <button class="restart-btn" onclick="restartGame()">YENİDƏN BAŞLA 🔄</button>
-        </div>
+        <div id="player" class="car" style="left: 50%;">🏎️</div>
     </div>
-
-    <div class="controls" style="display:flex; justify-content:center; gap:20px;">
-        <button class="btn" onclick="moveLeft()">⬅️ SOL</button>
-        <button class="btn" onclick="moveRight()">SAĞ ➡️</button>
-    </div>
+    <button class="btn" onclick="move(-30)">⬅️ SOL</button>
+    <button class="btn" onclick="move(30)">SAĞ ➡️</button>
 
     <script>
         const socket = io("https://bearbee-production.up.railway.app");
         let score = 0, playerPos = 50, isGameOver = false;
         const player = document.getElementById('player');
-        const username = window.Telegram.WebApp.initDataUnsafe?.user?.first_name || "Oyunçu";
 
-        socket.on('connect', () => socket.emit('joinGame', { username }));
-        
-        socket.on('gameResult', (msg) => { document.getElementById('winner-msg').innerText = msg; });
+        socket.emit('joinGame', { username: "Oyunçu_" + Math.floor(Math.random()*100) });
+        socket.on('roomStarted', () => document.getElementById('wait-screen').style.display = 'none');
+        socket.on('gameResult', (msg) => { document.getElementById('winner-msg').innerText = msg; isGameOver = true; });
+        socket.on('playerExploded', (id) => { if(id === socket.id) isGameOver = true; });
 
-        socket.on('playerExploded', (id) => {
-            if(id === socket.id) {
-                isGameOver = true;
-                document.getElementById('final-score').innerText = score;
-                document.getElementById('game-over').classList.remove('hidden');
+        function move(dir) {
+            if(!isGameOver && (playerPos + dir >= 20 && playerPos + dir <= 80)) {
+                playerPos += dir;
+                player.style.left = playerPos + '%';
             }
-        });
-
-        function restartGame() {
-            score = 0; isGameOver = false;
-            document.getElementById('score').innerText = '0';
-            document.getElementById('game-over').classList.add('hidden');
-            document.getElementById('winner-msg').innerText = "Yarış gedir...";
-            socket.emit('joinGame', { username });
-            document.querySelectorAll('.obstacle').forEach(o => o.remove());
         }
 
         setInterval(() => {
-            if(!isGameOver) {
-                score++;
-                document.getElementById('score').innerText = score;
-                socket.emit('updateScore', score);
-            }
+            if(!isGameOver) { score++; document.getElementById('score').innerText = score; socket.emit('updateScore', score); }
         }, 200);
 
-        function spawnObstacle() {
+        function spawn() {
             if(isGameOver) return;
-            let obs = document.createElement('div'); 
-            obs.className = 'obstacle'; 
-            obs.innerText = '🪨';
-            const positions = [20, 50, 80];
-            let pos = positions[Math.floor(Math.random()*3)];
-            obs.style.left = pos + '%'; 
-            obs.style.top = '-50px';
+            let obs = document.createElement('div'); obs.className = 'obstacle'; obs.innerText = '🪨';
+            let pos = [20, 50, 80][Math.floor(Math.random()*3)];
+            obs.style.left = pos + '%'; obs.style.top = '-50px';
             document.getElementById('track').appendChild(obs);
             
             let fall = setInterval(() => {
-                if(isGameOver) { clearInterval(fall); return; }
                 let top = parseInt(obs.style.top || -50);
                 obs.style.top = (top + 8) + 'px';
-                
-                // Məsafə yoxlaması: Eyni zolaq və maşın hündürlüyü
-                if (top > (document.getElementById('track').offsetHeight - 150) && 
-                    top < (document.getElementById('track').offsetHeight - 50) &&
-                    Math.abs(pos - playerPos) < 10) {
-                    socket.emit('playerDied');
-                    clearInterval(fall);
+                if (top > 300 && top < 380 && Math.abs(pos - playerPos) < 10) {
+                    socket.emit('playerDied'); clearInterval(fall);
                 }
-
-                if (top > document.getElementById('track').offsetHeight) { obs.remove(); clearInterval(fall); }
+                if (top > 400) { obs.remove(); clearInterval(fall); }
             }, 20);
         }
-        setInterval(spawnObstacle, 1100);
-
-        function moveLeft() { if (!isGameOver && playerPos > 20) { playerPos -= 30; player.style.left = playerPos + '%'; } }
-        function moveRight() { if (!isGameOver && playerPos < 80) { playerPos += 30; player.style.left = playerPos + '%'; } }
-        
-        window.Telegram.WebApp.ready();
+        setInterval(spawn, 1100);
     </script>
 </body>
 </html>
+
