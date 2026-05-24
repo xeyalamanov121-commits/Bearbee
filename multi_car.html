@@ -3,80 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Bearbee Cyber Empire</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #050505; color: #ffd700; font-family: sans-serif; text-align: center; margin: 0; }
-        .tab { display: none; padding: 20px; }
+        body { background: #050505; color: #ffd700; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .screen { display: none; margin-bottom: 80px; }
         .active { display: block; }
-        .nav { background: #1a1a1a; padding: 10px; display: flex; justify-content: space-around; }
-        .btn { padding: 10px 20px; background: #222; border: 1px solid #ffd700; color: #ffd700; cursor: pointer; border-radius: 10px; }
-        #track { width: 300px; height: 400px; background: #111; margin: 20px auto; border: 2px solid #00ff66; position: relative; overflow: hidden; }
-        .car { font-size: 30px; position: absolute; bottom: 20px; transform: translateX(-50%); transition: left 0.1s; }
+        
+        /* Düymələr üçün panel (aşağıda yan-yana) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; padding: 15px 0; display: flex; justify-content: space-around; border-top: 2px solid #ffd700; }
+        .nav-btn { background: none; border: none; color: #ffd700; cursor: pointer; font-size: 16px; font-weight: bold; }
+        
+        .main-tapper { font-size: 100px; margin: 50px 0; cursor: pointer; }
+        .room-btn { display: block; width: 80%; margin: 10px auto; padding: 15px; background: #222; border: 1px solid #ffd700; color: #ffd700; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="nav">
-    <button class="btn" onclick="showTab('tapper')">Tapper</button>
-    <button class="btn" onclick="showTab('race')">Yarış</button>
-    <button class="btn" onclick="showTab('chat')">Chat</button>
-</div>
-
-<div id="admin-panel" style="display: none; background: #330; padding: 10px;">
-    <input id="admin_id" placeholder="ID"> <input id="admin_bal" placeholder="Balans">
-    <button onclick="saveBalance()">Balansı Yenilə</button>
-</div>
-
-<div id="tapper" class="tab active">
+<div id="tapper" class="screen active">
     <h3>Xal: <span id="user-points">0</span></h3>
-    <div onclick="tap()" style="font-size: 100px; cursor: pointer;">🐝</div>
-    <button class="btn" onclick="showAd()">Reklama bax (+100)</button>
+    <div class="main-tapper" onclick="tap()">🐝</div>
+    <button onclick="showAd()">Reklama bax (+100)</button>
 </div>
 
-<div id="race" class="tab">
-    <div id="rooms">
-        <button class="btn" onclick="enterRace(0.40)">Otaq 0.40 TON</button>
-        <button class="btn" onclick="enterRace(1.0)">Otaq 1.0 TON</button>
-    </div>
-    <div id="track" style="display:none;">
-        <div id="player" class="car" style="left: 50%;">🏎️</div>
-    </div>
+<div id="race" class="screen">
+    <h3>Yarış Otaqları</h3>
+    <button class="room-btn" onclick="enterRace(0.40)">0.40 TON Otağı</button>
+    <button class="room-btn" onclick="enterRace(1.00)">1.00 TON Otağı</button>
 </div>
 
-<div id="chat" class="tab">
-    <div id="chat-box" style="height: 150px; overflow-y: scroll; border: 1px solid #444; margin-bottom: 10px;"></div>
-    <input id="msg-input" style="padding: 10px;"> <button class="btn" onclick="sendMsg()">Göndər</button>
+<div id="wallet" class="screen">
+    <h3>Mənim Cüzdanım</h3>
+    <p>Balans: <span id="user-balance">0</span> TON</p>
+    <div style="background: #222; padding: 15px; border-radius: 10px;">
+        EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp
+    </div>
+    <p><small>Depozit üçün bu ünvana göndərin</small></p>
+</div>
+
+<div class="bottom-nav">
+    <button class="nav-btn" onclick="showScreen('tapper')">TAPPER</button>
+    <button class="nav-btn" onclick="showScreen('race')">YARIŞ</button>
+    <button class="nav-btn" onclick="showScreen('wallet')">CÜZDAN</button>
 </div>
 
 <script>
-    // Anon Key-i buraya əlavə edin
-    const supabase = supabase.createClient(
-        'https://ywpqvvriakbbhvrtpvso.supabase.co', 
-        'BURAYA_ANON_KEY_YAZIN' 
-    );
-    
-    const socket = io("https://bearbee-production.up.railway.app");
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    const user = tg.initDataUnsafe.user || { id: "8591374417", username: "Gokhan" };
-
-    if (user.id.toString() === "8591374417") document.getElementById('admin-panel').style.display = 'block';
-
-    function showTab(t) {
-        document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-        document.getElementById(t).classList.add('active');
-    }
-
-    async function enterRace(min) {
-        const { data } = await supabase.from('users').select('balance').eq('telegram_id', user.id.toString()).single();
-        if (!data || data.balance < min) {
-            alert("Depozit tələb olunur: " + min + " TON. Cüzdan: EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp");
-        } else {
-            document.getElementById('track').style.display = 'block';
-            document.getElementById('rooms').style.display = 'none';
-        }
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
     function tap() {
@@ -84,22 +56,10 @@
         document.getElementById('user-points').innerText = p;
     }
 
-    async function saveBalance() {
-        const id = document.getElementById('admin_id').value;
-        const bal = document.getElementById('admin_bal').value;
-        await supabase.from('users').upsert({ telegram_id: id, balance: parseFloat(bal) });
-        alert("Balans uğurla yeniləndi!");
+    function enterRace(min) {
+        alert("Yarışa girmək üçün balansınız yoxlanılır...");
     }
-
-    function sendMsg() {
-        const txt = document.getElementById('msg-input').value;
-        socket.emit('chatMessage', { username: user.username, text: txt });
-        document.getElementById('msg-input').value = '';
-    }
-
-    socket.on('newMessage', (m) => {
-        document.getElementById('chat-box').innerHTML += `<div><b>${m.username}:</b> ${m.text}</div>`;
-    });
 </script>
 </body>
 </html>
+
