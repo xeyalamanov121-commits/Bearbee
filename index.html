@@ -1,27 +1,224 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bearbee Arena</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bearbee Arena | Main</title>
+
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
-        .hero { height: 40vh; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .card { background: #111; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #333; }
-        .btn { display: block; margin-top: 10px; padding: 10px; background: #ffd700; color: #000; font-weight: bold; border-radius: 8px; text-decoration: none; }
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            background:#000;
+            color:#fff;
+            font-family:'Segoe UI',sans-serif;
+            padding-bottom:90px;
+        }
+
+        /* HERO */
+        .hero{
+            height:55vh;
+            background:
+            linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.35)),
+            url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1600&auto=format&fit=crop');
+            background-size:cover;
+            background-position:center;
+            display:flex;
+            flex-direction:column;
+            justify-content:flex-end;
+            padding:30px;
+            border-bottom:3px solid #ffd700;
+        }
+
+        .hero h1{
+            font-size:38px;
+            color:#ffd700;
+            margin-bottom:10px;
+            font-weight:900;
+            letter-spacing:2px;
+        }
+
+        .hero p{
+            color:#ddd;
+            font-size:16px;
+            max-width:400px;
+            line-height:1.5;
+        }
+
+        /* GRID */
+        .grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:18px;
+            padding:20px;
+        }
+
+        .card{
+            background:#111;
+            border-radius:18px;
+            overflow:hidden;
+            border:1px solid #222;
+            transition:0.3s;
+            box-shadow:0 0 20px rgba(255,215,0,0.08);
+        }
+
+        .card:hover{
+            transform:translateY(-5px);
+            border-color:#ffd700;
+        }
+
+        .card img{
+            width:100%;
+            height:150px;
+            object-fit:cover;
+        }
+
+        .card-content{
+            padding:15px;
+            text-align:center;
+        }
+
+        .card h3{
+            font-size:18px;
+            margin-bottom:10px;
+            color:#ffd700;
+        }
+
+        .card p{
+            color:#aaa;
+            font-size:13px;
+            line-height:1.5;
+        }
+
+        .btn{
+            display:block;
+            margin-top:15px;
+            padding:12px;
+            background:#ffd700;
+            color:#000;
+            text-decoration:none;
+            border-radius:10px;
+            font-weight:700;
+            transition:0.3s;
+        }
+
+        .btn:hover{
+            background:#fff;
+        }
+
+        /* NAVBAR */
+        .nav{
+            position:fixed;
+            bottom:0;
+            left:0;
+            width:100%;
+            background:#0d0d0d;
+            border-top:1px solid #222;
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            padding:15px 0;
+            z-index:999;
+        }
+
+        .nav span{
+            color:#ffd700;
+            font-size:14px;
+            font-weight:bold;
+        }
+
+        @media(max-width:700px){
+            .grid{
+                grid-template-columns:1fr;
+            }
+
+            .hero h1{
+                font-size:30px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- HERO -->
     <div class="hero">
-        <h1>Bearbee Arena</h1>
-        <p>Oyna, Kliklə və Qazan!</p>
+        <h1>BEARBEE ARENA</h1>
+        <p>
+            Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.
+        </p>
     </div>
+
+    <!-- CARDS -->
     <div class="grid">
-        <div class="card"><h3>Mining</h3><a href="tapper.html" class="btn">OYNAMAQ</a></div>
-        <div class="card"><h3>Cyber Race</h3><a href="game.html" class="btn">OYNAMAQ</a></div>
-        <div class="card"><h3>Ads (x100)</h3><a href="ads.html" class="btn">İZLƏ</a></div>
-        <div class="card"><h3>Bonus Link</h3><a href="#" class="btn">KEÇİD</a></div>
+
+        <!-- MINING -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=1200&auto=format&fit=crop" alt="Mining">
+            
+            <div class="card-content">
+                <h3>MINING</h3>
+                <p>
+                    Tapper mining sistemi ilə coin topla və balansını artır.
+                </p>
+
+                <a href="tapper.html" class="btn">GİRİŞ</a>
+            </div>
+        </div>
+
+        <!-- RACE ROOM -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop" alt="Race">
+
+            <div class="card-content">
+                <h3>RACE ROOM</h3>
+                <p>
+                    3 nəfərlik yarış otaqlarına qoşul və qalib ol.
+                </p>
+
+                <a href="race.html" class="btn">OTAĞA GİR</a>
+            </div>
+        </div>
+
+        <!-- ADS -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop" alt="Ads">
+
+            <div class="card-content">
+                <h3>ADS</h3>
+                <p>
+                    Reklam yerləşdir və istifadəçilərə daha tez çat.
+                </p>
+
+                <a href="ads.html" class="btn">DOLDUR</a>
+            </div>
+        </div>
+
+        <!-- BONUS -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop" alt="Bonus">
+
+            <div class="card-content">
+                <h3>BONUS</h3>
+                <p>
+                    Gündəlik bonuslar və xüsusi mükafatlar əldə et.
+                </p>
+
+                <a href="#" class="btn">KEÇİD</a>
+            </div>
+        </div>
+
     </div>
+
+    <!-- NAV -->
+    <div class="nav">
+        <span>ARENA</span>
+        <span>PROFILE</span>
+        <span>RANK</span>
+    </div>
+
 </body>
 </html>
