@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <title>Bearbee Növbəli Yarış</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM9JiPIBmpvkncGFKmZsZJY1HxptJdDOQ",
+            authDomain: "bearbee-437e9.firebaseapp.com",
+            projectId: "bearbee-437e9",
+            storageBucket: "bearbee-437e9.firebasestorage.app",
+            messagingSenderId: "205001364803",
+            appId: "1:205001364803:web:fe925b194a27b5cefdcbf6"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.saveScoreToFirebase = function(username, score) {
+            const timestamp = Date.now();
+            set(ref(db, 'leaderboard/' + username.replace(/\./g, '') + '_' + timestamp), {
+                username: username,
+                score: score,
+                date: new Date().toISOString()
+            });
+        };
+    </script>
     <style>
         body { margin: 0; background: #020b05; color: #fff; text-align: center; font-family: sans-serif; }
         .screen { position: absolute; top:0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -29,14 +53,22 @@
     <script>
         const socket = io("https://bearbee-production.up.railway.app");
         let score = 0, playerPos = 50, isGameOver = true;
+        const username = "Oyunçu_" + Math.floor(Math.random()*99);
         const player = document.getElementById('player');
 
-        socket.emit('joinGame', { username: "Oyunçu_" + Math.floor(Math.random()*99) });
+        socket.emit('joinGame', { username: username });
 
         socket.on('roomUpdate', (c) => document.getElementById('status-text').innerText = "Otaqda: " + c + "/2");
         socket.on('gameStarted', () => { document.getElementById('wait-screen').style.display = 'none'; isGameOver = false; });
         socket.on('gameResult', (m) => { document.getElementById('msg').innerText = m; isGameOver = true; });
-        socket.on('playerExploded', (id) => { if(id === socket.id) isGameOver = true; });
+        
+        socket.on('playerExploded', (id) => { 
+            if(id === socket.id) { 
+                isGameOver = true; 
+                // Xalı Firebase-ə göndəririk
+                window.saveScoreToFirebase(username, score);
+            } 
+        });
 
         function move(dir) {
             if(!isGameOver && (playerPos + dir >= 20 && playerPos + dir <= 80)) {
