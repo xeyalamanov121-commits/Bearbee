@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Premium Tapper</title>
+    <title>Bearbee Cyber Tapper</title>
     <style>
         body { 
             margin: 0; background: #050505; color: #ffd700; overflow: hidden; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Arial', sans-serif;
         }
-        #ui { position: absolute; top: 20px; text-align: center; font-size: 20px; font-weight: bold; }
+        #ui { position: absolute; top: 30px; text-align: center; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #ffd700; }
         #bear-container { 
-            position: relative; width: 280px; height: 280px; margin: 40px auto; 
-            cursor: pointer; transform-style: preserve-3d; transition: transform 0.1s; 
+            position: relative; width: 280px; height: 280px; cursor: pointer;
+            transition: transform 0.1s; user-select: none;
         }
         #bear { 
             width: 100%; height: 100%; border-radius: 50%;
             border: 4px solid #ffd700; box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);
-            background: linear-gradient(135deg, #ffd700 0%, #1a1a1a 100%);
-            display: flex; align-items: center; justify-content: center; font-size: 80px;
+            background: radial-gradient(circle, #ffd700 0%, #000 100%);
+            display: flex; align-items: center; justify-content: center; font-size: 100px;
         }
-        /* Vizual Parçalanma Effekti (Particle) */
         .particle { position: absolute; background: #ffd700; pointer-events: none; border-radius: 50%; }
     </style>
 </head>
 <body>
+
     <div id="ui">XAL: 0 / 100,000</div>
-    <div id="bear-container" onmousedown="tap(event)" ontouchstart="tap(event)">
+    <div id="bear-container" onclick="tap(event)">
         <div id="bear">🐻</div>
     </div>
 
@@ -35,49 +35,55 @@
         const ui = document.getElementById('ui');
         const bearContainer = document.getElementById('bear-container');
         let score = 0;
+        let nextAdMilestone = 400; // İlk reklam hədəfi
 
         function tap(e) {
             if (score >= 100000) return;
 
-            // 1. Premium Hissiyat (Mobil Haptic Feedback)
-            // Bu yalnız mobil tətbiqlərdə və bəzi mobil brauzerlərdə işləyir.
-            if ('vibrate' in navigator) { navigator.vibrate(20); } 
+            // 1. Premium Haptic Feedback
+            if ('vibrate' in navigator) { navigator.vibrate(20); }
 
-            // 2. Klikdə Vizual Böyümə/Kiçilmə (Hamster effekti)
-            bearContainer.style.transform = 'scale(0.95) translateZ(-10px)';
+            // 2. Klik effekti
+            bearContainer.style.transform = 'scale(0.95)';
             setTimeout(() => bearContainer.style.transform = 'scale(1)', 100);
 
-            // 3. Zərrəcə Effektləri (Particle Generation)
-            const rect = bearContainer.getBoundingClientRect();
-            for (let i = 0; i < 5; i++) {
-                createParticle(e.clientX || e.touches[0].clientX - rect.left, e.clientY || e.touches[0].clientY - rect.top);
-            }
+            // 3. Zərrəcə effekti
+            createParticles(e.clientX, e.clientY);
 
-            // 4. Xal hesabı
+            // 4. Xal və Reklam məntiqi
             score += 2;
             ui.innerText = `XAL: ${score} / 100,000`;
-            if (score >= 100000) alert("Təbriklər! Sən artıq çıxarış edə bilərsən!");
+
+            // Hər 400 xalda reklamı işə sal
+            if (score >= nextAdMilestone) {
+                showRewardedAd();
+                nextAdMilestone += 400; // Növbəti hədəfi 800 et
+            }
         }
 
-        function createParticle(x, y) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.width = Math.random() * 8 + 4 + 'px';
-            p.style.height = p.style.width;
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            bearContainer.appendChild(p);
+        function showRewardedAd() {
+            // Buraya Google AdMob və ya digər reklam SDK kodunu əlavə et
+            alert("Sistem: 400 xal limitinə çatdın! Zəhmət olmasa reklamı izlə.");
+            console.log("Reklam göstərilir...");
+        }
 
-            // Animasiya (Zərrəcənin uçması)
-            const angle = Math.random() * Math.PI * 2;
-            const dist = Math.random() * 50 + 20;
-            const dx = Math.cos(angle) * dist; const dy = Math.sin(angle) * dist;
-
-            p.animate([
-                { transform: 'translate(0, 0)', opacity: 1 },
-                { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
-            ], { duration: Math.random() * 500 + 300, easing: 'ease-out' }).onfinish = () => p.remove();
+        function createParticles(x, y) {
+            for(let i=0; i<5; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.width = '8px'; p.style.height = '8px';
+                p.style.left = x + 'px'; p.style.top = y + 'px';
+                document.body.appendChild(p);
+                
+                const dx = (Math.random() - 0.5) * 100;
+                const dy = (Math.random() - 0.5) * 100;
+                
+                p.animate([
+                    { transform: 'translate(0, 0)', opacity: 1 },
+                    { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+                ], { duration: 600 }).onfinish = () => p.remove();
+            }
         }
     </script>
 </body>
 </html>
-
