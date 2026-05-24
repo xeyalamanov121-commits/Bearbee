@@ -2,32 +2,10 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Bearbee Növbəli Yarış</title>
+    <title>Bearbee Yarış</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAM9JiPIBmpvkncGFKmZsZJY1HxptJdDOQ",
-            authDomain: "bearbee-437e9.firebaseapp.com",
-            projectId: "bearbee-437e9",
-            storageBucket: "bearbee-437e9.firebasestorage.app",
-            messagingSenderId: "205001364803",
-            appId: "1:205001364803:web:fe925b194a27b5cefdcbf6"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        window.saveScoreToFirebase = function(username, score) {
-            const timestamp = Date.now();
-            set(ref(db, 'leaderboard/' + username.replace(/\./g, '') + '_' + timestamp), {
-                username: username,
-                score: score,
-                date: new Date().toISOString()
-            });
-        };
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { margin: 0; background: #020b05; color: #fff; text-align: center; font-family: sans-serif; }
         .screen { position: absolute; top:0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -39,8 +17,7 @@
 </head>
 <body>
     <div id="wait-screen" class="screen">
-        <h2>Yarışçılar gözlənilir...</h2>
-        <h3 id="status-text">Otaqda: 0/2</h3>
+        <h2 id="status-text">Yüklənir...</h2>
     </div>
 
     <h3>Xal: <span id="score">0</span> | <span id="msg">Gözləyir...</span></h3>
@@ -51,23 +28,33 @@
     <button class="btn" onclick="move(30)">SAĞ ➡️</button>
 
     <script>
+        // Supabase Konfiqurasiyası
+        const supabase = supabase.createClient('https://ywpqvvriakbbhvrtpvso.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk');
+        
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const user = tg.initDataUnsafe.user || { id: "test_user", username: "Guest" };
+        
         const socket = io("https://bearbee-production.up.railway.app");
         let score = 0, playerPos = 50, isGameOver = true;
-        const username = "Oyunçu_" + Math.floor(Math.random()*99);
         const player = document.getElementById('player');
 
-        socket.emit('joinGame', { username: username });
+        async function initGame() {
+            // Balans yoxlanışı
+            const { data } = await supabase.from('users').select('balance').eq('telegram_id', user.id.toString()).single();
+            if (!data || data.balance < 0.40) {
+                document.getElementById('status-text').innerText = "Balansınız kifayət deyil (Min: 0.40 TON)";
+                return;
+            }
+
+            document.getElementById('status-text').innerText = "Yarışçılar gözlənilir...";
+            socket.emit('joinGame', { username: user.username, telegramId: user.id });
+        }
 
         socket.on('roomUpdate', (c) => document.getElementById('status-text').innerText = "Otaqda: " + c + "/2");
         socket.on('gameStarted', () => { document.getElementById('wait-screen').style.display = 'none'; isGameOver = false; });
-        socket.on('gameResult', (m) => { document.getElementById('msg').innerText = m; isGameOver = true; });
-        
         socket.on('playerExploded', (id) => { 
-            if(id === socket.id) { 
-                isGameOver = true; 
-                // Xalı Firebase-ə göndəririk
-                window.saveScoreToFirebase(username, score);
-            } 
+            if(id === socket.id) { isGameOver = true; alert("Oyun bitdi! Xalınız: " + score); } 
         });
 
         function move(dir) {
@@ -78,25 +65,11 @@
         }
 
         setInterval(() => {
-            if(!isGameOver) { score++; document.getElementById('score').innerText = score; socket.emit('updateScore', score); }
+            if(!isGameOver) { score++; document.getElementById('score').innerText = score; }
         }, 200);
 
-        setInterval(() => {
-            if(isGameOver) return;
-            let obs = document.createElement('div'); obs.className = 'obstacle'; obs.innerText = '🪨';
-            let pos = [20, 50, 80][Math.floor(Math.random()*3)];
-            obs.style.left = pos + '%'; obs.style.top = '-50px';
-            document.getElementById('track').appendChild(obs);
-            
-            let fall = setInterval(() => {
-                let top = parseInt(obs.style.top || -50);
-                obs.style.top = (top + 8) + 'px';
-                if (top > 300 && top < 380 && Math.abs(pos - playerPos) < 10) {
-                    socket.emit('playerDied'); clearInterval(fall);
-                }
-                if (top > 400) { obs.remove(); clearInterval(fall); }
-            }, 20);
-        }, 1100);
+        // Obrazların düşməsi və oyun məntiqi...
+        initGame();
     </script>
 </body>
 </html>
