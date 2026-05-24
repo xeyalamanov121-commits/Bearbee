@@ -1,40 +1,105 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <title>Bearbee Cyber Arena</title>
     <style>
-        body { margin: 0; background: #050505; color: white; font-family: sans-serif; overflow: hidden; }
-        #canvas { width: 100vw; height: 80vh; background: #111; display: block; border-bottom: 5px solid #00ff66; }
-        .controls { height: 20vh; display: flex; align-items: center; justify-content: center; }
-        #gasBtn { width: 90%; padding: 20px; background: #00ff66; border: none; border-radius: 10px; font-weight: bold; }
+        body { 
+            margin: 0; 
+            background: #050505; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: 'Segoe UI', sans-serif;
+        }
+        canvas { 
+            border: 3px solid #ffd700; 
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4); 
+            background: linear-gradient(to bottom, #000000, #1a1a1a);
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 10px #ffd700;
+        }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="400" height="300"></canvas>
-    <div class="controls"><button id="gasBtn">QAZA BAS! 🏎️</button></div>
+    <div id="ui">XAL: 0</div>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
-        const socket = io("https://senin-server-linkin.com"); // Bura öz URL-ni yaz!
-        const canvas = document.getElementById("canvas");
+        const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const ui = document.getElementById("ui");
 
-        // Oyunçunun özü ilə serveri sinxronizasiya et
-        socket.emit('join_race_track', { room: "ROOM_ID_BURA_GELECEK", userId: "USER_ID" });
+        canvas.width = 360; 
+        canvas.height = 600;
 
-        document.getElementById("gasBtn").onclick = () => {
-            socket.emit('gas_press', { room: "ROOM_ID", userId: "USER_ID" });
-        };
+        let car = { x: 155, y: 500, w: 50, h: 80 };
+        let obstacles = [];
+        let speed = 7;
+        let score = 0;
+        let isGameOver = false;
 
-        socket.on('race_state_update', (data) => {
-            ctx.clearRect(0,0,400,300);
-            for(let id in data.players) {
-                let p = data.players[id];
-                ctx.fillStyle = "white";
-                ctx.fillRect(p.x, 50, 40, 20); // Maşınları çək
-            }
+        function spawnObstacle() {
+            if (isGameOver) return;
+            let x = Math.random() * (canvas.width - 50);
+            obstacles.push({ x: x, y: -50, w: 50, h: 50 });
+        }
+
+        function draw() {
+            if (isGameOver) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Maşın (Neon effekti ilə)
+            ctx.fillStyle = "#ffd700";
+            ctx.shadowBlur = 20; 
+            ctx.shadowColor = "#ffd700";
+            ctx.fillRect(car.x, car.y, car.w, car.h);
+            
+            // Maneələr (Qırmızı Neon)
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ff0055";
+            ctx.fillStyle = "#ff0055";
+            
+            obstacles.forEach((o, index) => {
+                o.y += speed;
+                ctx.fillRect(o.x, o.y, o.w, o.h);
+                
+                // Toqquşma Məntiqi
+                if (o.y > car.y && o.y < car.y + car.h && o.x < car.x + car.w && o.x + o.w > car.x) {
+                    isGameOver = true;
+                    alert("OYUN BİTDİ! Yekun Xal: " + Math.floor(score));
+                    location.reload(); // Yenidən başla
+                }
+                
+                // Maneə ekrandan çıxanda
+                if (o.y > canvas.height) { 
+                    obstacles.splice(index, 1); 
+                    score += 10; 
+                    ui.innerText = "XAL: " + score;
+                }
+            });
+
+            speed += 0.002; // Getdikcə daha da sürətlənir
+            requestAnimationFrame(draw);
+        }
+
+        // Mobil idarəetmə
+        window.addEventListener("touchmove", (e) => {
+            car.x = e.touches[0].clientX - (car.w / 2);
         });
+
+        setInterval(spawnObstacle, 800); // Daha tez maneə çıxır
+        draw();
     </script>
 </body>
 </html>
-
