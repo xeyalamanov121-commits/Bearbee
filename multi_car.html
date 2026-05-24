@@ -2,54 +2,168 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bearbee Racing</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #111; color: white; text-align: center; font-family: sans-serif; }
-        .track { width: 300px; height: 500px; border: 2px solid #555; margin: 20px auto; position: relative; background: #222; overflow: hidden; }
-        .car { width: 50px; height: 80px; background: red; position: absolute; bottom: 10px; transition: 0.1s; }
-        .coin { width: 30px; height: 30px; background: gold; border-radius: 50%; position: absolute; }
+        body { 
+            margin: 0; 
+            background: #020b05; 
+            color: #fff; 
+            text-align: center; 
+            font-family: 'Poppins', sans-serif; 
+            overflow: hidden; 
+            user-select: none;
+        }
+        .header { 
+            padding: 15px; 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: #ffd700; 
+            border-bottom: 2px solid #00ff66;
+            background: rgba(4, 23, 12, 0.9);
+        }
+        .track { 
+            width: 100%; 
+            max-width: 400px; 
+            height: 55vh; 
+            background: #111; 
+            margin: 15px auto; 
+            position: relative; 
+            border-left: 3px dashed #00ff66; 
+            border-right: 3px dashed #00ff66; 
+            overflow: hidden; 
+        }
+        .car { 
+            font-size: 45px; 
+            position: absolute; 
+            bottom: 20px; 
+            transition: left 0.15s ease-out; 
+            transform: translateX(-50%);
+        }
+        .coin { 
+            font-size: 30px; 
+            position: absolute; 
+            transform: translateX(-50%);
+        }
+        .controls { 
+            display: flex; 
+            justify-content: center; 
+            gap: 30px; 
+            margin-top: 10px; 
+        }
+        .btn { 
+            background: #004d1a; 
+            border: 2px solid #00ff66; 
+            color: #00ff66; 
+            padding: 20px 40px; 
+            font-size: 24px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            box-shadow: 0 5px 15px rgba(0, 255, 102, 0.2);
+        }
+        .btn:active { 
+            transform: scale(0.90); 
+            background: #00ff66; 
+            color: #000;
+        }
+        .back-btn { 
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid #777; 
+            padding: 10px 20px; 
+            margin-top: 20px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
-    <h1>Ötüşmə: <span id="score">0</span> Coin</h1>
+
+    <div class="header">🪙 Toplanan Coin: <span id="score">0</span></div>
+
     <div class="track" id="track">
-        <div id="player" class="car" style="left: 125px;">🏎️</div>
+        <div id="player" class="car" style="left: 50%;">🏎️</div>
     </div>
 
+    <div class="controls">
+        <button class="btn" onclick="moveLeft()">⬅️ SOL</button>
+        <button class="btn" onclick="moveRight()">SAĞ ➡️</button>
+    </div>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">🔙 Ana Səhifəyə Qayıt</button>
+
     <script>
+        const tg = window.Telegram.WebApp;
+        
         let score = 0;
         let player = document.getElementById('player');
-        
-        // Maşını idarə etmə
-        document.addEventListener('keydown', (e) => {
-            let left = parseInt(player.style.left);
-            if(e.key === 'ArrowLeft' && left > 0) player.style.left = (left - 50) + 'px';
-            if(e.key === 'ArrowRight' && left < 250) player.style.left = (left + 50) + 'px';
-        });
+        let track = document.getElementById('track');
+        let playerPos = 50; // Başlanğıc mövqe (faizlə)
 
-        // Coin yaratma
+        // Maşını sola hərəkət etdir
+        function moveLeft() {
+            if (playerPos > 20) { 
+                playerPos -= 30; 
+                player.style.left = playerPos + '%'; 
+            }
+        }
+
+        // Maşını sağa hərəkət etdir
+        function moveRight() {
+            if (playerPos < 80) { 
+                playerPos += 30; 
+                player.style.left = playerPos + '%'; 
+            }
+        }
+
+        // Yuxarıdan Coin düşməsi
         function spawnCoin() {
             let coin = document.createElement('div');
             coin.className = 'coin';
-            coin.style.left = Math.random() * 270 + 'px';
-            coin.style.top = '-30px';
-            document.getElementById('track').appendChild(coin);
+            coin.innerText = '🪙';
             
-            let move = setInterval(() => {
-                let top = parseInt(coin.style.top);
-                coin.style.top = (top + 5) + 'px';
+            // Coin 3 yoldan birində düşəcək (20%, 50%, 80%)
+            const positions = [20, 50, 80];
+            let randomPos = positions[Math.floor(Math.random() * positions.length)];
+            coin.style.left = randomPos + '%';
+            coin.style.top = '-40px';
+            track.appendChild(coin);
+            
+            let fallSpeed = 5;
+            let fall = setInterval(() => {
+                let top = parseInt(coin.style.top || -40);
+                coin.style.top = (top + fallSpeed) + 'px';
                 
-                // Coin tutma məntiqi
-                if(top > 400 && Math.abs(parseInt(coin.style.left) - parseInt(player.style.left)) < 40) {
-                    score += 10;
+                let coinRect = coin.getBoundingClientRect();
+                let playerRect = player.getBoundingClientRect();
+
+                // Toqquşma (Coin-i tutmaq)
+                if (
+                    coinRect.bottom >= playerRect.top + 10 &&
+                    coinRect.top <= playerRect.bottom &&
+                    coinRect.right >= playerRect.left &&
+                    coinRect.left <= playerRect.right
+                ) {
+                    score += 5; // Hər coin 5 xal verir
                     document.getElementById('score').innerText = score;
                     coin.remove();
-                    clearInterval(move);
+                    clearInterval(fall);
                 }
-                if(top > 500) { coin.remove(); clearInterval(move); }
-            }, 50);
+
+                // Ekranda aşağı düşüb yoxa çıxanda silinir
+                if (top > track.offsetHeight) { 
+                    coin.remove(); 
+                    clearInterval(fall); 
+                }
+            }, 20); // Düşmə sürəti
         }
-        setInterval(spawnCoin, 2000);
+
+        // Hər 1.2 saniyədən bir yeni coin yaradılır
+        setInterval(spawnCoin, 1200);
+
+        tg.ready();
+        tg.expand();
     </script>
 </body>
 </html>
