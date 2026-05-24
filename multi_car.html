@@ -3,51 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bearbee Survival Racing</title>
+    <title>Bearbee CANLI Çoxoyunçulu Yarış</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { 
             margin: 0; 
             background: #020b05; 
             color: #fff; 
             text-align: center; 
-            font-family: 'Poppins', sans-serif; 
+            font-family: sans-serif; 
             overflow: hidden; 
-            user-select: none;
+            user-select: none; 
         }
         .header { 
-            padding: 15px; 
-            font-size: 22px; 
+            padding: 10px; 
+            font-size: 18px; 
             font-weight: bold; 
-            color: #ff3333; 
-            border-bottom: 2px solid #ff3333;
-            background: rgba(4, 23, 12, 0.9);
-            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+            color: #ffd700; 
+            background: rgba(4, 23, 12, 0.9); 
+            border-bottom: 2px solid #00ff66; 
         }
         .track { 
             width: 100%; 
             max-width: 400px; 
             height: 55vh; 
             background: #111; 
-            margin: 15px auto; 
+            margin: 10px auto; 
             position: relative; 
-            border-left: 3px dashed #ff3333; 
-            border-right: 3px dashed #ff3333; 
+            border-left: 3px dashed #00ff66; 
+            border-right: 3px dashed #00ff66; 
             overflow: hidden; 
         }
         .car { 
-            font-size: 45px; 
+            font-size: 40px; 
             position: absolute; 
             bottom: 20px; 
             transition: left 0.1s ease-out; 
-            transform: translateX(-50%);
-            z-index: 2;
+            transform: translateX(-50%); 
+            z-index: 5; 
+        }
+        .car-label { 
+            position: absolute; 
+            top: -20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 11px; 
+            background: rgba(0,0,0,0.7); 
+            padding: 2px 5px; 
+            border-radius: 5px; 
+            white-space: nowrap; 
+            color: #fff; 
         }
         .obstacle { 
             font-size: 35px; 
             position: absolute; 
-            transform: translateX(-50%);
-            z-index: 1;
+            transform: translateX(-50%); 
+            z-index: 2; 
         }
         .controls { 
             display: flex; 
@@ -56,50 +68,58 @@
             margin-top: 10px; 
         }
         .btn { 
-            background: #4d0000; 
-            border: 2px solid #ff3333; 
-            color: #ff3333; 
-            padding: 20px 40px; 
-            font-size: 24px; 
+            background: #004d1a; 
+            border: 2px solid #00ff66; 
+            color: #00ff66; 
+            padding: 15px 35px; 
+            font-size: 22px; 
             border-radius: 20px; 
             cursor: pointer; 
-            box-shadow: 0 5px 15px rgba(255, 51, 51, 0.2);
         }
         .btn:active { 
             transform: scale(0.95); 
-            background: #ff3333; 
-            color: #000;
         }
-        .game-over-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+        .game-over-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.9); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
         }
-        .hidden { display: none !important; }
-        .restart-btn {
-            background: #004d1a; border: 2px solid #00ff66; color: #00ff66;
-            padding: 15px 30px; font-size: 20px; border-radius: 15px; cursor: pointer; margin-top: 15px;
+        .hidden { 
+            display: none !important; 
+        }
+        .restart-btn { 
+            background: #004d1a; 
+            border: 2px solid #00ff66; 
+            color: #00ff66; 
+            padding: 12px 25px; 
+            font-size: 18px; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            margin-top: 15px; 
         }
     </style>
 </head>
 <body>
 
-    <div class="header">⏱️ Sağ Qalma Məsafəsi: <span id="score">0</span> m</div>
+    <div class="header">⏱️ Sənin Məsafən: <span id="score">0</span> m | 👥 Onlayn: <span id="online-count">1</span></div>
 
     <div class="track" id="track">
-        <div id="player" class="car" style="left: 50%;">🏎️</div>
+        <div id="player" class="car" style="left: 50%;">
+            <div class="car-label">Sən</div>🏎️
+        </div>
 
         <div id="game-over" class="game-over-screen hidden">
-            <h1 style="color: #ff3333; font-size: 40px; margin: 0;">💥 YANDINIZ!</h1>
-            <p style="font-size: 20px; margin: 10px 0;">Rekordunuz: <span id="final-score">0</span> metr</p>
-            <p style="color: #00ff66; font-size: 14px;">Xalınız bazaya göndərildi 💾</p>
-            <button class="restart-btn" onclick="startGame()">Yenidən Başla 🔄</button>
-            <button class="restart-btn" style="background:#222; border-color:#777; color:#fff;" onclick="window.location.href='index.html'">🔙 Menyuya Qayıt</button>
+            <h1 style="color: #ff3333; margin: 0;">💥 TOQQOŞDUNUZ!</h1>
+            <p style="font-size: 20px;">Xalınız: <span id="final-score">0</span> metr</p>
+            <button class="restart-btn" onclick="location.reload()">Yenidən Qoşul 🔄</button>
         </div>
     </div>
 
@@ -110,7 +130,8 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        const API_URL = "https://bearbee-production.up.railway.app";
+        // Sizin canlı Railway server linkiniz
+        const socket = io("https://bearbee-production.up.railway.app"); 
         
         let score = 0;
         let player = document.getElementById('player');
@@ -119,124 +140,124 @@
         
         let playerPos = 50; 
         let isGameOver = false;
-        let scoreInterval;
-        let obstacleInterval;
+        let otherPlayers = {};
+        let username = tg.initDataUnsafe?.user?.first_name || "Oyunçu";
 
-        function startGame() {
-            // Oyun dəyişənlərini sıfırla
-            isGameOver = false;
-            score = 0;
-            playerPos = 50;
-            player.style.left = '50%';
-            player.innerText = '🏎️';
-            document.getElementById('score').innerText = '0';
-            gameOverScreen.classList.add('hidden');
+        // Serverə qoşulma xəbəri göndəririk
+        socket.on('connect', () => {
+            socket.emit('joinGame', { username: username });
+        });
+
+        // Aktiv oyunçuların siyahısı yenilənəndə
+        socket.on('updatePlayers', (serverPlayers) => {
+            document.getElementById('online-count').innerText = Object.keys(serverPlayers).length;
             
-            // Köhnə maneələri təmizlə
-            document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
-            
-            // İntervalları başlat
-            clearInterval(scoreInterval);
-            clearInterval(obstacleInterval);
-            
-            // Hər 200 millisaniyədən bir məsafə (xal) artır
-            scoreInterval = setInterval(() => {
-                if(!isGameOver) {
-                    score += 1;
-                    document.getElementById('score').innerText = score;
+            // Yeni gələn oyunçuları ekrana əlavə et
+            for (let id in serverPlayers) {
+                if (id !== socket.id && !otherPlayers[id]) {
+                    let enemyCar = document.createElement('div');
+                    enemyCar.className = 'car';
+                    enemyCar.id = 'player-' + id;
+                    enemyCar.style.left = serverPlayers[id].x + '%';
+                    enemyCar.innerHTML = `<div class="car-label">${serverPlayers[id].username}</div>🚗`;
+                    track.appendChild(enemyCar);
+                    otherPlayers[id] = enemyCar;
                 }
-            }, 200);
+            }
+        });
 
-            // Hər 900 millisaniyədən bir yeni maneə düşür
-            obstacleInterval = setInterval(spawnObstacle, 900);
-        }
+        // Hər hansı bir rəqib sağa-sola hərəkət edəndə
+        socket.on('playerMoved', (data) => {
+            if (otherPlayers[data.id]) {
+                otherPlayers[data.id].style.left = data.x + '%';
+            }
+        });
 
+        // Bir rəqib partlayanda onun emojisini dəyişirik
+        socket.on('playerExploded', (id) => {
+            if (otherPlayers[id]) {
+                otherPlayers[id].innerHTML = `<div class="car-label">💥 ÖLDÜ</div>💥`;
+            }
+            if (id === socket.id) {
+                isGameOver = true;
+                gameOverScreen.classList.remove('hidden');
+                document.getElementById('final-score').innerText = score;
+            }
+        });
+
+        // Oyunçu çıxanda onu ekrandan sil
+        socket.on('playerLeft', (id) => {
+            if (otherPlayers[id]) {
+                otherPlayers[id].remove();
+                delete otherPlayers[id];
+            }
+            document.getElementById('online-count').innerText = Object.keys(otherPlayers).length + 1;
+        });
+
+        // Sola hərəkət məntiqi
         function moveLeft() {
             if (!isGameOver && playerPos > 20) { 
                 playerPos -= 30; 
                 player.style.left = playerPos + '%'; 
+                socket.emit('move', { x: playerPos }); // Serverə bildir
             }
         }
 
+        // Sağa hərəkət məntiqi
         function moveRight() {
             if (!isGameOver && playerPos < 80) { 
                 playerPos += 30; 
                 player.style.left = playerPos + '%'; 
+                socket.emit('move', { x: playerPos }); // Serverə bildir
             }
         }
 
+        // Xal artımı (Metr hesabı)
+        setInterval(() => {
+            if(!isGameOver) {
+                score += 1;
+                document.getElementById('score').innerText = score;
+            }
+        }, 150);
+
+        // Yerli obyekt (Maneə) yaratma və toqquşma yoxlanışı
         function spawnObstacle() {
             if(isGameOver) return;
-
             let obstacle = document.createElement('div');
             obstacle.className = 'obstacle';
-            
-            // Təsadüfi maneə növləri: Daş, bomba və ya yağ ləkəsi
-            const types = ['🪨', '💥', '🛢️'];
-            obstacle.innerText = types[Math.floor(Math.random() * types.length)];
+            obstacle.innerText = '🪨';
             
             const positions = [20, 50, 80];
-            let randomPos = positions[Math.floor(Math.random() * positions.length)];
-            obstacle.style.left = randomPos + '%';
+            obstacle.style.left = positions[Math.floor(Math.random() * positions.length)] + '%';
             obstacle.style.top = '-40px';
             track.appendChild(obstacle);
             
-            let fallSpeed = 6; // Maneənin düşmə sürəti
             let fall = setInterval(() => {
-                if(isGameOver) {
-                    clearInterval(fall);
-                    return;
-                }
-
+                if(isGameOver) { clearInterval(fall); return; }
                 let top = parseInt(obstacle.style.top || -40);
-                obstacle.style.top = (top + fallSpeed) + 'px';
+                obstacle.style.top = (top + 6) + 'px';
                 
                 let obsRect = obstacle.getBoundingClientRect();
                 let playerRect = player.getBoundingClientRect();
 
-                // TOQQUŞMA REAKSİYASI (YANMAQ)
                 if (
                     obsRect.bottom >= playerRect.top + 15 &&
                     obsRect.top <= playerRect.bottom - 15 &&
                     obsRect.right >= playerRect.left + 10 &&
                     obsRect.left <= playerRect.right - 10
                 ) {
-                    endGame();
+                    socket.emit('playerDied'); // Serverə öldüyümüzü xəbər veririk
                     clearInterval(fall);
                 }
 
-                if (top > track.offsetHeight) { 
-                    obstacle.remove(); 
-                    clearInterval(fall); 
-                }
+                if (top > track.offsetHeight) { obstacle.remove(); clearInterval(fall); }
             }, 20);
         }
-
-        async function endGame() {
-            isGameOver = true;
-            clearInterval(scoreInterval);
-            clearInterval(obstacleInterval);
-            
-            player.innerText = '💥'; // Maşın partlayır
-            document.getElementById('final-score').innerText = score;
-            gameOverScreen.classList.remove('hidden');
-
-            // Xalı Railway vasitəsilə verilənlər bazasına (Supabase) göndər
-            const userId = tg.initDataUnsafe?.user?.id || "test-user";
-            try {
-                await fetch(`${API_URL}/api/user/sync`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, honey: score }) // Burada 'honey' parametrini qazandığı xal kimi istifadə edirik
-                });
-            } catch (e) { console.log("Xal sinxronizasiya edilə bilmədi."); }
-        }
-
-        // Oyunu avtomatik başlat
-        startGame();
+        setInterval(spawnObstacle, 1000);
 
         tg.ready();
         tg.expand();
     </script>
 </body>
 </html>
+
