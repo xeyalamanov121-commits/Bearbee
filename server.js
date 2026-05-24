@@ -10,12 +10,11 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Bütün domenlərdən (GitHub Pages-dən) gələn bağlantılara icazə verilir
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-// Sadə ana səhifə mesajı
 app.get('/', (req, res) => {
     res.send("Bearbee Multiplayer Serveri Aktivdir! 🚀");
 });
@@ -67,4 +66,3 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server ${PORT} portunda işləyir...`);
 });
-
