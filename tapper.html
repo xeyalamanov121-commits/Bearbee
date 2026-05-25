@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Cyber Ayı Clicker Mining</title>
-<script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
 <style>
   body { text-align:center; background:#0a0a0f; color:#fff; margin:0; padding:0; min-height:200vh; }
   #bear { width:350px; cursor:pointer; border:4px solid #00ffff; border-radius:15px; box-shadow:0 0 20px #00ffff; margin-top:100px; }
@@ -23,7 +22,7 @@
   <h1>💎 Cyber Ayı Clicker Mining 💎</h1>
   <div id="energyPanel">Enerji: <span id="energy">100</span>/100</div>
   <div id="energyBar"><div id="bar"></div></div>
-  <div id="adPanel">📺 Reklamı izlə və enerji qazan</div>
+  <div id="adPanel">📺 Reklam yeri (Adsgram və s.)</div>
   
   <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.f66eeac8-be8a-412e-a0a3-88d16d917054.png" alt="Cyber Ayı">
   <div id="bottomLine"></div>
@@ -32,9 +31,6 @@
 let energy=100;
 const bear=document.getElementById("bear"),bottom=document.getElementById("bottomLine");
 const energySpan=document.getElementById("energy"),adPanel=document.getElementById("adPanel"),bar=document.getElementById("bar");
-
-// Adsgram reklam sistemi (Sənin Block ID-ni bura yazmalısan)
-const adController = window.Adsgram.init({ blockId: "REKLAM_BLOCK_ID_BURA" });
 
 function updateBar(){
   bar.style.width=energy+"%";
@@ -46,38 +42,29 @@ function updateBar(){
 bear.addEventListener("click",e=>{
   if(energy>0){
     energy-=1; energySpan.textContent=energy; updateBar();
+    // hər klikdə 3 daş düşür
     for(let i=0;i<3;i++){
       const stone=document.createElement("img");
       stone.className="stone";
-      stone.src="https://copilot.microsoft.com/th/id/BCO.d2e80846-1e5c-4e2d-b3b5-78fc47b6436a.png";
+      stone.src="https://copilot.microsoft.com/th/id/BCO.d2e80846-1e5c-4e2d-b3b5-78fc47b6436a.png"; // zümrüd şəkli
       stone.style.left=(e.pageX-25+i*20)+"px"; 
       stone.style.top=(e.pageY-25)+"px";
       document.body.appendChild(stone);
       setTimeout(()=>{stone.remove(); const s=document.createElement("img"); s.src=stone.src; bottom.appendChild(s);},1000);
     }
+    // Enerji dalğası effekti
     const pulse=document.createElement("div");
     pulse.className="pulse"; pulse.style.width="100px"; pulse.style.height="100px";
     pulse.style.left=(e.pageX-50)+"px"; pulse.style.top=(e.pageY-50)+"px";
     document.body.appendChild(pulse); setTimeout(()=>pulse.remove(),1000);
-  } else { alert("Enerji bitdi! Reklamı sona qədər izləyərək enerji qazan."); }
+  } else { alert("Enerji bitdi! Reklam izləyərək enerji qazan."); }
 });
 
-// Reklam paneli - yalnız reklam bitəndə enerji artır
+// Reklam paneli kliklənəndə enerji +30 (animasiya ilə dolma)
 adPanel.addEventListener("click",()=>{
-  adController.show().then((result) => {
-    if (result.done) {
-        // Reklam uğurla bitdi
-        energy = 100;
-        energySpan.textContent = energy;
-        updateBar();
-        alert("Təbriklər! Enerjin tam doldu.");
-    } else {
-        // İstifadəçi reklamı yarımçıq bağladı
-        alert("Reklamı sona qədər izləmədiyin üçün enerji verilmədi!");
-    }
-  }).catch((err) => {
-      alert("Reklam yüklənərkən xəta baş verdi.");
-  });
+  energy+=30; if(energy>100) energy=100;
+  energySpan.textContent=energy; updateBar();
+  alert("Reklama baxdınız, +30 enerji qazandınız!");
 });
 
 updateBar();
