@@ -1,224 +1,150 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bearbee Arena | Main</title>
-
-    <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
-
-        body{
-            background:#000;
-            color:#fff;
-            font-family:'Segoe UI',sans-serif;
-            padding-bottom:90px;
-        }
-
-        /* HERO */
-        .hero{
-            height:55vh;
-            background:
-            linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.35)),
-            url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1600&auto=format&fit=crop');
-            background-size:cover;
-            background-position:center;
-            display:flex;
-            flex-direction:column;
-            justify-content:flex-end;
-            padding:30px;
-            border-bottom:3px solid #ffd700;
-        }
-
-        .hero h1{
-            font-size:38px;
-            color:#ffd700;
-            margin-bottom:10px;
-            font-weight:900;
-            letter-spacing:2px;
-        }
-
-        .hero p{
-            color:#ddd;
-            font-size:16px;
-            max-width:400px;
-            line-height:1.5;
-        }
-
-        /* GRID */
-        .grid{
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:18px;
-            padding:20px;
-        }
-
-        .card{
-            background:#111;
-            border-radius:18px;
-            overflow:hidden;
-            border:1px solid #222;
-            transition:0.3s;
-            box-shadow:0 0 20px rgba(255,215,0,0.08);
-        }
-
-        .card:hover{
-            transform:translateY(-5px);
-            border-color:#ffd700;
-        }
-
-        .card img{
-            width:100%;
-            height:150px;
-            object-fit:cover;
-        }
-
-        .card-content{
-            padding:15px;
-            text-align:center;
-        }
-
-        .card h3{
-            font-size:18px;
-            margin-bottom:10px;
-            color:#ffd700;
-        }
-
-        .card p{
-            color:#aaa;
-            font-size:13px;
-            line-height:1.5;
-        }
-
-        .btn{
-            display:block;
-            margin-top:15px;
-            padding:12px;
-            background:#ffd700;
-            color:#000;
-            text-decoration:none;
-            border-radius:10px;
-            font-weight:700;
-            transition:0.3s;
-        }
-
-        .btn:hover{
-            background:#fff;
-        }
-
-        /* NAVBAR */
-        .nav{
-            position:fixed;
-            bottom:0;
-            left:0;
-            width:100%;
-            background:#0d0d0d;
-            border-top:1px solid #222;
-            display:flex;
-            justify-content:space-around;
-            align-items:center;
-            padding:15px 0;
-            z-index:999;
-        }
-
-        .nav span{
-            color:#ffd700;
-            font-size:14px;
-            font-weight:bold;
-        }
-
-        @media(max-width:700px){
-            .grid{
-                grid-template-columns:1fr;
-            }
-
-            .hero h1{
-                font-size:30px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>BEARBEE ARENA</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #0a0a0a, #1a1a1a);
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-shadow: 0 0 20px #f0f;
+      margin-top: 30px;
+    }
+    p {
+      font-size: 18px;
+      color: #ccc;
+    }
+    .auth {
+      margin: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+    button {
+      background: #0ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #f0f;
+      color: #fff;
+    }
+    .sections {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 30px auto;
+      max-width: 1200px;
+    }
+    .section {
+      background: #111;
+      border: 2px solid #0ff;
+      margin: 15px;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px #0ff;
+      width: 280px;
+      transition: transform 0.3s;
+    }
+    .section:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px #f0f;
+    }
+    .section img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 20px #f0f;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+      color: #0ff;
+    }
+    .section p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
+  <h1>🏎️ BEARBEE ARENA</h1>
+  <p>Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.</p>
 
-    <!-- HERO -->
-    <div class="hero">
-        <h1>BEARBEE ARENA</h1>
-        <p>
-            Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.
-        </p>
+  <!-- Auth form -->
+  <div class="auth">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="logout()">Logout</button>
+    <div id="result"></div>
+  </div>
+
+  <!-- Bölmələr -->
+  <div class="sections">
+    <div class="section">
+      <h2>MINING</h2>
+      <img src="https://images.unsplash.com/photo-1621508454371-0e3f3f3a5d3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mining şəkli">
+      <p>Tapper mining sistemi ilə coin topla və balansını artır.</p>
+      <button onclick="window.location='tapper.html'">GİRİŞ</button>
     </div>
 
-    <!-- CARDS -->
-    <div class="grid">
-
-        <!-- MINING -->
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=1200&auto=format&fit=crop" alt="Mining">
-            
-            <div class="card-content">
-                <h3>MINING</h3>
-                <p>
-                    Tapper mining sistemi ilə coin topla və balansını artır.
-                </p>
-
-                <a href="tapper.html" class="btn">GİRİŞ</a>
-            </div>
-        </div>
-
-        <!-- RACE ROOM -->
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop" alt="Race">
-
-            <div class="card-content">
-                <h3>RACE ROOM</h3>
-                <p>
-                    3 nəfərlik yarış otaqlarına qoşul və qalib ol.
-                </p>
-
-                <a href="race.html" class="btn">OTAĞA GİR</a>
-            </div>
-        </div>
-
-        <!-- ADS -->
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop" alt="Ads">
-
-            <div class="card-content">
-                <h3>ADS</h3>
-                <p>
-                    Reklam yerləşdir və istifadəçilərə daha tez çat.
-                </p>
-
-                <a href="ads.html" class="btn">DOLDUR</a>
-            </div>
-        </div>
-
-        <!-- BONUS -->
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop" alt="Bonus">
-
-            <div class="card-content">
-                <h3>BONUS</h3>
-                <p>
-                    Gündəlik bonuslar və xüsusi mükafatlar əldə et.
-                </p>
-
-                <a href="#" class="btn">KEÇİD</a>
-            </div>
-        </div>
-
+    <div class="section">
+      <h2>RACE ROOM</h2>
+      <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Race Room şəkli">
+      <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
+      <button onclick="window.location='race.html'">OTAĞA GİR</button>
     </div>
 
-    <!-- NAV -->
-    <div class="nav">
-        <span>ARENA</span>
-        <span>PROFILE</span>
-        <span>RANK</span>
+    <div class="section">
+      <h2>ADS</h2>
+      <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Reklam şəkli">
+      <p>Reklam yerləri və istifadəçilərə daha tez çat.</p>
+      <button onclick="alert('Reklam doldur!')">DOLDUR</button>
     </div>
 
+    <div class="section">
+      <h2>BONUS</h2>
+      <img src="https://images.unsplash.com/photo-1605902711622-cfb43c44367f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Bonus şəkli">
+      <p>Gündəlik bonuslar və xüsusi mükafatlar əldə et.</p>
+      <button onclick="alert('Bonus götürüldü!')">KEÇİD</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+    const supabase = createClient("https://ywpqvvriakbbhvrtpvso.supabase.co", "YOUR_ANON_KEY")
+
+    async function login() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        document.getElementById("result").innerText = "⚠️ Login failed!"
+      } else {
+        document.getElementById("result").innerText = `✅ Logged in as ${data.user.email}`
+      }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut()
+      document.getElementById("result").innerText = "🚪 Logged out!"
+    }
+  </script>
 </body>
 </html>
