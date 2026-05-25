@@ -4,64 +4,44 @@
   <meta charset="UTF-8">
   <title>BEARBEE ARENA</title>
   <style>
-    body {
-      background: linear-gradient(to right, #0a0a0a, #1a1a1a);
-      font-family: 'Orbitron', sans-serif;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    h1 { text-shadow: 0 0 20px #f0f; margin-top: 30px; }
-    p { font-size: 18px; color: #ccc; }
-    .auth { margin: 20px; }
-    input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
-    button {
-      background: #0ff; border: none; padding: 10px 20px;
-      border-radius: 5px; cursor: pointer; font-weight: bold;
-      margin: 5px; transition: 0.3s;
-    }
-    button:hover { background: #f0f; color: #fff; }
-    .sections { display: flex; flex-wrap: wrap; justify-content: center; margin: 30px auto; max-width: 1200px; }
-    .section {
-      background: #111; border: 2px solid #0ff; margin: 15px; padding: 20px;
-      border-radius: 15px; box-shadow: 0 0 25px #0ff; width: 280px; transition: transform 0.3s;
-    }
-    .section:hover { transform: scale(1.05); box-shadow: 0 0 40px #f0f; }
-    .section h2 { margin-bottom: 10px; color: #0ff; }
-    .section p { font-size: 14px; color: #aaa; margin-bottom: 15px; }
-    #balance { margin-top: 20px; font-size: 18px; color: #0ff; }
-    #bear { width: 200px; cursor: pointer; margin-top: 20px; transition: transform 0.2s; }
-    #bear:hover { transform: scale(1.1); }
+    body { background:#111; color:#fff; font-family:'Orbitron',sans-serif; text-align:center; margin:0; padding:0; }
+    h1 { text-shadow:0 0 20px #f0f; margin-top:30px; }
+    p { font-size:18px; color:#ccc; }
+    button { background:#0ff; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; margin:5px; transition:0.3s; }
+    button:hover { background:#f0f; color:#fff; }
+    .sections { display:flex; flex-wrap:wrap; justify-content:center; margin:30px auto; max-width:1200px; }
+    .section { background:#222; border:2px solid #0ff; margin:15px; padding:20px; border-radius:15px; box-shadow:0 0 25px #0ff; width:280px; transition:transform 0.3s; }
+    .section:hover { transform:scale(1.05); box-shadow:0 0 40px #f0f; }
+    .section h2 { margin-bottom:10px; color:#0ff; }
+    .section p { font-size:14px; color:#aaa; margin-bottom:15px; }
+    #balance { margin-top:20px; font-size:18px; color:#0ff; }
   </style>
 </head>
 <body>
   <h1>🏎️ BEARBEE ARENA</h1>
   <p>Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.</p>
 
-  <!-- Ana şəkil -->
+  <!-- Ana şəkil (panel fotonu buraya qoy) -->
   <div style="text-align:center; margin-top:20px;">
-    <img src="images/arena.jpg" alt="BEARBEE ARENA bölmələri"
+    <img src="images/arena-panels.jpg" alt="BEARBEE ARENA bölmələri"
          style="width:95%; border-radius:15px; box-shadow:0 0 30px #0ff;">
   </div>
 
-  <!-- Auth form -->
-  <div class="auth">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="signup()">Signup</button>
-    <button onclick="login()">Login</button>
-    <button onclick="logout()">Logout</button>
-    <div id="result"></div>
-    <div id="balance">💰 Coin: 0 | ⚡ Enerji: 0</div>
+  <!-- Telegram giriş -->
+  <div style="margin:20px;">
+    <p>🔑 Giriş yalnız Telegram ilə mümkündür</p>
+    <a href="https://t.me/Bearbeee_bot" target="_blank">
+      <button>Telegram ilə GİRİŞ</button>
+    </a>
+    <div id="balance">💰 Coin: 0 | ⚡ Enerji: 100</div>
   </div>
 
   <!-- Bölmələr -->
   <div class="sections">
     <div class="section">
       <h2>MINING</h2>
-      <p>Ayıya kliklə və coin topla!</p>
-      <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.553ad732-4916-4809-9ec6-3c43798e115d.png" onclick="mineCoin()" alt="Cyber Ayı Avatar">
+      <p>Ayı ilə coin toplamaq üçün ayrıca səhifəyə keç!</p>
+      <button onclick="window.location='mining.html'">MININGƏ GİR</button>
     </div>
 
     <div class="section">
@@ -73,7 +53,6 @@
     <div class="section">
       <h2>ADS</h2>
       <p>Reklam izləməklə ⚡ enerji doldur.</p>
-      <!-- Video tam silindi -->
       <button onclick="fillEnergy()">Enerjini Doldur</button>
     </div>
 
@@ -85,103 +64,20 @@
 
     <div class="section">
       <h2>DEPOSIT</h2>
-      <p>Ton Wallet: <br> EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
+      <p>Ton Wallet: EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
       <p>ID: 9947429</p>
       <button onclick="copyWallet()">KOPYALA</button>
     </div>
   </div>
 
-  <!-- Supabase bağlantısı -->
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
-
-    const supabase = createClient(
-      "https://ywpqvvriakbbhvrtpvso.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    )
-
-    let userId = null;
-    let coins = 0;
-    let energy = 0;
-
-    async function signup() {
-      const email = document.getElementById("email").value
-      const password = document.getElementById("password").value
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) document.getElementById("result").innerText = "⚠️ Signup failed: " + error.message
-      else document.getElementById("result").innerText = "✅ Qeydiyyat uğurlu!"
-    }
-
-    async function login() {
-      const email = document.getElementById("email").value
-      const password = document.getElementById("password").value
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        document.getElementById("result").innerText = "⚠️ Login failed: " + error.message
-      } else {
-        userId = data.user.id;
-        document.getElementById("result").innerText = `✅ Logged in as ${data.user.email}`
-        await loadProfile();
-      }
-    }
-
-    async function logout() {
-      await supabase.auth.signOut()
-      userId = null;
-      document.getElementById("result").innerText = "🚪 Logged out!"
-      document.getElementById("balance").innerText = "💰 Coin: 0 | ⚡ Enerji: 0"
-    }
-
-    async function loadProfile() {
-      let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
-      if (!error && data) {
-        coins = data.coins;
-        energy = data.energy;
-      } else {
-        coins = 0;
-        energy = 100;
-        await supabase.from("profiles").insert({ id: userId, coins, energy, bear_power: 1, bear_count: 0 })
-      }
-      updateBalance();
-    }
-
-    async function saveProfile() {
-      await supabase.from("profiles").update({ coins, energy }).eq("id", userId)
-    }
-
-    function updateBalance() {
-      document.getElementById("balance").innerText = `💰 Coin: ${coins} | ⚡ Enerji: ${energy}`
-    }
-
-    async function bonus() {
-      if (!userId) return alert("Əvvəl login et!");
-      coins += 10;
-      updateBalance();
-      await saveProfile();
-      alert("🎁 Bonus götürüldü!");
-    }
-
-    async function mineCoin() {
-      if (!userId) return alert("Əvvəl login et!");
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single()
-      if (!profile) return;
-      if (profile.energy <= 0) {
-        alert("⚡ Enerjin bitdi! Reklama baxmalısan.");
-        return;
-      }
-      coins += profile.bear_power;
-      energy -= 1;
-      updateBalance();
-      await saveProfile();
-    }
-
-    async function fillEnergy() {
-      if (!userId) return alert("Əvvəl login et!");
-      energy = 100;
-      updateBalance();
-      await saveProfile();
-      alert("⚡ Enerjin reklam izləməklə dolduruldu!");
-    }
-
-    function copyWallet() {
-      navigator.clipboard.writeText("EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee
+  <!-- Sadə JS -->
+  <script>
+    let coins=0, energy=100;
+    function updateBalance(){ document.getElementById("balance").innerText=`💰 Coin: ${coins} | ⚡ Enerji: ${energy}`; }
+    function bonus(){ coins+=10; updateBalance(); alert("🎁 Bonus götürüldü!"); }
+    function fillEnergy(){ energy=100; updateBalance(); alert("⚡ Enerjin dolduruldu!"); }
+    function copyWallet(){ navigator.clipboard.writeText("EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp"); alert("💳 Wallet kopyalandı!"); }
+    updateBalance();
+  </script>
+</body>
+</html>
