@@ -1,114 +1,187 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<title>Cyber Ayı Arena</title>
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-  const supabaseUrl = "https://YOUR-PROJECT-REF.supabase.co";   // öz Supabase URL
-  const supabaseKey = "YOUR-ANON-KEY";                          // öz anon key
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // Signup
-    document.getElementById("signupBtn").addEventListener("click", async () => {
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) alert("Xəta: " + error.message);
-      else alert("Qeydiyyat uğurlu: " + data.user.email);
-    });
-
-    // Login
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("Xəta: " + error.message);
-      else alert("Daxil oldun: " + data.user.email);
-    });
-  });
-</script>
-<style>
-  body { text-align:center; background:#0a0a0f; color:#fff; margin:0; padding:0; min-height:200vh; }
-  input { margin:5px; padding:8px; border-radius:6px; border:1px solid #555; }
-  button { margin:5px; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; }
-  #bear { width:350px; cursor:pointer; border:4px solid #00ffff; border-radius:15px; box-shadow:0 0 20px #00ffff; margin-top:50px; }
-  .stone { position:absolute; width:50px; height:50px; animation:drop 1s ease-out forwards; }
-  @keyframes drop { from{transform:translateY(0);} to{transform:translateY(300px);} }
-  .pulse { position:absolute; border-radius:50%; background:rgba(0,255,255,0.4); animation:spread 1s ease-out forwards; pointer-events:none; }
-  @keyframes spread { from{transform:scale(0);opacity:1;} to{transform:scale(3);opacity:0;} }
-  #bottomLine { position:fixed; bottom:0; left:0; width:100%; height:100px; background:rgba(0,255,255,0.1); border-top:2px solid #00ffff; display:flex; justify-content:center; align-items:center; overflow-x:auto; z-index:10; }
-  #bottomLine img { width:60px; height:60px; margin:0 5px; border-radius:8px; box-shadow:0 0 10px #00ff99; }
-  #energyPanel { margin:20px; font-size:20px; }
-  #energyBar { width:300px; height:25px; background:#333; margin:10px auto; border-radius:12px; overflow:hidden; border:2px solid #555; }
-  #bar { height:100%; width:100%; background:limegreen; transition:width 1s ease-in-out; }
-  #adPanel { margin:20px; padding:15px; background:#111; border:2px dashed #ffcc00; border-radius:10px; color:#ffcc00; cursor:pointer; }
-</style>
+  <meta charset="UTF-8">
+  <title>BEARBEE ARENA</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #0a0a0a, #1a1a1a);
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 { text-shadow: 0 0 20px #f0f; margin-top: 30px; }
+    p { font-size: 18px; color: #ccc; }
+    .auth { margin: 20px; }
+    input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+    button {
+      background: #0ff; border: none; padding: 10px 20px;
+      border-radius: 5px; cursor: pointer; font-weight: bold;
+      margin: 5px; transition: 0.3s;
+    }
+    button:hover { background: #f0f; color: #fff; }
+    .sections { display: flex; flex-wrap: wrap; justify-content: center; margin: 30px auto; max-width: 1200px; }
+    .section {
+      background: #111; border: 2px solid #0ff; margin: 15px; padding: 20px;
+      border-radius: 15px; box-shadow: 0 0 25px #0ff; width: 280px; transition: transform 0.3s;
+    }
+    .section:hover { transform: scale(1.05); box-shadow: 0 0 40px #f0f; }
+    .section h2 { margin-bottom: 10px; color: #0ff; }
+    .section p { font-size: 14px; color: #aaa; margin-bottom: 15px; }
+    #balance { margin-top: 20px; font-size: 18px; color: #0ff; }
+    #bear { width: 200px; cursor: pointer; margin-top: 20px; transition: transform 0.2s; }
+    #bear:hover { transform: scale(1.1); }
+  </style>
 </head>
 <body>
-  <h1>💎 Cyber Ayı Arena 💎</h1>
+  <h1>🏎️ BEARBEE ARENA</h1>
+  <p>Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.</p>
 
-  <!-- Login / Signup -->
-  <h2>Qeydiyyat</h2>
-  <input type="email" id="signupEmail" placeholder="Email">
-  <input type="password" id="signupPassword" placeholder="Şifrə">
-  <button id="signupBtn">Signup</button>
+  <!-- Ana şəkil -->
+  <div style="text-align:center; margin-top:20px;">
+    <img src="images/arena.jpg" alt="BEARBEE ARENA bölmələri"
+         style="width:95%; border-radius:15px; box-shadow:0 0 30px #0ff;">
+  </div>
 
-  <h2>Daxil ol</h2>
-  <input type="email" id="loginEmail" placeholder="Email">
-  <input type="password" id="loginPassword" placeholder="Şifrə">
-  <button id="loginBtn">Login</button>
+  <!-- Auth form -->
+  <div class="auth">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+    <button onclick="logout()">Logout</button>
+    <div id="result"></div>
+    <div id="balance">💰 Coin: 0 | ⚡ Enerji: 0</div>
+  </div>
 
-  <!-- Enerji paneli -->
-  <div id="energyPanel">Enerji: <span id="energy">100</span>/100</div>
-  <div id="energyBar"><div id="bar"></div></div>
-  <div id="adPanel">📺 Reklam yeri (Adsgram və s.)</div>
+  <!-- Bölmələr -->
+  <div class="sections">
+    <div class="section">
+      <h2>MINING</h2>
+      <p>Ayıya kliklə və coin topla!</p>
+      <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.553ad732-4916-4809-9ec6-3c43798e115d.png" onclick="mineCoin()" alt="Cyber Ayı Avatar">
+    </div>
 
-  <!-- Oyun -->
-  <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.f66eeac8-be8a-412e-a0a3-88d16d917054.png" alt="Cyber Ayı">
-  <div id="bottomLine"></div>
+    <div class="section">
+      <h2>RACE ROOM</h2>
+      <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
+      <button onclick="window.location='race.html'">OTAĞA GİR</button>
+    </div>
 
-<script>
-let energy=100;
-const bear=document.getElementById("bear"),bottom=document.getElementById("bottomLine");
-const energySpan=document.getElementById("energy"),adPanel=document.getElementById("adPanel"),bar=document.getElementById("bar");
+    <div class="section">
+      <h2>ADS</h2>
+      <p>Reklam izləməklə ⚡ enerji doldur.</p>
+      <!-- Video tam silindi -->
+      <button onclick="fillEnergy()">Enerjini Doldur</button>
+    </div>
 
-function updateBar(){
-  bar.style.width=energy+"%";
-  if(energy>60) bar.style.background="limegreen";
-  else if(energy>30) bar.style.background="orange";
-  else bar.style.background="red";
-}
+    <div class="section">
+      <h2>BONUS</h2>
+      <p>Gündəlik bonusunu götür!</p>
+      <button onclick="bonus()">KEÇİD</button>
+    </div>
 
-bear.addEventListener("click",e=>{
-  if(energy>0){
-    energy-=1; energySpan.textContent=energy; updateBar();
-    for(let i=0;i<3;i++){
-      const stone=document.createElement("img");
-      stone.className="stone";
-      stone.src="https://copilot.microsoft.com/th/id/BCO.d2e80846-1e5c-4e2d-b3b5-78fc47b6436a.png";
-      stone.style.left=(e.pageX-25+i*20)+"px"; 
-      stone.style.top=(e.pageY-25)+"px";
-      document.body.appendChild(stone);
-      setTimeout(()=>{stone.remove(); const s=document.createElement("img"); s.src=stone.src; bottom.appendChild(s);},1000);
+    <div class="section">
+      <h2>DEPOSIT</h2>
+      <p>Ton Wallet: <br> EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
+      <p>ID: 9947429</p>
+      <button onclick="copyWallet()">KOPYALA</button>
+    </div>
+  </div>
+
+  <!-- Supabase bağlantısı -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+
+    const supabase = createClient(
+      "https://ywpqvvriakbbhvrtpvso.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    )
+
+    let userId = null;
+    let coins = 0;
+    let energy = 0;
+
+    async function signup() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) document.getElementById("result").innerText = "⚠️ Signup failed: " + error.message
+      else document.getElementById("result").innerText = "✅ Qeydiyyat uğurlu!"
     }
-    const pulse=document.createElement("div");
-    pulse.className="pulse"; pulse.style.width="100px"; pulse.style.height="100px";
-    pulse.style.left=(e.pageX-50)+"px"; pulse.style.top=(e.pageY-50)+"px";
-    document.body.appendChild(pulse); setTimeout(()=>pulse.remove(),1000);
-  } else { alert("Enerji bitdi! Reklam izləyərək enerji qazan."); }
-});
 
-// Reklam paneli kliklənəndə enerji +30
-adPanel.addEventListener("click",()=>{
-  energy+=30; if(energy>100) energy=100;
-  energySpan.textContent=energy; updateBar();
-  alert("Reklama baxdınız, +30 enerji qazandınız!");
-});
+    async function login() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        document.getElementById("result").innerText = "⚠️ Login failed: " + error.message
+      } else {
+        userId = data.user.id;
+        document.getElementById("result").innerText = `✅ Logged in as ${data.user.email}`
+        await loadProfile();
+      }
+    }
 
-updateBar();
-</script>
-</body>
-</html>
+    async function logout() {
+      await supabase.auth.signOut()
+      userId = null;
+      document.getElementById("result").innerText = "🚪 Logged out!"
+      document.getElementById("balance").innerText = "💰 Coin: 0 | ⚡ Enerji: 0"
+    }
+
+    async function loadProfile() {
+      let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+      if (!error && data) {
+        coins = data.coins;
+        energy = data.energy;
+      } else {
+        coins = 0;
+        energy = 100;
+        await supabase.from("profiles").insert({ id: userId, coins, energy, bear_power: 1, bear_count: 0 })
+      }
+      updateBalance();
+    }
+
+    async function saveProfile() {
+      await supabase.from("profiles").update({ coins, energy }).eq("id", userId)
+    }
+
+    function updateBalance() {
+      document.getElementById("balance").innerText = `💰 Coin: ${coins} | ⚡ Enerji: ${energy}`
+    }
+
+    async function bonus() {
+      if (!userId) return alert("Əvvəl login et!");
+      coins += 10;
+      updateBalance();
+      await saveProfile();
+      alert("🎁 Bonus götürüldü!");
+    }
+
+    async function mineCoin() {
+      if (!userId) return alert("Əvvəl login et!");
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single()
+      if (!profile) return;
+      if (profile.energy <= 0) {
+        alert("⚡ Enerjin bitdi! Reklama baxmalısan.");
+        return;
+      }
+      coins += profile.bear_power;
+      energy -= 1;
+      updateBalance();
+      await saveProfile();
+    }
+
+    async function fillEnergy() {
+      if (!userId) return alert("Əvvəl login et!");
+      energy = 100;
+      updateBalance();
+      await saveProfile();
+      alert("⚡ Enerjin reklam izləməklə dolduruldu!");
+    }
+
+    function copyWallet() {
+      navigator.clipboard.writeText("EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee
