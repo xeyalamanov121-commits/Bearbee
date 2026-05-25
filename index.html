@@ -28,20 +28,28 @@
       border-radius: 15px; box-shadow: 0 0 25px #0ff; width: 280px; transition: transform 0.3s;
     }
     .section:hover { transform: scale(1.05); box-shadow: 0 0 40px #f0f; }
-    .section img { width: 100%; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 0 20px #f0f; }
     .section h2 { margin-bottom: 10px; color: #0ff; }
     .section p { font-size: 14px; color: #aaa; margin-bottom: 15px; }
     #balance { margin-top: 20px; font-size: 18px; color: #0ff; }
+    #bear { width: 200px; cursor: pointer; margin-top: 20px; transition: transform 0.2s; }
+    #bear:hover { transform: scale(1.1); }
   </style>
 </head>
 <body>
   <h1>🏎️ BEARBEE ARENA</h1>
   <p>Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.</p>
 
+  <!-- Ana şəkil -->
+  <div style="text-align:center; margin-top:20px;">
+    <img src="images/arena.jpg" alt="BEARBEE ARENA bölmələri"
+         style="width:95%; border-radius:15px; box-shadow:0 0 30px #0ff;">
+  </div>
+
   <!-- Auth form -->
   <div class="auth">
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
     <button onclick="login()">Login</button>
     <button onclick="logout()">Logout</button>
     <div id="result"></div>
@@ -52,38 +60,33 @@
   <div class="sections">
     <div class="section">
       <h2>MINING</h2>
-      <img src="https://img.freepik.com/free-vector/neon-crypto-mining-concept.jpg" alt="Mining şəkli">
-      <p>Tapper mining sistemi ilə coin topla və balansını artır.</p>
-      <button onclick="window.location='tapper.html'">GİRİŞ</button>
+      <p>Ayıya kliklə və coin topla!</p>
+      <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.553ad732-4916-4809-9ec6-3c43798e115d.png" onclick="mineCoin()" alt="Cyber Ayı Avatar">
     </div>
 
     <div class="section">
       <h2>RACE ROOM</h2>
-      <img src="https://img.freepik.com/free-photo/futuristic-neon-race-car.jpg" alt="Race Room şəkli">
       <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
       <button onclick="window.location='race.html'">OTAĞA GİR</button>
     </div>
 
     <div class="section">
       <h2>ADS</h2>
-      <img src="https://img.freepik.com/free-photo/neon-digital-marketing.jpg" alt="Reklam şəkli">
-      <p>Reklam yerləri və istifadəçilərə daha tez çat.</p>
-      <button onclick="alert('Reklam doldur!')">DOLDUR</button>
+      <p>Reklam izləməklə ⚡ enerji doldur.</p>
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+      <button onclick="fillEnergy()">Enerjini Doldur</button>
     </div>
 
     <div class="section">
       <h2>BONUS</h2>
-      <img src="https://img.freepik.com/free-photo/neon-casino-bonus.jpg" alt="Bonus şəkli">
-      <p>Gündəlik bonuslar və xüsusi mükafatlar əldə et.</p>
+      <p>Gündəlik bonusunu götür!</p>
       <button onclick="bonus()">KEÇİD</button>
     </div>
 
     <div class="section">
       <h2>DEPOSIT</h2>
-      <img src="https://img.freepik.com/free-photo/neon-wallet.jpg" alt="Deposit Wallet">
-      <p>Balansını artırmaq üçün aşağıdakı cüzdanlardan istifadə et:</p>
-      <p><strong>Ton Wallet:</strong> EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
-      <p><strong>ID:</strong> 9947429</p>
+      <p>Ton Wallet: <br> EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
+      <p>ID: 9947429</p>
       <button onclick="copyWallet()">KOPYALA</button>
     </div>
   </div>
@@ -94,12 +97,20 @@
 
     const supabase = createClient(
       "https://ywpqvvriakbbhvrtpvso.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     )
 
     let userId = null;
     let coins = 0;
     let energy = 0;
+
+    async function signup() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) document.getElementById("result").innerText = "⚠️ Signup failed: " + error.message
+      else document.getElementById("result").innerText = "✅ Qeydiyyat uğurlu!"
+    }
 
     async function login() {
       const email = document.getElementById("email").value
@@ -129,7 +140,7 @@
       } else {
         coins = 0;
         energy = 100;
-        await supabase.from("profiles").insert({ id: userId, coins, energy })
+        await supabase.from("profiles").insert({ id: userId, coins, energy, bear_power: 1, bear_count: 0 })
       }
       updateBalance();
     }
@@ -150,10 +161,27 @@
       alert("🎁 Bonus götürüldü!");
     }
 
-    function copyWallet() {
-      const wallet = "EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp\nID: 9947429";
-      navigator.clipboard.writeText(wallet).then(() => {
-        alert("💳 Cüzdan məlumatı kopyalandı!");
-      });
+    async function mineCoin() {
+      if (!userId) return alert("Əvvəl login et!");
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single()
+      if (!profile) return;
+      if (profile.energy <= 0) {
+        alert("⚡ Enerjin bitdi! Reklama baxmalısan.");
+        return;
+      }
+      coins += profile.bear_power;
+      energy -= 1;
+      updateBalance();
+      await saveProfile();
     }
-  </script
+
+    async function fillEnergy() {
+      if (!userId) return alert("Əvvəl login et!");
+      energy = 100;
+      updateBalance();
+      await saveProfile();
+      alert("⚡ Enerjin reklam izləməklə dolduruldu!");
+    }
+
+    function copyWallet() {
+      navigator.clipboard.writeText("EQD14kgmngE0fNYVs7
