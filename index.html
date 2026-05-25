@@ -12,74 +12,26 @@
       margin: 0;
       padding: 0;
     }
-    h1 {
-      text-shadow: 0 0 20px #f0f;
-      margin-top: 30px;
-    }
-    p {
-      font-size: 18px;
-      color: #ccc;
-    }
-    .auth {
-      margin: 20px;
-    }
-    input {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-    }
+    h1 { text-shadow: 0 0 20px #f0f; margin-top: 30px; }
+    p { font-size: 18px; color: #ccc; }
+    .auth { margin: 20px; }
+    input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
     button {
-      background: #0ff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      margin: 5px;
-      transition: 0.3s;
+      background: #0ff; border: none; padding: 10px 20px;
+      border-radius: 5px; cursor: pointer; font-weight: bold;
+      margin: 5px; transition: 0.3s;
     }
-    button:hover {
-      background: #f0f;
-      color: #fff;
-    }
-    .sections {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 30px auto;
-      max-width: 1200px;
-    }
+    button:hover { background: #f0f; color: #fff; }
+    .sections { display: flex; flex-wrap: wrap; justify-content: center; margin: 30px auto; max-width: 1200px; }
     .section {
-      background: #111;
-      border: 2px solid #0ff;
-      margin: 15px;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 25px #0ff;
-      width: 280px;
-      transition: transform 0.3s;
+      background: #111; border: 2px solid #0ff; margin: 15px; padding: 20px;
+      border-radius: 15px; box-shadow: 0 0 25px #0ff; width: 280px; transition: transform 0.3s;
     }
-    .section:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 40px #f0f;
-    }
-    .section img {
-      width: 100%;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 0 20px #f0f;
-    }
-    .section h2 {
-      margin-bottom: 10px;
-      color: #0ff;
-    }
-    .section p {
-      font-size: 14px;
-      color: #aaa;
-      margin-bottom: 15px;
-    }
+    .section:hover { transform: scale(1.05); box-shadow: 0 0 40px #f0f; }
+    .section img { width: 100%; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 0 20px #f0f; }
+    .section h2 { margin-bottom: 10px; color: #0ff; }
+    .section p { font-size: 14px; color: #aaa; margin-bottom: 15px; }
+    #balance { margin-top: 20px; font-size: 18px; color: #0ff; }
   </style>
 </head>
 <body>
@@ -93,36 +45,37 @@
     <button onclick="login()">Login</button>
     <button onclick="logout()">Logout</button>
     <div id="result"></div>
+    <div id="balance">💰 Coin: 0 | ⚡ Enerji: 0</div>
   </div>
 
   <!-- Bölmələr -->
   <div class="sections">
     <div class="section">
       <h2>MINING</h2>
-      <img src="https://source.unsplash.com/400x250/?crypto,mining" alt="Mining şəkli">
+      <img src="https://img.freepik.com/free-vector/mining-cryptocurrency-neon-glow-icon_20598358.jpg" alt="Mining şəkli">
       <p>Tapper mining sistemi ilə coin topla və balansını artır.</p>
       <button onclick="window.location='tapper.html'">GİRİŞ</button>
     </div>
 
     <div class="section">
       <h2>RACE ROOM</h2>
-      <img src="https://source.unsplash.com/400x250/?race,car" alt="Race Room şəkli">
+      <img src="https://img.freepik.com/free-photo/futuristic-race-car-neon.jpg" alt="Race Room şəkli">
       <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
       <button onclick="window.location='race.html'">OTAĞA GİR</button>
     </div>
 
     <div class="section">
       <h2>ADS</h2>
-      <img src="https://source.unsplash.com/400x250/?digital,ads" alt="Reklam şəkli">
+      <img src="https://img.freepik.com/free-photo/digital-marketing-neon.jpg" alt="Reklam şəkli">
       <p>Reklam yerləri və istifadəçilərə daha tez çat.</p>
       <button onclick="alert('Reklam doldur!')">DOLDUR</button>
     </div>
 
     <div class="section">
       <h2>BONUS</h2>
-      <img src="https://source.unsplash.com/400x250/?bonus,casino" alt="Bonus şəkli">
+      <img src="https://img.freepik.com/free-photo/casino-bonus-neon.jpg" alt="Bonus şəkli">
       <p>Gündəlik bonuslar və xüsusi mükafatlar əldə et.</p>
-      <button onclick="alert('Bonus götürüldü!')">KEÇİD</button>
+      <button onclick="bonus()">KEÇİD</button>
     </div>
   </div>
 
@@ -135,6 +88,10 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk"
     )
 
+    let userId = null;
+    let coins = 0;
+    let energy = 0;
+
     async function login() {
       const email = document.getElementById("email").value
       const password = document.getElementById("password").value
@@ -142,13 +99,46 @@
       if (error) {
         document.getElementById("result").innerText = "⚠️ Login failed: " + error.message
       } else {
+        userId = data.user.id;
         document.getElementById("result").innerText = `✅ Logged in as ${data.user.email}`
+        await loadProfile();
       }
     }
 
     async function logout() {
       await supabase.auth.signOut()
+      userId = null;
       document.getElementById("result").innerText = "🚪 Logged out!"
+      document.getElementById("balance").innerText = "💰 Coin: 0 | ⚡ Enerji: 0"
+    }
+
+    async function loadProfile() {
+      let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+      if (!error && data) {
+        coins = data.coins;
+        energy = data.energy;
+      } else {
+        coins = 0;
+        energy = 100;
+        await supabase.from("profiles").insert({ id: userId, coins, energy })
+      }
+      updateBalance();
+    }
+
+    async function saveProfile() {
+      await supabase.from("profiles").update({ coins, energy }).eq("id", userId)
+    }
+
+    function updateBalance() {
+      document.getElementById("balance").innerText = `💰 Coin: ${coins} | ⚡ Enerji: ${energy}`
+    }
+
+    async function bonus() {
+      if (!userId) return alert("Əvvəl login et!");
+      coins += 10;
+      updateBalance();
+      await saveProfile();
+      alert("🎁 Bonus götürüldü!");
     }
   </script>
 </body>
