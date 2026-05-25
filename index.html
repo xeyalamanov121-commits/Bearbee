@@ -99,43 +99,48 @@
   <div class="sections">
     <div class="section">
       <h2>MINING</h2>
-      <img src="https://images.unsplash.com/photo-1621508454371-0e3f3f3a5d3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mining şəkli">
+      <img src="https://source.unsplash.com/400x250/?crypto,mining" alt="Mining şəkli">
       <p>Tapper mining sistemi ilə coin topla və balansını artır.</p>
       <button onclick="window.location='tapper.html'">GİRİŞ</button>
     </div>
 
     <div class="section">
       <h2>RACE ROOM</h2>
-      <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Race Room şəkli">
+      <img src="https://source.unsplash.com/400x250/?race,car" alt="Race Room şəkli">
       <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
       <button onclick="window.location='race.html'">OTAĞA GİR</button>
     </div>
 
     <div class="section">
       <h2>ADS</h2>
-      <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Reklam şəkli">
+      <img src="https://source.unsplash.com/400x250/?digital,ads" alt="Reklam şəkli">
       <p>Reklam yerləri və istifadəçilərə daha tez çat.</p>
       <button onclick="alert('Reklam doldur!')">DOLDUR</button>
     </div>
 
     <div class="section">
       <h2>BONUS</h2>
-      <img src="https://images.unsplash.com/photo-1605902711622-cfb43c44367f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Bonus şəkli">
+      <img src="https://source.unsplash.com/400x250/?bonus,casino" alt="Bonus şəkli">
       <p>Gündəlik bonuslar və xüsusi mükafatlar əldə et.</p>
       <button onclick="alert('Bonus götürüldü!')">KEÇİD</button>
     </div>
   </div>
 
+  <!-- Supabase bağlantısı -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
-    const supabase = createClient("https://ywpqvvriakbbhvrtpvso.supabase.co", "YOUR_ANON_KEY")
+
+    const supabase = createClient(
+      "https://ywpqvvriakbbhvrtpvso.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3cHF2dnJpYWtiYmh2cnRwdnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTc0NjcsImV4cCI6MjA5NTE5MzQ2N30.C8Y7bCgTsnz8jFUoUBv8gJTvH5i7LwzLVAq43sEV2Kk"
+    )
 
     async function login() {
       const email = document.getElementById("email").value
       const password = document.getElementById("password").value
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
-        document.getElementById("result").innerText = "⚠️ Login failed!"
+        document.getElementById("result").innerText = "⚠️ Login failed: " + error.message
       } else {
         document.getElementById("result").innerText = `✅ Logged in as ${data.user.email}`
       }
