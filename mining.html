@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>BEARBEE MINING</title>
+  <style>
+    body {
+      background:#000;
+      color:#fff;
+      text-align:center;
+      font-family:'Orbitron',sans-serif;
+      margin:0; padding:0;
+    }
+    h1 { text-shadow:0 0 20px #0ff; margin-top:30px; }
+    #bear {
+      width:200px; cursor:pointer; margin-top:50px;
+      transition:transform 0.2s;
+    }
+    #bear:hover { transform:scale(1.1); }
+    #balance { margin-top:20px; font-size:18px; color:#0ff; }
+    button {
+      margin-top:20px; padding:10px 20px;
+      border:none; border-radius:5px;
+      background:#0ff; cursor:pointer; font-weight:bold;
+    }
+    button:hover { background:#f0f; color:#fff; }
+  </style>
+</head>
+<body>
+  <h1>🐻 BEARBEE MINING</h1>
+  <p>Ayıya kliklə və coin topla!</p>
+
+  <!-- Ayı şəkli -->
+  <img id="bear" src="https://copilot.microsoft.com/th/id/BCO.553ad732-4916-4809-9ec6-3c43798e115d.png"
+       onclick="mineCoin()" alt="Cyber Ayı Avatar">
+
+  <!-- Balans -->
+  <div id="balance">💰 Coin: 0 | ⚡ Enerji: 100</div>
+
+  <!-- Düymələr -->
+  <button onclick="fillEnergy()">Enerjini Doldur</button>
+  <button onclick="window.location='index.html'">⬅️ Ana səhifəyə qayıt</button>
+
+  <!-- JS məntiqi -->
+  <script>
+    let coins = 0;
+    let energy = 100;
+
+    function updateBalance() {
+      document.getElementById("balance").innerText =
+        `💰 Coin: ${coins} | ⚡ Enerji: ${energy}`;
+    }
+
+    function mineCoin() {
+      if (energy <= 0) {
+        alert("⚡ Enerjin bitdi! Reklama baxmalısan.");
+        return;
+      }
+      coins += 1;
+      energy -= 1;
+      updateBalance();
+    }
+
+    function fillEnergy() {
+      energy = 100;
+      updateBalance();
+      alert("⚡ Enerjin dolduruldu!");
+    }
+
+    updateBalance();
+  </script>
+</body>
+</html>
