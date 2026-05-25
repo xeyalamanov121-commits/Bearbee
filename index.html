@@ -77,6 +77,15 @@
       <p>Gündəlik bonuslar və xüsusi mükafatlar əldə et.</p>
       <button onclick="bonus()">KEÇİD</button>
     </div>
+
+    <div class="section">
+      <h2>DEPOSIT</h2>
+      <img src="https://img.freepik.com/free-photo/neon-wallet.jpg" alt="Deposit Wallet">
+      <p>Balansını artırmaq üçün aşağıdakı cüzdanlardan istifadə et:</p>
+      <p><strong>Ton Wallet:</strong> EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
+      <p><strong>ID:</strong> 9947429</p>
+      <button onclick="copyWallet()">KOPYALA</button>
+    </div>
   </div>
 
   <!-- Supabase bağlantısı -->
@@ -140,6 +149,11 @@
       await saveProfile();
       alert("🎁 Bonus götürüldü!");
     }
-  </script>
-</body>
-</html>
+
+    function copyWallet() {
+      const wallet = "EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp\nID: 9947429";
+      navigator.clipboard.writeText(wallet).then(() => {
+        alert("💳 Cüzdan məlumatı kopyalandı!");
+      });
+    }
+  </script
