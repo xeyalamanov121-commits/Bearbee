@@ -2,82 +2,179 @@
 <html lang="az">
 <head>
   <meta charset="UTF-8">
-  <title>BEARBEE ARENA</title>
+  <title>Cyber Arena</title>
   <style>
-    body { background:#111; color:#fff; font-family:'Orbitron',sans-serif; text-align:center; margin:0; padding:0; }
-    h1 { text-shadow:0 0 20px #f0f; margin-top:30px; }
-    p { font-size:18px; color:#ccc; }
-    button { background:#0ff; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; margin:5px; transition:0.3s; }
-    button:hover { background:#f0f; color:#fff; }
-    .sections { display:flex; flex-wrap:wrap; justify-content:center; margin:30px auto; max-width:1200px; }
-    .section { background:#222; border:2px solid #0ff; margin:15px; padding:20px; border-radius:15px; box-shadow:0 0 25px #0ff; width:280px; transition:transform 0.3s; }
-    .section:hover { transform:scale(1.05); box-shadow:0 0 40px #f0f; }
-    .section h2 { margin-bottom:10px; color:#0ff; }
-    .section p { font-size:14px; color:#aaa; margin-bottom:15px; }
-    #balance { margin-top:20px; font-size:18px; color:#0ff; }
+    body { margin:0; background:#000; color:#fff; font-family:Arial; }
+    #hud { position:absolute; top:10px; left:10px; }
+    #hud div { margin:5px 0; }
+    #hud button { background:#00ffcc; border:none; padding:8px; cursor:pointer; }
+    .section { margin-top:20px; }
+    .card { border:1px solid #444; padding:10px; margin:10px; display:inline-block; width:200px; vertical-align:top; }
+    .card img { width:100%; height:auto; }
+    button { background:#00ffcc; border:none; padding:8px; cursor:pointer; margin-top:5px; }
   </style>
 </head>
 <body>
-  <h1>🏎️ BEARBEE ARENA</h1>
-  <p>Deposit et, yarış otaqlarına qoşul, mining et və böyük bonuslar qazan.</p>
-
-  <!-- Ana şəkil (panel fotonu buraya qoy) -->
-  <div style="text-align:center; margin-top:20px;">
-    <img src="images/arena-panels.jpg" alt="BEARBEE ARENA bölmələri"
-         style="width:95%; border-radius:15px; box-shadow:0 0 30px #0ff;">
+  <div id="hud">
+    <div id="energy">Enerji: 100</div>
+    <div id="balance">Balans: 0</div>
+    <button onclick="watchAd()">Reklama bax → Enerji +30</button>
   </div>
 
-  <!-- Telegram giriş -->
-  <div style="margin:20px;">
-    <p>🔑 Giriş yalnız Telegram ilə mümkündür</p>
-    <a href="https://t.me/Bearbeee_bot" target="_blank">
-      <button>Telegram ilə GİRİŞ</button>
-    </a>
-    <div id="balance">💰 Coin: 0 | ⚡ Enerji: 100</div>
+  <div class="section">
+    <h2>Kartlar</h2>
+    <div id="cards"></div>
   </div>
 
-  <!-- Bölmələr -->
-  <div class="sections">
-    <div class="section">
-      <h2>MINING</h2>
-      <p>Ayı ilə coin toplamaq üçün ayrıca səhifəyə keç!</p>
-      <button onclick="window.location='mining.html'">MININGƏ GİR</button>
-    </div>
-
-    <div class="section">
-      <h2>RACE ROOM</h2>
-      <p>3 nəfərlik yarış otaqlarına qoşul və qalib ol.</p>
-      <button onclick="window.location='race.html'">OTAĞA GİR</button>
-    </div>
-
-    <div class="section">
-      <h2>ADS</h2>
-      <p>Reklam izləməklə ⚡ enerji doldur.</p>
-      <button onclick="fillEnergy()">Enerjini Doldur</button>
-    </div>
-
-    <div class="section">
-      <h2>BONUS</h2>
-      <p>Gündəlik bonusunu götür!</p>
-      <button onclick="bonus()">KEÇİD</button>
-    </div>
-
-    <div class="section">
-      <h2>DEPOSIT</h2>
-      <p>Ton Wallet: EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp</p>
-      <p>ID: 9947429</p>
-      <button onclick="copyWallet()">KOPYALA</button>
-    </div>
+  <div class="section">
+    <h2>Marketplace</h2>
+    <div id="market"></div>
   </div>
 
-  <!-- Sadə JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let coins=0, energy=100;
-    function updateBalance(){ document.getElementById("balance").innerText=`💰 Coin: ${coins} | ⚡ Enerji: ${energy}`; }
-    function bonus(){ coins+=10; updateBalance(); alert("🎁 Bonus götürüldü!"); }
-    function fillEnergy(){ energy=100; updateBalance(); alert("⚡ Enerjin dolduruldu!"); }
-    function copyWallet(){ navigator.clipboard.writeText("EQD14kgmngE0fNYVs7_9dw78V3rPhNt7_Ee-7X3ykDORQvMp"); alert("💳 Wallet kopyalandı!"); }
-    updateBalance();
+    // --- Supabase bağlantısı ---
+    const supabase = supabase.createClient(
+      "https://YOUR_PROJECT.supabase.co",
+      "YOUR_PUBLIC_ANON_KEY"
+    );
+
+    let energy = 100, balance = 0;
+
+    async function loadBalance() {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+      const { data, error } = await supabase.from("profiles").select("balance").eq("id", user.id).single();
+      if (!error && data) {
+        balance = data.balance;
+        updateHUD();
+      }
+    }
+
+    async function saveBalance() {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+      await supabase.from("profiles").update({ balance }).eq("id", user.id);
+    }
+
+    function updateHUD() {
+      document.getElementById("energy").innerText = "Enerji: " + energy;
+      document.getElementById("balance").innerText = "Balans: " + balance;
+    }
+
+    function watchAd() {
+      energy = Math.min(100, energy + 30); // reklam → +30 enerji, maksimum 100
+      updateHUD();
+    }
+
+    // --- Three.js səhnəsi (clickleme) ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const geometry = new THREE.IcosahedronGeometry(3, 1);
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00ffff });
+    const crystal = new THREE.Mesh(geometry, material);
+    scene.add(crystal);
+
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10,10,10);
+    scene.add(light);
+
+    camera.position.z = 10;
+
+    renderer.domElement.addEventListener("click", async () => {
+      if (energy > 0) {
+        balance += 15;   // hər klikdə balans +15
+        energy -= 10;    // hər klikdə enerji −10
+        updateHUD();
+        await saveBalance(); // Supabase‑də balansı saxla
+      } else {
+        alert("Enerji bitdi! Reklama baxaraq doldur.");
+      }
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      crystal.rotation.x += 0.01;
+      crystal.rotation.y += 0.02;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // --- Kartların siyahısı ---
+    async function loadCards() {
+      const { data, error } = await supabase.from("cards").select("*");
+      if (error) { console.error(error); return; }
+      const container = document.getElementById("cards");
+      container.innerHTML = "";
+      data.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${card.image_url}" alt="${card.name}">
+          <h3>${card.name}</h3>
+          <p>Qiymət: ${card.price}</p>
+          <p>Güc: +${card.power_increase}</p>
+          <button onclick="buyCard(${card.id})">Buy</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function buyCard(cardId) {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) { alert("Əvvəl login ol!"); return; }
+      const { error } = await supabase.rpc("buy_card", {
+        user_id: user.id,
+        card_id: cardId
+      });
+      if (error) { alert("Xəta: " + error.message); }
+      else { alert("Kart uğurla alındı!"); loadCards(); }
+    }
+
+    // --- Marketplace ---
+    async function loadMarket() {
+      const { data, error } = await supabase.from("market").select(`
+        id, price, is_sold,
+        cards (name, image_url, power_increase),
+        seller_id
+      `).eq("is_sold", false);
+      if (error) { console.error(error); return; }
+      const container = document.getElementById("market");
+      container.innerHTML = "";
+      data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${item.cards.image_url}" alt="${item.cards.name}">
+          <h3>${item.cards.name}</h3>
+          <p>Qiymət: ${item.price}</p>
+          <p>Güc: +${item.cards.power_increase}</p>
+          <button onclick="buyFromMarket(${item.id})">Buy</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function buyFromMarket(marketId) {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) { alert("Əvvəl login ol!"); return; }
+      const { error } = await supabase.rpc("buy_from_market", {
+        buyer_id: user.id,
+        market_id: marketId
+      });
+      if (error) { alert("Xəta: " + error.message); }
+      else { alert("Kart uğurla alındı!"); loadMarket(); }
+    }
+
+    // İlk yükləmə
+    loadBalance();
+    loadCards();
+    loadMarket();
   </script>
 </body>
 </html>
