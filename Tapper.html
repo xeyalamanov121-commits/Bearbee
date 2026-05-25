@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Wolf Tapper</title>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #00ffff;
+      text-align: center;
+      font-family: monospace;
+    }
+    #avatar {
+      width: 250px;
+      margin-top: 40px;
+      cursor: pointer;
+      filter: drop-shadow(0 0 25px purple);
+    }
+    #score, #energy {
+      margin: 15px;
+      font-size: 22px;
+    }
+    .ad {
+      position: absolute;
+      color: magenta;
+      font-size: 20px;
+      animation: blink 1s infinite alternate;
+    }
+    @keyframes blink {
+      from { opacity: 0.3; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Cyber Wolf Tapper</h1>
+  <img id="avatar" src="wolf_avatar.png" alt="Cyber Wolf">
+  <div id="score">Xal: 0</div>
+  <div id="energy">Enerji: 0/100</div>
+  <button id="adBtn">Reklam izləyin (+30 enerji)</button>
+
+  <script>
+    let score = 0;
+    let energy = 0;
+
+    document.getElementById("avatar").addEventListener("click", () => {
+      score += 2;   // klikdə +2 xal
+      score -= 3;   // klikdə -3 xal
+      document.getElementById("score").innerText = "Xal: " + score;
+    });
+
+    document.getElementById("adBtn").addEventListener("click", () => {
+      energy = Math.min(100, energy + 30);
+      document.getElementById("energy").innerText = "Enerji: " + energy + "/100";
+
+      // Reklam paneli effekti
+      let ad = document.createElement("div");
+      ad.className = "ad";
+      ad.innerText = "REKLAM AKTİV!";
+      ad.style.left = Math.random() * window.innerWidth + "px";
+      ad.style.top = Math.random() * window.innerHeight + "px";
+      document.body.appendChild(ad);
+
+      setTimeout(() => ad.remove(), 3000);
+    });
+  </script>
+</body>
+</html>
